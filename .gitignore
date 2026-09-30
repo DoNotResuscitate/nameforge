@@ -1,0 +1,12 @@
+# Build and verification output
+/bin/
+/dist/
+/coverage.out
+*.test
+.DS_Store
+
+# Local tool overrides and personal data
+/mise.local.toml
+/.local/
+/data/local/
+/exports/
