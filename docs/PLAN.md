@@ -9,9 +9,11 @@ working offline on first launch with no interpreter, hosted service or setup imp
 Prioritize Mediterranean and Western European lists plus Turkish; optional North
 African packs require specific provenance, not just generic Arabic labels.
 
-The repository currently contains planning documents and a mise Go pin only.
-No application code, downloaded corpus, remote, or release pipeline exists yet.
-All milestones below are pending. Agents should update statuses as work lands.
+The repository contains the M1 bootstrap and contracts and has a GitHub remote,
+but no corpus, name generation, or release pipeline yet. M1 is complete; later
+milestones remain pending. The Go module path is
+`github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
+lands.
 
 ### MVP
 
@@ -63,8 +65,8 @@ Dependencies flow UI/CLI -> generator -> markov/corpus. The maintenance extracto
 produces assets consumed through embed.FS. No UI or networking imports in the
 Markov engine; no data-network calls in the runtime binary.
 Use concrete types and small interfaces at I/O boundaries; avoid a plugin system.
-Choose the final Go module path from the actual remote if one exists at M1;
-otherwise use `nameforge` locally and record the later rename prerequisite.
+Use the canonical module path from the GitHub remote:
+`github.com/DoNotResuscitate/nameforge`.
 
 Define these contracts in M1 before implementing consumers (signatures may use
 idiomatic concrete Go types, preserving these semantics):
@@ -203,7 +205,7 @@ Each suggested commit is a coherent unit, not a requirement to batch the entire
 milestone. Include relevant tests with the feature they verify. Milestones remain
 pending until their acceptance checks pass.
 
-### M1 — Bootstrap and contracts (pending; no dependencies)
+### M1 — Bootstrap and contracts (complete; no prerequisite milestones)
 
 - Create module, CLI skeleton, version/help command and agreed boundary types.
 - Add mise tasks: `fmt`, `fmt-check`, `test`, `vet`, `build`, `run`, `check`.
@@ -212,6 +214,15 @@ pending until their acceptance checks pass.
   without a personal corpus or network calls to name sources.
 - Acceptance: clean checkout + mise install builds; help/version run; check
   passes; dependencies pinned; task commands documented.
+- Completed: pinned Go and library versions, command routing/help/version,
+  corpus and generation boundary types, mise tasks, and CI workflow. The module
+  initially used `nameforge`; after the GitHub repository was created it was
+  updated to `github.com/DoNotResuscitate/nameforge`. Acceptance commands:
+  `mise install`, `mise run check`, `mise run run -- --help`,
+  `mise run run -- version`, and `mise exec -- go mod verify` pass.
+- Limitation: corpus selection, Markov training, and generation are contracts
+  only and remain for M2/M4.
+- Next ready milestone: M2 — Corpus schema and embedded loading.
 - Commits: `chore(tooling): bootstrap Go module and mise tasks`,
   `feat(cli): add command routing and version output`,
   `ci: verify Go build and tests with mise`.
@@ -299,8 +310,9 @@ pending until their acceptance checks pass.
   cached pages or private paths; run a binary outside the checkout with an empty
   home, network disabled, no Go and no separately installed data.
 - Document category coverage/modes, offline use, reproducibility, controls,
-  troubleshooting, architecture, data sources and dependency notices. Confirm project license
-  choice with owner before public release; this does not block personal builds.
+  troubleshooting, architecture, data sources and dependency notices. The
+  GitHub repository's `LICENSE` is GNU GPLv3; include it and verify release
+  artifacts and interactive legal notices comply before public release.
 - Acceptance: clean-checkout workflow and data:verify pass, checksummed binaries
   build, offline first-launch generation works, no runtime dependency beyond binary.
 - Commits: `ci(release): build checksummed cross-platform binaries`,
@@ -311,6 +323,11 @@ pending until their acceptance checks pass.
 Critical path: M1 -> M2 -> M3/M4 -> M5 -> M6 -> M7. M3 and M4 may be worked on
 independently after M2 contracts settle; coordinate go.mod changes. This is a
 dependency map for future implementers, not an instruction to spawn agents.
+
+Repository handoff: `origin` is `git@github.com:DoNotResuscitate/nameforge.git`.
+The current `origin/main` initial commit contains only the GNU GPLv3 `LICENSE`
+and is separate from the local planning history; reconcile those histories
+before the first push.
 
 For each handoff record: milestone status, changed contracts, commands/checks and
 their results, extracted counts and source revisions where relevant, unresolved
