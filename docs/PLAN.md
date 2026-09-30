@@ -2,10 +2,12 @@
 
 ## 1. Goal and delivery boundary
 
-Build a local command-line TUI in Go that learns character transitions from real
-name lists and produces new candidate names using Markov chains. Deliver a single
-executable per target platform, with no runtime interpreter or hosted service.
-The corpus is imported locally once; generation is offline thereafter.
+Build a local command-line TUI in Go for TTRPG character/NPC names. Learn character
+transitions from real name lists and produce candidates using Markov chains.
+Deliver a single executable per target platform with embedded licensed data,
+working offline on first launch with no interpreter, hosted service or setup import.
+Prioritize Mediterranean and Western European lists plus Turkish; optional North
+African packs require specific provenance, not just generic Arabic labels.
 
 The repository currently contains planning documents and a mise Go pin only.
 No application code, downloaded corpus, remote, or release pipeline exists yet.
@@ -13,8 +15,9 @@ All milestones below are pending. Agents should update statuses as work lands.
 
 ### MVP
 
-- Personal Behind the Name import by usage/category, including pagination.
-- Local corpus selection and source gender filters.
+- Embedded Faker static name arrays, licensed and pinned as defined in DATA.md.
+- Searchable multi-select categories, source gender filters and script labels.
+- Default per-name category selection and explicit blended Markov models.
 - Configurable Markov order, length bounds, count and random seed.
 - TUI generation, regenerate, selection, session favorites and text/JSON export.
 - Scriptable generation sharing the exact same engine and validation.
@@ -22,9 +25,10 @@ All milestones below are pending. Agents should update statuses as work lands.
 
 ### Later work
 
-Surname/full-name composition, mixed weighted cultures, phonetic models,
+Surname/full-name composition, custom category weights, phonetic models,
 syllable constraints, persistent favorites, clipboard integration, model caches,
-embedded redistributable datasets, and package-manager publishing. No LLM or
+optional personal Behind the Name imports, historical/mythological packs,
+regional North African datasets and package-manager publishing. No LLM or
 AI-authored training data. Output is stylistically inspired, not a guarantee of
 linguistically valid names or source meanings.
 
@@ -44,7 +48,9 @@ Suggested layout:
 cmd/nameforge/main.go        # composition, exit code only
 internal/cli/               # commands, flags, streams, terminal detection
 internal/corpus/            # schema, validation, normalization, filters
-internal/source/btn/        # acquisition, cache, HTML extraction
+cmd/corpus-build/           # maintenance-only pinned data extraction
+internal/corpus/assets/     # committed redistributable data and notices
+internal/source/faker/      # static-array extraction; no runtime generator
 internal/markov/            # pure training and sampling
 internal/generator/         # requests, rejection/uniqueness, result metadata
 internal/store/             # local paths and atomic persistence
@@ -53,8 +59,9 @@ internal/export/            # text/JSON encoding
 docs/                       # design, source notes and user guide
 ```
 
-Dependencies flow UI/CLI -> generator -> markov/corpus. Source importer and store
-are composed by CLI commands. No UI or networking imports in the Markov engine.
+Dependencies flow UI/CLI -> generator -> markov/corpus. The maintenance extractor
+produces assets consumed through embed.FS. No UI or networking imports in the
+Markov engine; no data-network calls in the runtime binary.
 Use concrete types and small interfaces at I/O boundaries; avoid a plugin system.
 Choose the final Go module path from the actual remote if one exists at M1;
 otherwise use `nameforge` locally and record the later rename prerequisite.
@@ -63,15 +70,19 @@ Define these contracts in M1 before implementing consumers (signatures may use
 idiomatic concrete Go types, preserving these semantics):
 
 - `corpus.Record` and `corpus.Manifest`: DATA.md v1 fields.
-- `corpus.Select(records, usage, gender)`: stable ordered training spellings;
+- `corpus.Select(records, categoryIDs, gender)`: stable ordered category pools;
   `any` includes all, `masculine`/`feminine` include dual-labeled entries,
-  `unisex` requires both labels. Empty selection is an actionable error.
+  `unisex` requires both labels. Upstream generic means unspecified, not unisex.
+  Selecting a category with zero matches is an actionable error identifying it;
+  never silently drop categories or substitute English.
 - `markov.Train(spellings, order)`: immutable model; no filesystem or RNG.
-- `generator.Generate(ctx, model, request)`: result plus typed error, using a
+- `generator.Generate(ctx, models, request)`: result plus typed error, using a
   request-local seeded RNG. Result includes actual seed, algorithm version,
-  corpus hash, options, accepted names, attempt/rejection totals and completeness.
-- Importer takes context and injected HTTP/cache boundaries; store publishes only
-  validated complete updates. Test without contacting the live site.
+  bundle hash, sorted category IDs, mode, per-category effective bounds, options,
+  accepted names with category attribution, attempts/rejections and completeness.
+- Extractor takes context and injected HTTP/cache boundaries; normal build and
+  tests use committed assets with no upstream access. Store serves exports and
+  future local packs; built-ins do not require writable filesystem state.
 
 ## 3. Markov and generation specification
 
@@ -90,8 +101,10 @@ idiomatic concrete Go types, preserving these semantics):
    At maximum length, accept only if the next sampled token is END; otherwise
    reject the candidate rather than truncate it into a different name.
 5. Validate `count=1..1000`, `1 <= min <= max <= 64`, order range, and unsigned
-   64-bit seed. Defaults: count 20, min 3, max 12, order 2. A missing seed is
-   obtained from `crypto/rand` and reported in result metadata/TUI.
+   64-bit seed. Defaults: count 20, automatic category-derived min/max (DATA.md),
+   order 2. Explicit length flags override automatic bounds. In blend mode use
+   the selected union's observed bounds. A missing seed is obtained from
+   `crypto/rand` and reported in result metadata/TUI.
 6. Reject lengths outside bounds, malformed separator placement (leading,
    trailing, repeated separators), duplicate candidates, and, by default,
    exact training spellings. `--allow-existing` permits the latter only.
@@ -111,6 +124,28 @@ Reproducibility means identical corpus hash, algorithm version, options and seed
 produce identical ordered output across runs/platforms. Pin golden cases and
 explicitly version any intentional change to this behavior.
 
+### Multi-category semantics
+
+- Require one or more category IDs, or explicit `--all-categories`. Sort and
+  deduplicate IDs before model training and RNG use. Picker order must not alter
+  seeded output. Filters are OR across selected categories, AND with gender.
+- Default `--mode category`: train a separate model per selected category. For
+  each requested output slot choose a category uniformly with the request RNG,
+  then retry within that category until an accepted candidate or attempt limit.
+  This gives categories equal selection probability rather than favoring larger
+  lists or easier-to-generate categories. The global attempt limit still applies.
+  Retain category attribution in results. A batch need not include every selected
+  category; selections are eligible pools, not a per-category quota.
+- `--mode blend`: train one model on the deduplicated union, equal weight per
+  distinct spelling. Larger lists influence more transitions; document this.
+  This deliberately creates hybrid TTRPG styles. Mark output as blended with
+  all contributing category IDs, not as belonging to one real culture.
+- Blend only compatible script profiles per DATA.md; category mode permits
+  arbitrary categories because individual names stay within one model.
+- Novelty exclusion compares against the union of all selected training names;
+  uniqueness applies to the complete batch. Result metadata records mode and
+  bundle hash so the same request can be replayed.
+
 ## 4. CLI and TUI contract
 
 Planned commands (not yet available):
@@ -118,37 +153,41 @@ Planned commands (not yet available):
 ```sh
 nameforge
 nameforge tui --data-dir /path/to/local/data
-nameforge data import btn --usage irish
-nameforge data import btn --usage irish --refresh
-nameforge data import btn --saved-pages /path/to/manifest.json
 nameforge data list
-nameforge data inspect --corpus btn-irish
-nameforge generate --corpus btn-irish --gender any --order 2 --count 20 --seed 42
-nameforge generate --corpus btn-irish --format json --allow-existing
+nameforge data inspect --category french
+nameforge generate --category french --category italian --mode category --seed 42
+nameforge generate --category spanish --category turkish --mode blend --count 20
+nameforge generate --all-categories --format json --allow-existing
+nameforge licenses
 nameforge version
 ```
 
-Generation also accepts `--min-length`, `--max-length`, and `--data-dir`.
+Generation also accepts `--gender`, `--order`, `--min-length`, `--max-length`.
+Reserve `--data-dir` for optional local state/packs; built-ins need no directory.
 Default no-argument invocation opens the TUI only with terminal stdin/stdout;
 otherwise return usage explaining `generate`, with exit code 2. `--help` works
-without a corpus or TTY. `generate` requires an explicit corpus ID. TUI selects
-the only installed corpus automatically, or prompts when there are several.
+without a TTY. `generate` requires repeatable `--category` flags or
+`--all-categories` (mutually exclusive). TUI opens its bundled category picker
+on first launch. Do not default silently to English.
 
 Text generation writes one name per line to stdout, metadata to stderr; JSON
 writes one versioned result object including names and reproduction metadata.
 Errors go to stderr. Exit codes: 0 success, 1 I/O/data/generation failure,
 2 invalid command/options, 130 interrupted. Never emit ANSI in machine output.
 
-TUI state machine: no-data setup -> corpus/filter selection -> generating ->
-results, with recoverable error states. No-data setup offers explicit import or
-local data instructions; it does not silently start downloading. Network import
-and generation run via cancellable Tea commands, never in `View` or blocking
-`Update`. Track request IDs so stale completions cannot replace newer results.
+TUI state machine: bundled category/filter selection -> generating -> results,
+with recoverable error states. Missing/corrupt built-in assets are an installation
+error, not an invitation to download a corpus. Generation runs via cancellable
+Tea commands, never in `View` or blocking `Update`. Track request IDs so stale
+completions cannot replace newer results.
 
-Screen: settings panel (corpus, usage, gender, order, count, lengths, novelty),
-results list, active seed, corpus count/source, and key hints. Controls:
+Screen: searchable checkbox category picker with select-all/clear, labels,
+scripts, counts and selection summary; settings panel (category/blend mode,
+gender, order, count, automatic/explicit lengths, novelty), results list,
+active seed, sources and key hints. Controls:
 Tab/Shift-Tab focus, arrows or j/k navigation outside text entry, Enter generate,
-r regenerate with a fresh seed, Space toggle favorite, e export, ? help,
+r regenerate with a fresh seed, Space toggle category in the picker or favorite
+in results, e export, ? help,
 Esc dismiss/cancel operation, q quit outside text entry, Ctrl-C quit globally.
 An explicit entered seed is replayable; show each regenerated batch's new seed.
 
@@ -177,32 +216,39 @@ pending until their acceptance checks pass.
   `feat(cli): add command routing and version output`,
   `ci: verify Go build and tests with mise`.
 
-### M2 — Corpus schema and storage (pending; depends M1)
+### M2 — Corpus schema and embedded loading (pending; depends M1)
 
 - Implement DATA.md normalization, schema/version validation, filtering, stable
-  serialization/hash, local path precedence, list/inspect and atomic writes.
+  serialization/hash, category catalog, embed.FS loading and list/inspect.
 - Add traceable redistributable test fixtures and their notice; no invented names.
 - Acceptance: reject corrupt/unknown schemas, invalid UTF-8 and empty selections;
-  normalization/dedup/hash stable; multi-usage/gender semantics tested; failed
-  replacement preserves prior data; clean repository after local store use.
+  normalization/dedup/hash stable; category/gender semantics tested; generic
+  buckets not mistaken for unisex; assets load without writable local storage.
 - Commits: `feat(corpus): validate and filter versioned name corpora`,
-  `feat(data): add local corpus storage and inspection`.
+  `feat(data): load and inspect embedded category packs`.
 
-### M3 — Real Behind the Name import (pending; depends M2)
+### M3 — Bundled multilingual dataset (pending; depends M2)
 
-- Implement bounded HTTP/cache and selected-category pagination, DOM parser,
-  import reports, saved-page mode and CLI commands per DATA.md.
-- Add mocked HTTP tests for pagination, loops, retry, cancellation, changed
-  markup, duplicate entries, corrupt cache and transactional failure.
-- Acceptance: all DATA.md acceptance items pass; import the three suggested
-  categories locally and report actual counts. Do not check imported data in.
-- Commits: `feat(source): fetch and cache Behind the Name list pages`,
-  `feat(source): parse paginated name lists with provenance`,
-  `feat(data): expose validated live and saved-page imports`.
+- Implement pinned static-array extraction and `data:fetch`, `data:build`,
+  `data:verify` mise tasks from DATA.md. Commit derived assets, source lock,
+  upstream license and category quality report. No generated Faker samples.
+- Target the nine core Mediterranean/Western European/Turkish categories in
+  DATA.md, plus optional broadly labelled Arabic. Record actual counts and script
+  metadata; no English fallback or unsupported North African labels.
+- Test string escapes/comments, unsupported TS syntax, malformed records,
+  duplicate spellings, generic buckets, missing arrays and checksum failures.
+- Acceptance: canonical rebuild identical from locked cache; bundle validates
+  offline; source traceability and notices complete; all core target gaps are
+  resolved or explicitly reported before marking complete. Once M4 is ready,
+  publish generation smoke results for each included category (track separately
+  from extraction completion so M3 and M4 can progress independently).
+- Commits: `feat(source): extract pinned Faker name arrays`,
+  `feat(data): bundle licensed European and Mediterranean name packs`,
+  `chore(data): add reproducible corpus verification tasks`.
 
 ### M4 — Markov engine and generation service (pending; depends M2)
 
-- Implement section 3 independently of TUI/importer. Use sourced fixtures and
+- Implement section 3 independently of TUI/extractor. Use sourced fixtures and
   clearly non-name token sequences for small transition-count tests.
 - Test boundary tokens, weighted transitions, suffix backoff, deterministic
   ordering, Unicode, length validation, source exclusion, duplicate rejection,
@@ -210,16 +256,22 @@ pending until their acceptance checks pass.
 - Acceptance: fixed-seed golden cases stable; bounded exhaustion returns the
   documented partial result; model supports independent concurrent requests
   without races; benchmark training and a 100-name batch with corpus size noted.
+  Test category-order invariance, equal category choice, category attribution,
+  blended deduplication, script compatibility, automatic bounds, unknown IDs,
+  empty filtered categories and generic/unisex distinction.
 - Commits: `feat(markov): train deterministic Unicode transition models`,
-  `feat(generator): add bounded seeded name generation`.
+  `feat(generator): add bounded seeded name generation`,
+  `feat(generator): support category selection and blended models`.
 
 ### M5 — Headless vertical slice (pending; depends M3, M4)
 
 - Implement generation flags, stream formats, metadata, exit codes and docs.
-- Acceptance: actual local import -> training -> generation -> JSON/text works
-  with network disabled for generation; repeat seed exactly; invalid flags fail
-  before expensive work; insufficient diversity is actionable; stdout is clean.
-- Commit: `feat(cli): generate reproducible names from local corpora`.
+- Acceptance: first-run bundled-data -> training -> JSON/text works with an
+  empty home and network disabled; repeat seeds across both multi-category modes;
+  invalid flags fail before expensive work; insufficient diversity actionable;
+  stdout clean; `licenses` displays full embedded notices. Run and record the
+  M3 per-category generation smoke checks using default settings and fixed seeds.
+- Commit: `feat(cli): generate reproducible names from embedded categories`.
 
 ### M6 — Interactive UI (pending; depends M5)
 
@@ -227,9 +279,10 @@ pending until their acceptance checks pass.
   navigation, cancellable asynchronous work, favorites and exports.
 - Test update transitions, stale messages, errors, resize and focus without live
   network access; share CLI generation validation rather than duplicate it.
-- Acceptance: actual TTY walkthrough from empty store through import and several
-  batches/export; replay displayed seed via CLI; inspect error recovery, narrow
-  terminal and no-color mode; Ctrl-C restores terminal during active operations.
+- Acceptance: actual offline first-launch walkthrough, choose French + Italian,
+  generate in each mode and export; replay displayed seed via CLI; inspect Greek
+  (and Arabic if bundled) script display, error recovery, narrow terminal and
+  no-color mode; Ctrl-C restores terminal during active operations.
 - Commits: `feat(tui): add corpus and generation controls`,
   `feat(tui): show cancellable generation results`,
   `feat(tui): add session favorites and export`.
@@ -242,15 +295,16 @@ pending until their acceptance checks pass.
   trimpath, version/commit metadata, archives, notices and SHA-256 checksums.
   Target darwin/linux/windows x amd64/arm64; cross-build all, smoke-test natively
   on available OS runners, and clearly identify targets only cross-built.
-- Verify artifacts contain no corpus, cached pages or private paths; run a binary
-  from outside the checkout with a separately imported local corpus and no Go.
-- Document setup/import, offline use, reproducibility, controls, troubleshooting,
-  architecture, data sources and dependency notices. Confirm project license
+- Verify artifacts contain intended built-in packs/notices but no personal corpus,
+  cached pages or private paths; run a binary outside the checkout with an empty
+  home, network disabled, no Go and no separately installed data.
+- Document category coverage/modes, offline use, reproducibility, controls,
+  troubleshooting, architecture, data sources and dependency notices. Confirm project license
   choice with owner before public release; this does not block personal builds.
-- Acceptance: clean-checkout workflow passes, checksummed binaries build, local
-  offline generation works, and no runtime dependency beyond binary + data.
+- Acceptance: clean-checkout workflow and data:verify pass, checksummed binaries
+  build, offline first-launch generation works, no runtime dependency beyond binary.
 - Commits: `ci(release): build checksummed cross-platform binaries`,
-  `docs: document installation data import and terminal usage`.
+  `docs: document bundled categories and terminal usage`.
 
 ## 6. Execution and handoff
 
@@ -259,10 +313,11 @@ independently after M2 contracts settle; coordinate go.mod changes. This is a
 dependency map for future implementers, not an instruction to spawn agents.
 
 For each handoff record: milestone status, changed contracts, commands/checks and
-their results, real import counts where relevant, unresolved limitations, and
-next ready work. Never report live-source verification from mocked tests alone.
+their results, extracted counts and source revisions where relevant, unresolved
+limitations, and next ready work. Never claim measured corpus quality from mocks.
 
-Key engineering risks: site DOM drift (strict parser and local snapshots), small
-corpora (bounded rejection and visible counts), Unicode/casing (NFC/rune tests),
+Key engineering risks: upstream data shape changes (pinned extraction), small
+corpora (bounded rejection and visible counts), uneven category coverage (reports),
+Unicode/casing and native-script usability (NFC/rune/rendering tests),
 non-deterministic iteration (sorted transitions/goldens), terminal responsiveness
 (async commands/cancellation), and dataset updates (hash/versioned provenance).

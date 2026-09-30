@@ -6,18 +6,26 @@ the plan before handing off. This initial repository is a planning deliverable.
 
 ## Constraints
 
-- Go application, local TUI, character-level Markov generation.
+- Go application, local TUI, character-level Markov generation for TTRPG use.
+- Embed licensed multilingual data so the binary works offline on first launch.
+  Support selecting one or more categories and explicit category/blend modes.
+  Prioritize Mediterranean/Western Europe and Turkish. Do not relabel a generic
+  Arabic list as North African or substitute English fallback for missing data.
 - Real externally sourced training data only. Do not author name corpora or seed
   lists, including demonstration lists. Small algorithm fixtures may use clearly
   non-name token sequences; name-bearing fixtures must have source provenance.
-- Behind the Name is the primary source; the user has email permission for
-  personal use. No additional permission prompt is required for personal import.
+- Faker's static locale name arrays are the planned bundled source (MIT).
+  Extract source arrays, not generated Faker outputs; preserve full notices.
+  Never use implicit English fallback or equate unspecified gender with unisex.
+- Behind the Name is an optional later personal source and UX reference; the
+  user has permission for personal use. No repeat permission prompt is required.
 - Use mise for all developer tool versions and command tasks. Pin exact versions;
   run Go commands through `mise exec --` or mise tasks. Pin dependencies in Go
   module files. Do not introduce another version manager or depend on global Go.
 - Keep generation independent of the terminal, filesystem, and network.
-- Keep local corpora, fetched HTML, generated names, and permission correspondence
-  out of commits. Binary distributions do not embed personal datasets or models.
+- Commit the reproducibly derived redistributable corpus, source lock and notices.
+  Keep personal corpora, fetched HTML, generated names, and correspondence out of
+  commits. Embed only the explicit redistributable asset directory.
 - Maintain Unicode and deterministic seeded generation as specified in the plan.
 
 ## Workflow
