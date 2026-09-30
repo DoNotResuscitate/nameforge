@@ -6,8 +6,10 @@ Select one or more naming categories, generate a batch, and save favorites.
 The initial focus is Mediterranean and Western Europe, plus Turkish, with
 accurately sourced North African categories as a possible expansion.
 
-**Status: planning only.** The application and corpus build pipeline are not implemented.
-Nameforge is the working project/binary name.
+**Status: bootstrap implemented.** Command routing, version/help output, core
+contracts, and mise verification tasks are in place. Corpus loading and name
+generation are not implemented yet. The Go module path is
+`github.com/DoNotResuscitate/nameforge`.
 
 ## Development handoff
 
@@ -18,17 +20,19 @@ Nameforge is the working project/binary name.
 
 ## Toolchain
 
-Use [mise](https://mise.jdx.dev/) for tools and exact versions. Go is pinned in
-`mise.toml`; after reviewing this repository's configuration:
+Use [mise](https://mise.jdx.dev/) for tools and exact versions. Go and the
+project commands are pinned in `mise.toml`; after reviewing this repository's
+configuration:
 
 ```sh
 mise trust
 mise install
-mise exec -- go version
+mise run check
 ```
 
-Build, test, run, format, and verification tasks will be added in milestone M1.
-Go libraries will be pinned in `go.mod` / `go.sum`, not installed globally.
+Available tasks are `fmt`, `fmt-check`, `test`, `vet`, `build`, `run`, and
+`check`. For example, `mise run run -- version` runs the version command. Go
+libraries are pinned in `go.mod` / `go.sum`, not installed globally.
 
 ## Data and operation
 

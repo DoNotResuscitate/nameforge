@@ -1,2 +1,33 @@
 [tools]
 go = "1.27.1"
+
+[env]
+GOTOOLCHAIN = "local"
+
+[tasks.fmt]
+description = "Format Go source"
+run = "go fmt ./..."
+
+[tasks.fmt-check]
+description = "Check Go formatting without changing files"
+run = "files=$(git ls-files -co --exclude-standard -- '*.go'); test -z \"$(gofmt -l $files)\""
+
+[tasks.test]
+description = "Run Go tests"
+run = "go test ./..."
+
+[tasks.vet]
+description = "Run go vet"
+run = "go vet ./..."
+
+[tasks.build]
+description = "Build the Nameforge executable into bin/"
+run = "mkdir -p bin && go build -trimpath -o bin/nameforge ./cmd/nameforge"
+
+[tasks.run]
+description = "Run Nameforge"
+run = "go run ./cmd/nameforge"
+
+[tasks.check]
+description = "Run formatting, tests, vet, and build checks"
+run = ["mise run fmt-check", "mise run test", "mise run vet", "mise run build"]
