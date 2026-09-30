@@ -325,9 +325,9 @@ independently after M2 contracts settle; coordinate go.mod changes. This is a
 dependency map for future implementers, not an instruction to spawn agents.
 
 Repository handoff: `origin` is `git@github.com:DoNotResuscitate/nameforge.git`.
-The current `origin/main` initial commit contains only the GNU GPLv3 `LICENSE`
-and is separate from the local planning history; reconcile those histories
-before the first push.
+The remote's original LICENSE-only initial commit has been merged into local
+history as `chore(repo): merge remote license history`; its GNU GPLv3 `LICENSE`
+is now present in the working tree.
 
 For each handoff record: milestone status, changed contracts, commands/checks and
 their results, extracted counts and source revisions where relevant, unresolved
