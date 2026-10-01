@@ -122,6 +122,10 @@ idiomatic concrete Go types, preserving these semantics):
    preserving all other model letters. Apostrophes do not trigger capitalization.
    Normalize output to NFC. Document this simple rule rather than claiming it
    reconstructs culturally specific capitalization.
+9. The current generator accepts only Latin-script letters, supported combining
+   diacritics, and spaces/apostrophes/hyphens. Reject mixed-script samples and
+   return an explicit unsupported-script error for categories without a Latin
+   profile. Never transliterate or substitute another category.
 
 Reproducibility means identical corpus hash, algorithm version, options and seed
 produce identical ordered output across runs/platforms. Pin golden cases and
@@ -143,8 +147,8 @@ explicitly version any intentional change to this behavior.
   distinct spelling. Larger lists influence more transitions; document this.
   This deliberately creates hybrid TTRPG styles. Mark output as blended with
   all contributing category IDs, not as belonging to one real culture.
-- Blend only compatible script profiles per DATA.md; category mode permits
-  arbitrary categories because individual names stay within one model.
+- Blend only compatible script profiles per DATA.md. Category mode keeps each
+  candidate within one category, but the Latin-only output policy still applies.
 - Novelty exclusion compares against the union of all selected training names;
   uniqueness applies to the complete batch. Result metadata records mode and
   bundle hash so the same request can be replayed.
@@ -266,13 +270,15 @@ pending until their acceptance checks pass.
 - Acceptance: canonical rebuild identical from locked cache; bundle validates
   offline; source traceability and notices complete; all core target gaps are
   resolved or explicitly reported before marking complete. Once M4 is ready,
-  publish generation smoke results for each included category (track separately
-  from extraction completion so M3 and M4 can progress independently).
+  publish generation smoke results for each included Latin-profile category and
+  verify that non-Latin categories return the documented unsupported-script
+  error (track separately from extraction completion so M3 and M4 can progress
+  independently).
 - Commits: `feat(source): extract pinned Faker name arrays`,
   `feat(data): bundle licensed European and Mediterranean name packs`,
   `chore(data): add reproducible corpus verification tasks`.
 
-### M4 — Markov engine and generation service (pending; depends M2)
+### M4 — Markov engine and generation service (complete; depends M2)
 
 - Implement section 3 independently of TUI/extractor. Use sourced fixtures and
   clearly non-name token sequences for small transition-count tests.
@@ -281,13 +287,26 @@ pending until their acceptance checks pass.
   tiny/empty corpus, impossible requests and cancellation.
 - Acceptance: fixed-seed golden cases stable; bounded exhaustion returns the
   documented partial result; model supports independent concurrent requests
-  without races; benchmark training and a 100-name batch with corpus size noted.
+  without races; benchmark training and 100 model samples with corpus size noted.
   Test category-order invariance, equal category choice, category attribution,
   blended deduplication, script compatibility, automatic bounds, unknown IDs,
   empty filtered categories and generic/unisex distinction.
-- Commits: `feat(markov): train deterministic Unicode transition models`,
-  `feat(generator): add bounded seeded name generation`,
-  `feat(generator): support category selection and blended models`.
+- Completed the immutable Unicode-rune Markov model, deterministic sorted
+  transitions and PCG sampling, category/blend generation, per-category bounds,
+  request-local seeded metadata, novelty/uniqueness filters, casing, Latin-only
+  output enforcement, and typed bounded/cancellation errors. Tests cover the
+  listed engine and selection semantics, including a fixed-seed `Alix` golden
+  derived from the committed Faker v10.6.0 French schema fixture.
+- Acceptance checks passed: `mise run check`, `mise exec -- go test -race ./...`,
+  `mise exec -- go mod verify`, and the training/100-sample benchmark below.
+- Baseline on Apple M2 Max (`darwin/arm64`), using the only available corpus at
+  this point (three sourced French schema-fixture records): order-2 training
+  19,208 ns/op; 100 model samples 34,166 ns/op. These measurements are not
+  representative of corpus coverage or name quality. A 100-distinct-name
+  end-to-end benchmark and per-category generation smoke checks await M3's
+  multilingual data; the current fixture correctly exhausts diversity early.
+- Next ready milestone: M3 — Bundled multilingual dataset.
+- Commit: `feat(generator): add deterministic Latin-only Markov generation`.
 
 ### M5 — Headless vertical slice (pending; depends M3, M4)
 
@@ -296,7 +315,8 @@ pending until their acceptance checks pass.
   empty home and network disabled; repeat seeds across both multi-category modes;
   invalid flags fail before expensive work; insufficient diversity actionable;
   stdout clean; `licenses` displays full embedded notices. Run and record the
-  M3 per-category generation smoke checks using default settings and fixed seeds.
+  M3 Latin-profile generation smoke checks using default settings and fixed
+  seeds; verify explicit unsupported-script errors for non-Latin categories.
 - Commit: `feat(cli): generate reproducible names from embedded categories`.
 
 ### M6 — Interactive UI (pending; depends M5)

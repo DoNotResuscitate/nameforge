@@ -53,6 +53,7 @@ type GeneratedName struct {
 // Rejections counts candidates discarded by the bounded generation service.
 type Rejections struct {
 	Length     int `json:"length"`
+	Script     int `json:"script"`
 	Separators int `json:"separators"`
 	Duplicates int `json:"duplicates"`
 	Existing   int `json:"existing"`
@@ -91,6 +92,7 @@ const (
 	ErrorInvalidRequest    ErrorKind = "invalid_request"
 	ErrorEmptySelection    ErrorKind = "empty_selection"
 	ErrorIncompatibleBlend ErrorKind = "incompatible_blend"
+	ErrorUnsupportedScript ErrorKind = "unsupported_script"
 	ErrorAttemptsExhausted ErrorKind = "attempts_exhausted"
 	ErrorCanceled          ErrorKind = "canceled"
 )
