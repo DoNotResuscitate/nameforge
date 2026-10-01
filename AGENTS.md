@@ -42,8 +42,10 @@ the plan before handing off. This initial repository is a planning deliverable.
   complete license notices. Flag authored or generated training names, inaccurate
   cultural labels, and treating unspecified gender as unisex.
 - Preserve the offline architecture: generation stays independent of terminal,
-  filesystem, and network I/O; runtime uses only embedded redistributable data and
-  never fetches training data.
+  filesystem, and network I/O. Built-in corpora must load offline from embedded
+  redistributable assets without writable local state. Explicitly selected local
+  packs may load through documented storage boundaries; runtime never fetches
+  training data over the network.
 
 ## Workflow
 
