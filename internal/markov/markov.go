@@ -98,9 +98,10 @@ func (model *Model) Order() int {
 	return model.order
 }
 
-// Sample returns one NFC sample using rng. Sampling is bounded to maxRunes;
-// when the next token after maxRunes characters is not END, ErrTooLong is
-// returned rather than truncating the candidate.
+// Sample returns one NFC sample using rng. Its normalized length must fit
+// maxRunes; raw sampling is bounded to twice MaxNameRunes so canonical
+// composition can reduce a temporarily longer rune sequence without unbounded
+// sampling.
 func (model *Model) Sample(rng *rand.Rand, maxRunes int) (string, error) {
 	if model == nil || model.order < MinOrder || model.order > MaxOrder {
 		return "", errors.New("model is not initialized")
@@ -116,23 +117,28 @@ func (model *Model) Sample(rng *rand.Rand, maxRunes int) (string, error) {
 	for i := range history {
 		history[i] = startToken
 	}
-	output := make([]rune, 0, maxRunes)
+	hardLimit := MaxNameRunes * 2
+	output := make([]rune, 0, hardLimit)
 	for {
 		token, err := model.nextToken(history, rng)
 		if err != nil {
-			return string(output), err
+			return norm.NFC.String(string(output)), err
 		}
 		if token == endToken {
 			if len(output) == 0 {
 				return "", errors.New("model generated an empty spelling")
 			}
-			return norm.NFC.String(string(output)), nil
+			normalized := norm.NFC.String(string(output))
+			if utf8.RuneCountInString(normalized) > maxRunes {
+				return normalized, ErrTooLong
+			}
+			return normalized, nil
 		}
 		if token < 0 || !utf8.ValidRune(rune(token)) {
-			return string(output), fmt.Errorf("model produced invalid rune token %d", token)
+			return norm.NFC.String(string(output)), fmt.Errorf("model produced invalid rune token %d", token)
 		}
-		if len(output) == maxRunes {
-			return string(output), ErrTooLong
+		if len(output) == hardLimit {
+			return norm.NFC.String(string(output)), ErrTooLong
 		}
 		output = append(output, rune(token))
 		history = advance(history, token, model.order)

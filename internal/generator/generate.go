@@ -19,7 +19,7 @@ import (
 
 const (
 	// AlgorithmVersion changes whenever seeded output behavior intentionally changes.
-	AlgorithmVersion = "markov-v1/nfc-v1/latin-v1/math-rand-v2-pcg"
+	AlgorithmVersion = "markov-v2/nfc-v1/latin-v1/math-rand-v2-pcg"
 	defaultCount     = 20
 	defaultOrder     = 2
 	maxCount         = 1000

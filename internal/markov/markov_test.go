@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/DoNotResuscitate/nameforge/internal/corpus"
+	"golang.org/x/text/unicode/norm"
 )
 
 func TestTrainCountsWeightedRuneTransitions(t *testing.T) {
@@ -51,8 +52,51 @@ func TestSampleRuneLimitDoesNotTruncate(t *testing.T) {
 	if !errors.Is(err, ErrTooLong) {
 		t.Fatalf("Sample() error = %v, want ErrTooLong (partial %q)", err, sample)
 	}
-	if sample != "<fi" {
-		t.Fatalf("partial sample = %q, want first three runes", sample)
+	if len([]rune(sample)) <= 3 || !strings.HasPrefix(sample, "<fi") {
+		t.Fatalf("partial sample = %q, want bounded prefix longer than the requested three-rune limit", sample)
+	}
+}
+
+func TestSampleChecksRuneLimitAfterNFC(t *testing.T) {
+	// Non-name token sequences exercise canonical composition across generated
+	// transitions, including a second combining mark.
+	tests := []struct {
+		label     string
+		runes     []int32
+		maxRunes  int
+		wantRunes int
+	}{
+		{label: "one composed rune", runes: []int32{'e', '\u0301'}, maxRunes: 1, wantRunes: 1},
+		{label: "multiple combining marks", runes: []int32{'a', '\u0302', '\u0301'}, maxRunes: 1, wantRunes: 1},
+	}
+	for _, test := range tests {
+		t.Run(test.label, func(t *testing.T) {
+			model := deterministicModel(test.runes...)
+			sample, err := model.Sample(rand.New(rand.NewPCG(5, 8)), test.maxRunes)
+			if err != nil {
+				t.Fatalf("Sample() error = %v, want valid NFC sample", err)
+			}
+			if !norm.NFC.IsNormalString(sample) || len([]rune(sample)) != test.wantRunes {
+				t.Fatalf("Sample() = %q (%d runes), want NFC with %d runes", sample, len([]rune(sample)), test.wantRunes)
+			}
+		})
+	}
+}
+
+func TestSampleHasSeparateHardRuneBound(t *testing.T) {
+	// The mark loops indefinitely in the model. Sampling must still stop at the
+	// global raw-sampling limit even though a prefix can normalize to fewer runes.
+	model := &Model{
+		order: 1,
+		transitions: map[string][]transition{
+			contextKey([]int32{startToken}, 1): {{token: 'e', weight: 1}},
+			contextKey([]int32{'e'}, 1):        {{token: '\u0301', weight: 1}},
+			contextKey([]int32{'\u0301'}, 1):   {{token: '\u0301', weight: 1}},
+		},
+	}
+	sample, err := model.Sample(rand.New(rand.NewPCG(5, 8)), 1)
+	if !errors.Is(err, ErrTooLong) {
+		t.Fatalf("Sample() error = %v, want ErrTooLong at hard sampling bound (partial %q)", err, sample)
 	}
 }
 
@@ -221,4 +265,15 @@ func TestTrainingAndSamplingAreIndependentOfInputOrder(t *testing.T) {
 			t.Fatalf("sample %d depends on training order: %q (%v) != %q (%v)", i, firstSample, firstErr, secondSample, secondErr)
 		}
 	}
+}
+
+func deterministicModel(runes ...int32) *Model {
+	model := &Model{order: 1, transitions: make(map[string][]transition)}
+	history := []int32{startToken}
+	for _, token := range runes {
+		model.transitions[contextKey(history, 1)] = []transition{{token: token, weight: 1}}
+		history = advance(history, token, 1)
+	}
+	model.transitions[contextKey(history, 1)] = []transition{{token: endToken, weight: 1}}
+	return model
 }

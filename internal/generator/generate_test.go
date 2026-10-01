@@ -381,5 +381,5 @@ func singleTokenBundle(token string) *corpus.Bundle {
 
 func ExampleAlgorithmVersion() {
 	fmt.Println(AlgorithmVersion)
-	// Output: markov-v1/nfc-v1/latin-v1/math-rand-v2-pcg
+	// Output: markov-v2/nfc-v1/latin-v1/math-rand-v2-pcg
 }

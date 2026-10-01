@@ -100,9 +100,10 @@ idiomatic concrete Go types, preserving these semantics):
    with `(seed, seed XOR 0x9e3779b97f4a7c15)`. Never sample by Go map iteration.
    Include RNG/normalization/model version in the algorithm version contract.
 4. Start with N start sentinels. Use the longest available suffix context,
-   backing off to shorter contexts only if none exists. Sample until END.
-   At maximum length, accept only if the next sampled token is END; otherwise
-   reject the candidate rather than truncate it into a different name.
+   backing off to shorter contexts only if none exists. Sample until END, with a
+   hard raw-sampling cap of twice the 64-rune global maximum. NFC-normalize the
+   full sample before checking its requested rune length; never truncate it into
+   a different name.
 5. Validate `count=1..1000`, `1 <= min <= max <= 64`, order range, and unsigned
    64-bit seed. Defaults: count 20, automatic category-derived min/max (DATA.md),
    order 2. Explicit length flags override automatic bounds. In blend mode use
@@ -114,10 +115,11 @@ idiomatic concrete Go types, preserving these semantics):
    Compare names with the same NFC/lowercase key as training. Uniqueness is
    within one batch; regenerated batches may overlap.
 7. Cap total attempts at `max(1000, count*200)` and check cancellation between
-   attempts. Each attempt is also bounded by max length. Exhaustion returns a
-   typed error with any partial result and rejection counts; never spin forever
-   or fall back to authored/source-picked names. CLI writes no partial stdout
-   by default; TUI can show the partial batch with an explicit incomplete state.
+   attempts. Each attempt has the hard raw-sampling cap in item 4. Exhaustion
+   returns a typed error with any partial result and rejection counts; never spin
+   forever or fall back to authored/source-picked names. CLI writes no partial
+   stdout by default; TUI can show the partial batch with an explicit incomplete
+   state.
 8. Display casing: uppercase the first letter after the start, a space or hyphen,
    preserving all other model letters. Apostrophes do not trigger capitalization.
    Normalize output to NFC. Document this simple rule rather than claiming it
@@ -294,14 +296,15 @@ pending until their acceptance checks pass.
 - Completed the immutable Unicode-rune Markov model, deterministic sorted
   transitions and PCG sampling, category/blend generation, per-category bounds,
   request-local seeded metadata, novelty/uniqueness filters, casing, Latin-only
-  output enforcement, and typed bounded/cancellation errors. Tests cover the
-  listed engine and selection semantics, including a fixed-seed `Alix` golden
-  derived from the committed Faker v10.6.0 French schema fixture.
+  output enforcement, and typed bounded/cancellation errors. The review follow-up
+  checks rune limits after NFC with a separate 128-rune raw sampling cap. Tests
+  cover the listed engine and selection semantics, including a fixed-seed `Alix`
+  golden derived from the committed Faker v10.6.0 French schema fixture.
 - Acceptance checks passed: `mise run check`, `mise exec -- go test -race ./...`,
   `mise exec -- go mod verify`, and the training/100-sample benchmark below.
 - Baseline on Apple M2 Max (`darwin/arm64`), using the only available corpus at
   this point (three sourced French schema-fixture records): order-2 training
-  19,208 ns/op; 100 model samples 34,166 ns/op. These measurements are not
+  14,667 ns/op; 100 model samples 22,625 ns/op. These measurements are not
   representative of corpus coverage or name quality. A 100-distinct-name
   end-to-end benchmark and per-category generation smoke checks await M3's
   multilingual data; the current fixture correctly exhausts diversity early.
