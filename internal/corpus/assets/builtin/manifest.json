@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "source_revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+  "sources": [
+    {
+      "path": "src/locales/fr/person/first_name.ts",
+      "sha256": "b034459642d48525aed95f78868cf3e8646db670ff871a96905690389ee311fe"
+    }
+  ],
+  "licenses": [
+    {
+      "name": "Faker MIT License",
+      "path": "licenses/FAKER-LICENSE"
+    }
+  ],
+  "extractor_version": "fixture-1",
+  "normalization_version": "nfc-v1",
+  "record_count": 3,
+  "records_sha256": "3482e4209d6b34c36121725f3a128e1b0a0b23818b573f8ba9c424b991eb4ce5",
+  "categories_sha256": "4f4078c0a98eda0e67d95a9464295dfb9b1253b450624e1ff77adaec012274f8"
+}

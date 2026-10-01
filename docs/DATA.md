@@ -171,3 +171,15 @@ Optional runtime directory precedence remains `--data-dir`,
 `NAMEFORGE_DATA_DIR`, then `filepath.Join(os.UserConfigDir(), "nameforge")`.
 Built-ins load even with an empty/unwritable home directory; never extract them
 to a writable cache as a prerequisite. Local packs cannot replace built-in IDs.
+
+## M2 schema fixture
+
+The initial embedded bundle is a validation fixture, not the M3 training corpus.
+It contains three literal entries from the pinned Faker `fr/person/first_name.ts`
+arrays: `female[0]` (`Abdonie`), `male[0]` (`Aaron`), and `generic[0]` (`Alix`).
+Their record references preserve those exact buckets and indices. The raw source
+SHA-256 is recorded in the fixture manifest, and the complete upstream Faker
+license is embedded under `internal/corpus/assets/builtin/licenses/`. Its displayed
+category label explicitly marks it as a schema fixture so the count is not read as
+coverage. M3 replaces this tiny bundle with the reproducibly extracted category
+packs and coverage report.

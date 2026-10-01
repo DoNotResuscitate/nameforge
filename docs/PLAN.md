@@ -227,7 +227,7 @@ pending until their acceptance checks pass.
   `feat(cli): add command routing and version output`,
   `ci: verify Go build and tests with mise`.
 
-### M2 — Corpus schema and embedded loading (pending; depends M1)
+### M2 — Corpus schema and embedded loading (complete; depends M1)
 
 - Implement DATA.md normalization, schema/version validation, filtering, stable
   serialization/hash, category catalog, embed.FS loading and list/inspect.
@@ -235,6 +235,20 @@ pending until their acceptance checks pass.
 - Acceptance: reject corrupt/unknown schemas, invalid UTF-8 and empty selections;
   normalization/dedup/hash stable; category/gender semantics tested; generic
   buckets not mistaken for unisex; assets load without writable local storage.
+- Completed the v1 bundle validator and read-only loader, NFC name normalization,
+  canonical JSONL/category encoding and SHA-256 identities, stable category/gender
+  selection, and `data list` / `data inspect`. Tests cover invalid schemas and
+  UTF-8, strict fields, content hashes, normalized-spelling duplicates, selection
+  ordering, dual-labeled/unset gender behavior, and embedded loading.
+- The embedded asset is deliberately only a provenance fixture: three French
+  entries from Faker v10.6.0 with their original array buckets/indices, raw source
+  checksum, and complete upstream license. It is labeled as a schema fixture and
+  is not sufficient training coverage. M3 replaces it with the extracted packs.
+- Acceptance checks passed: `mise run check`, `mise run run -- data list`,
+  `mise run run -- data inspect --category french`, and `mise exec -- go mod verify`.
+- Next ready milestones: M3 — Bundled multilingual dataset, and M4 — Markov engine
+  and generation service. Both now depend only on completed M2 and can proceed
+  independently.
 - Commits: `feat(corpus): validate and filter versioned name corpora`,
   `feat(data): load and inspect embedded category packs`.
 

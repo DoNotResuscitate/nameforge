@@ -27,6 +27,24 @@ func TestRun(t *testing.T) {
 			wantStdout: "nameforge version dev",
 		},
 		{
+			name:       "data list",
+			args:       []string{"data", "list"},
+			wantCode:   0,
+			wantStdout: "French (schema fixture)",
+		},
+		{
+			name:       "data inspect",
+			args:       []string{"data", "inspect", "--category", "french"},
+			wantCode:   0,
+			wantStdout: "Source locale: fr",
+		},
+		{
+			name:       "data inspect unknown category",
+			args:       []string{"data", "inspect", "--category", "missing"},
+			wantCode:   2,
+			wantStderr: `unknown category "missing"`,
+		},
+		{
 			name:       "headless default gives usage error",
 			wantCode:   2,
 			wantStderr: "Usage:",

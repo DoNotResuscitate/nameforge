@@ -6,9 +6,12 @@ Select one or more naming categories, generate a batch, and save favorites.
 The initial focus is Mediterranean and Western Europe, plus Turkish, with
 accurately sourced North African categories as a possible expansion.
 
-**Status: bootstrap implemented.** Command routing, version/help output, core
-contracts, and mise verification tasks are in place. Corpus loading and name
-generation are not implemented yet. The Go module path is
+**Status: M2 corpus loading implemented.** Command routing, version/help output,
+validated corpus contracts, NFC normalization, deterministic serialization and
+hashing, filtering, embedded loading, and `data list` / `data inspect` are in
+place. The embedded French records are a small Faker-sourced schema fixture, not
+a useful training corpus; multilingual data extraction and name generation are
+not implemented yet. The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
 ## Development handoff
@@ -41,6 +44,11 @@ The planned bundled source is the MIT-licensed static name data from
 embedded with Go's `embed`. The binary will work offline on first launch, with
 multiple non-English categories and no data download or JavaScript runtime.
 Agents must never invent training names or sample Faker's generator as a corpus.
+
+The current embedded fixture contains three French entries from Faker v10.6.0
+solely to validate schema, provenance, licensing, and offline loading. Use
+`nameforge data list` and `nameforge data inspect --category french` to inspect
+it. It does not represent the planned French coverage or the final category set.
 
 The TUI will offer searchable category checkboxes, a default mode that chooses
 one selected category per generated name, and an explicit blended-model mode for
