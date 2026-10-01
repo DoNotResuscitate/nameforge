@@ -324,7 +324,7 @@ func TestNameDisplayCasingAndSeparators(t *testing.T) {
 
 func TestLatinFilterPreservesDiacriticsAndRejectsOtherScripts(t *testing.T) {
 	// These non-name tokens isolate Latin diacritics and supported separators.
-	for _, value := range []string{"qzxé", "qzxe\u0301", "qzxv-hy", "qzxv qrt'kr"} {
+	for _, value := range []string{"qzxé", "qzxe\u0301", "qzxv-hy", "qzxv qrt'kr", "qzxv\u02bcqrt"} {
 		if !isLatinSpelling(value) {
 			t.Errorf("isLatinSpelling(%q) = false, want true", value)
 		}

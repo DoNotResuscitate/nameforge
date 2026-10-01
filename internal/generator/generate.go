@@ -356,6 +356,8 @@ func isLatinSpelling(value string) bool {
 	previousLatinLetter := false
 	for _, r := range value {
 		switch {
+		case isLatinSeparator(r):
+			previousLatinLetter = false
 		case unicode.IsLetter(r):
 			if !unicode.In(r, unicode.Latin) {
 				return false
@@ -366,8 +368,6 @@ func isLatinSpelling(value string) bool {
 			if !previousLatinLetter || !isLatinMark(r) {
 				return false
 			}
-		case isLatinSeparator(r):
-			previousLatinLetter = false
 		default:
 			return false
 		}

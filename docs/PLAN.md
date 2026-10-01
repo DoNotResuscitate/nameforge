@@ -297,9 +297,11 @@ pending until their acceptance checks pass.
   transitions and PCG sampling, category/blend generation, per-category bounds,
   request-local seeded metadata, novelty/uniqueness filters, casing, Latin-only
   output enforcement, and typed bounded/cancellation errors. The review follow-up
-  checks rune limits after NFC with a separate 128-rune raw sampling cap. Tests
-  cover the listed engine and selection semantics, including a fixed-seed `Alix`
-  golden derived from the committed Faker v10.6.0 French schema fixture.
+  checks rune limits after NFC with a separate 128-rune raw sampling cap. A second
+  review follow-up prioritizes supported apostrophe separators before Unicode
+  letter classification. Tests cover the listed engine and selection semantics,
+  including a fixed-seed `Alix` golden derived from the committed Faker v10.6.0
+  French schema fixture and the U+02BC separator.
 - Acceptance checks passed: `mise run check`, `mise exec -- go test -race ./...`,
   `mise exec -- go mod verify`, and the training/100-sample benchmark below.
 - Baseline on Apple M2 Max (`darwin/arm64`), using the only available corpus at
