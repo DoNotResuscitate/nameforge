@@ -182,7 +182,7 @@ func TestModelConcurrentSampling(t *testing.T) {
 	}
 }
 
-func BenchmarkTrainBuiltinSchemaFixture(b *testing.B) {
+func BenchmarkTrainBuiltinCorpus(b *testing.B) {
 	spellings := benchmarkBuiltinSpellings(b)
 	b.ResetTimer()
 	for range b.N {
@@ -193,7 +193,7 @@ func BenchmarkTrainBuiltinSchemaFixture(b *testing.B) {
 	b.ReportMetric(float64(len(spellings)), "source-names")
 }
 
-func BenchmarkSample100BuiltinSchemaFixture(b *testing.B) {
+func BenchmarkSample100BuiltinCorpus(b *testing.B) {
 	spellings := benchmarkBuiltinSpellings(b)
 	model, err := Train(spellings, 2)
 	if err != nil {

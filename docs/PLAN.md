@@ -9,10 +9,11 @@ working offline on first launch with no interpreter, hosted service or setup imp
 Prioritize Mediterranean and Western European lists plus Turkish; optional North
 African packs require specific provenance, not just generic Arabic labels.
 
-The repository includes the completed M1 bootstrap and M2 corpus schema and
-embedded-loading support, including a three-record French schema fixture. The
-multilingual training corpus, name generation, and release pipeline remain
-pending. The Go module path is
+The repository includes completed M1 bootstrap, M2 corpus schema and embedded
+loading, M3 pinned multilingual data extraction, and M4 deterministic generation
+engine. The corpus contains 10,652 locale-specific records from Faker v10.6.0.
+CLI generation, the TUI, and the release pipeline remain pending. The Go module
+path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
 
@@ -259,7 +260,7 @@ pending until their acceptance checks pass.
 - Commits: `feat(corpus): validate and filter versioned name corpora`,
   `feat(data): load and inspect embedded category packs`.
 
-### M3 — Bundled multilingual dataset (pending; depends M2)
+### M3 — Bundled multilingual dataset (complete; depends M2)
 
 - Implement pinned static-array extraction and `data:fetch`, `data:build`,
   `data:verify` mise tasks from DATA.md. Commit derived assets, source lock,
@@ -276,9 +277,51 @@ pending until their acceptance checks pass.
   verify that non-Latin categories return the documented unsupported-script
   error (track separately from extraction completion so M3 and M4 can progress
   independently).
-- Commits: `feat(source): extract pinned Faker name arrays`,
-  `feat(data): bundle licensed European and Mediterranean name packs`,
-  `chore(data): add reproducible corpus verification tasks`.
+- Completed: strict static TypeScript literal extraction; maintenance-only Go
+  command with injected HTTP/cache boundaries, pinned URL/checksums, timeouts,
+  bounded retries and explicit offline build/verify; `data:fetch`, `data:build`,
+  `data:verify` mise tasks; CI offline verification; full upstream notice;
+  canonical assets, source lock and machine-readable quality report.
+- All nine core targets plus broadly labelled Arabic are included from Faker
+  v10.6.0 revision `2cb04231a6ace91a59ebe577c653f4ec66478ca3`. Distinct
+  locale-specific counts: Dutch 1,085; English 3,186; French 931; German 1,145;
+  Greek 55; Italian 1,700; Portuguese (Portugal) 188; Spanish 227; Turkish 1,794;
+  Arabic 341. Total 10,652 accepted of 10,653 source occurrences. Dutch
+  `male[571]` is rejected for a control character; provenance/reason retained.
+  No within-locale duplicate spellings or explicit dual-gender spellings occur
+  in these pinned lists. Generic buckets remain unspecified, never unisex.
+- Accepted records retain exact original revision/path/bucket/index references;
+  IDs and merging are locale-specific so gender evidence cannot leak between
+  categories. Schema, normalization and generator algorithm contracts unchanged.
+  Parser tests cover escapes/comments, malformed strings and unknown expressions;
+  extraction tests cover normalization/dedup/gender provenance and malformed
+  records; maintenance tests cover checksum errors, missing arrays, cancellation,
+  bounded retries, notice and quality-report corruption.
+- Acceptance checks passed: `mise run check`, `mise run data:fetch`,
+  `mise run data:build`, `mise run data:verify`,
+  `mise exec -- go run ./cmd/corpus-build verify --rebuild`,
+  `mise exec -- go test -race ./...`, `mise exec -- go mod verify`, and CLI
+  `data list` / Greek `data inspect`. Fetching into a fresh independent
+  `.local/faker-clean` cache and verifying `--rebuild --cache .local/faker-clean`
+  produced identical public artifact bytes. Offline verification with
+  `--cache .local/absent-cache` passed without a raw cache.
+- With M4 complete, per-category fixed-seed smoke checks passed: all eight Latin
+  categories produce/replay 20 distinct novel names using seed 42 and defaults;
+  Greek and Arabic return explicit `unsupported_script`. French + Italian pass
+  picker-order invariance in both modes. The original M4 three-record golden is
+  preserved using the exact source-reference subset of the expanded bundle.
+  Commands: `mise exec -- go test -v ./internal/generator -run
+  TestBuiltinCategoryGenerationSmoke` and `mise exec -- go test
+  ./internal/markov ./internal/generator -run '^$' -bench Builtin -benchmem`.
+- Coverage, rejection counters, bundle hash and performance measurements are in
+  `docs/COVERAGE.md` and `data/quality.json`. Limitations: Greek has only 55 source
+  names; Greek/Arabic native-script generation is deferred by policy; broadly
+  labelled Arabic has only ten feminine names and no North African regional
+  claim. Portuguese/Spanish lists are smaller than other Latin packs. No core
+  extraction targets are missing. Smoke success is not a linguistic quality
+  guarantee. Unisex selection currently returns explicit empty-selection errors.
+- Next ready milestone: M5 — Headless vertical slice.
+- Commit: `feat(data): bundle pinned multilingual Faker corpora`.
 
 ### M4 — Markov engine and generation service (complete; depends M2)
 
@@ -307,10 +350,10 @@ pending until their acceptance checks pass.
 - Baseline on Apple M2 Max (`darwin/arm64`), using the only available corpus at
   this point (three sourced French schema-fixture records): order-2 training
   14,667 ns/op; 100 model samples 22,625 ns/op. These measurements are not
-  representative of corpus coverage or name quality. A 100-distinct-name
-  end-to-end benchmark and per-category generation smoke checks await M3's
-  multilingual data; the current fixture correctly exhausts diversity early.
-- Next ready milestone: M3 — Bundled multilingual dataset.
+  representative of corpus coverage or name quality. M3 now supplies the
+  100-distinct-name end-to-end benchmark and per-category generation smoke checks;
+  see `docs/COVERAGE.md`. The original fixture correctly exhausts diversity early.
+- Next ready milestone after M3 completion: M5 — Headless vertical slice.
 - Commit: `feat(generator): add deterministic Latin-only Markov generation`.
 
 ### M5 — Headless vertical slice (pending; depends M3, M4)

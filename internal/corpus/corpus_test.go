@@ -128,8 +128,8 @@ func TestLoadValidatesAndLoadsReadOnlyFilesystem(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(bundle.Records) != 3 || bundle.Categories[0].ID != "french" {
-		t.Fatalf("unexpected embedded fixture bundle: %#v", bundle)
+	if len(bundle.Records) != 10652 || len(bundle.Categories) != 10 {
+		t.Fatalf("unexpected embedded bundle coverage: %d records, %d categories", len(bundle.Records), len(bundle.Categories))
 	}
 	if _, err := fs.Stat(BuiltinFS(), "assets/builtin/licenses/FAKER-LICENSE"); err != nil {
 		t.Fatalf("embedded license missing: %v", err)

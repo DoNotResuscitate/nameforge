@@ -20,3 +20,4 @@ jobs:
         with:
           install: true
       - run: mise run check
+      - run: mise run data:verify

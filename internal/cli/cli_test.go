@@ -30,7 +30,7 @@ func TestRun(t *testing.T) {
 			name:       "data list",
 			args:       []string{"data", "list"},
 			wantCode:   0,
-			wantStdout: "French (schema fixture)",
+			wantStdout: "French",
 		},
 		{
 			name:       "data inspect",

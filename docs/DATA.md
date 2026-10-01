@@ -182,14 +182,37 @@ Optional runtime directory precedence remains `--data-dir`,
 Built-ins load even with an empty/unwritable home directory; never extract them
 to a writable cache as a prerequisite. Local packs cannot replace built-in IDs.
 
-## M2 schema fixture
+## M3 extraction and measured coverage
 
-The initial embedded bundle is a validation fixture, not the M3 training corpus.
-It contains three literal entries from the pinned Faker `fr/person/first_name.ts`
-arrays: `female[0]` (`Abdonie`), `male[0]` (`Aaron`), and `generic[0]` (`Alix`).
-Their record references preserve those exact buckets and indices. The raw source
-SHA-256 is recorded in the fixture manifest, and the complete upstream Faker
-license is embedded under `internal/corpus/assets/builtin/licenses/`. Its displayed
-category label explicitly marks it as a schema fixture so the count is not read as
-coverage. M3 replaces this tiny bundle with the reproducibly extracted category
-packs and coverage report.
+M3 replaces the M2 three-record French schema fixture with all ten reviewed
+locale arrays: 10,652 accepted locale-specific records. The source lock is
+`data/sources.lock.json`; canonical assets and the complete upstream notice are
+under `internal/corpus/assets/builtin/`. `data/quality.json` records every source
+bucket count, accepted/rejected/merged occurrence counts, gender counts, observed
+letter scripts and NFC rune-length ranges. [COVERAGE.md](COVERAGE.md) summarizes
+coverage, fixed-seed M4 smoke checks, benchmarks and remaining usability limits.
+
+One Dutch occurrence (`male[571]`) is rejected for a control character. Extraction
+checks controls before trimming, rejects format characters explicitly, and
+accepts Unicode letters/marks with supported internal separators. It never strips
+format characters or transliterates. Unknown source syntax and a category with
+no accepted names are hard errors. Reports retain rejected references/reasons.
+Generic is unspecified; no accepted spelling in these pinned arrays appears in
+both male/female buckets, so all current categories have zero unisex matches.
+
+Deduplication uses NFC and default Unicode lowercase within each locale. Records
+are kept separate across locales so gender evidence does not leak between source
+categories. Each stable ID is `faker:<locale>:<SHA-256 of lowercase NFC spelling>`.
+Display spelling is the first accepted source occurrence in sorted bucket order
+(`female`, `generic`, `male`), then source index order. All merged occurrences
+remain in provenance. Training/blending deduplication follows the existing engine
+contract. Corpus schema and normalization versions are unchanged.
+
+Offline `data:verify` checks canonical schema/content hashes, exact reviewed
+targets and source checksums, notice bytes against its locked checksum, script
+metadata, occurrence accounting and the canonical quality report. It needs no raw
+cache. After explicit `data:fetch`, `corpus-build verify --rebuild` re-extracts the
+checksum-validated raw cache and compares every public artifact byte-for-byte.
+Normal tests use embedded sourced data or clearly non-name parser/algorithm tokens.
+The M4 three-record golden still selects the original sourced French bucket/index
+references from the full bundle, so expanding data does not rewrite that golden.
