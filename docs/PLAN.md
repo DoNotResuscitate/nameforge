@@ -9,9 +9,10 @@ working offline on first launch with no interpreter, hosted service or setup imp
 Prioritize Mediterranean and Western European lists plus Turkish; optional North
 African packs require specific provenance, not just generic Arabic labels.
 
-The repository contains the M1 bootstrap and contracts and has a GitHub remote,
-but no corpus, name generation, or release pipeline yet. M1 is complete; later
-milestones remain pending. The Go module path is
+The repository includes the completed M1 bootstrap and M2 corpus schema and
+embedded-loading support, including a three-record French schema fixture. The
+multilingual training corpus, name generation, and release pipeline remain
+pending. The Go module path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
 
