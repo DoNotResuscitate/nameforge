@@ -28,6 +28,25 @@ the plan before handing off. This initial repository is a planning deliverable.
   commits. Embed only the explicit redistributable asset directory.
 - Maintain Unicode and deterministic seeded generation as specified in the plan.
 
+## Code Review Rules
+
+- Report only actionable defects introduced by the pull request. Prioritize
+  correctness, data provenance and licensing, security, and runtime/build
+  regressions. Give the concrete impact and location; skip style preferences,
+  speculative risks, and pre-existing issues.
+- Treat `docs/PLAN.md` and `docs/DATA.md` as behavioral contracts. In particular,
+  check seeded determinism, Unicode rune/NFC handling, category and gender
+  semantics, explicit errors for missing data, and the absence of English fallback.
+- For corpus changes, verify training names come from externally sourced static
+  arrays and retain traceable source references, pinned revisions/checksums, and
+  complete license notices. Flag authored or generated training names, inaccurate
+  cultural labels, and treating unspecified gender as unisex.
+- Preserve the offline architecture: generation stays independent of terminal,
+  filesystem, and network I/O. Built-in corpora must load offline from embedded
+  redistributable assets without writable local state. Explicitly selected local
+  packs may load through documented storage boundaries; runtime never fetches
+  training data over the network.
+
 ## Workflow
 
 - Inspect status and existing work before changing files. Do not overwrite another
