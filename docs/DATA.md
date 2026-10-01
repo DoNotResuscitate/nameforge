@@ -139,23 +139,33 @@ Source-meaningful format characters in non-Latin text need an explicit tested
 policy rather than silent stripping. Record Turkish casing and other
 language-specific limitations of the default Unicode lowercase mapping.
 
+The current model and generator identify duplicate spellings with NFC followed
+by Go's default Unicode `strings.ToLower`, not locale-sensitive case folding.
+This may not match Turkish orthographic case equivalence for `I`, `İ`, `ı` and
+`i`; spellings are never transliterated. The algorithm version covers this
+behavior so a future normalization change can be replayed explicitly.
+
 ## Script and usability policy
 
-Preserve original script by default. Label it in the picker so a user looking
-for Latin-script names can find them. Check the Greek and optional Arabic packs
-explicitly; do not claim native-script arrays provide romanized names. Existing
-romanized source lists can be added as separate verified categories later.
+The current generator emits Latin-script output only: Latin letters, supported
+combining diacritics, and spaces/apostrophes/hyphens. Do not transliterate Greek,
+Arabic or other source scripts. Categories without a Latin script profile return
+an explicit unsupported-script error, and sampled candidates containing other
+scripts or characters are rejected. Mixed-script source categories may still be
+listed, but cannot cause non-Latin output. Greek and Arabic arrays remain
+accurately labeled source data, not romanized lists; script expansion requires
+a deliberate future generator change.
 
 Category mode keeps each candidate within one category. Blend mode requires
 matching script profiles for MVP (e.g. Latin + Latin); reject incompatible
 profiles with an explanation. Preserve source-internal mixed scripts rather
-than arbitrarily splitting the names. Test non-Latin terminal
-rendering, combining marks, width and RTL behavior with actual sourced fixtures.
+than arbitrarily splitting source records. Test Latin diacritics, combining
+marks, and separators with sourced fixtures. Non-Latin generated-text rendering
+is deferred with non-Latin generator support.
 
 Use category-derived automatic length bounds (observed minimum/maximum capped
-at 64) unless the user explicitly sets bounds. This prevents Latin-oriented
-defaults from excluding ordinary short CJK names. A rune model is still an MVP
-approximation, especially for multi-codepoint writing systems; document it.
+at 64) unless the user explicitly sets bounds. The character-level rune model
+is an MVP approximation; document Unicode casing and normalization behavior.
 
 ## Optional personal sources (later, not on the MVP critical path)
 

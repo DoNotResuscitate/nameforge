@@ -100,9 +100,10 @@ idiomatic concrete Go types, preserving these semantics):
    with `(seed, seed XOR 0x9e3779b97f4a7c15)`. Never sample by Go map iteration.
    Include RNG/normalization/model version in the algorithm version contract.
 4. Start with N start sentinels. Use the longest available suffix context,
-   backing off to shorter contexts only if none exists. Sample until END.
-   At maximum length, accept only if the next sampled token is END; otherwise
-   reject the candidate rather than truncate it into a different name.
+   backing off to shorter contexts only if none exists. Sample until END, with a
+   hard raw-sampling cap of twice the 64-rune global maximum. NFC-normalize the
+   full sample before checking its requested rune length; never truncate it into
+   a different name.
 5. Validate `count=1..1000`, `1 <= min <= max <= 64`, order range, and unsigned
    64-bit seed. Defaults: count 20, automatic category-derived min/max (DATA.md),
    order 2. Explicit length flags override automatic bounds. In blend mode use
@@ -114,14 +115,19 @@ idiomatic concrete Go types, preserving these semantics):
    Compare names with the same NFC/lowercase key as training. Uniqueness is
    within one batch; regenerated batches may overlap.
 7. Cap total attempts at `max(1000, count*200)` and check cancellation between
-   attempts. Each attempt is also bounded by max length. Exhaustion returns a
-   typed error with any partial result and rejection counts; never spin forever
-   or fall back to authored/source-picked names. CLI writes no partial stdout
-   by default; TUI can show the partial batch with an explicit incomplete state.
+   attempts. Each attempt has the hard raw-sampling cap in item 4. Exhaustion
+   returns a typed error with any partial result and rejection counts; never spin
+   forever or fall back to authored/source-picked names. CLI writes no partial
+   stdout by default; TUI can show the partial batch with an explicit incomplete
+   state.
 8. Display casing: uppercase the first letter after the start, a space or hyphen,
    preserving all other model letters. Apostrophes do not trigger capitalization.
    Normalize output to NFC. Document this simple rule rather than claiming it
    reconstructs culturally specific capitalization.
+9. The current generator accepts only Latin-script letters, supported combining
+   diacritics, and spaces/apostrophes/hyphens. Reject mixed-script samples and
+   return an explicit unsupported-script error for categories without a Latin
+   profile. Never transliterate or substitute another category.
 
 Reproducibility means identical corpus hash, algorithm version, options and seed
 produce identical ordered output across runs/platforms. Pin golden cases and
@@ -143,8 +149,8 @@ explicitly version any intentional change to this behavior.
   distinct spelling. Larger lists influence more transitions; document this.
   This deliberately creates hybrid TTRPG styles. Mark output as blended with
   all contributing category IDs, not as belonging to one real culture.
-- Blend only compatible script profiles per DATA.md; category mode permits
-  arbitrary categories because individual names stay within one model.
+- Blend only compatible script profiles per DATA.md. Category mode keeps each
+  candidate within one category, but the Latin-only output policy still applies.
 - Novelty exclusion compares against the union of all selected training names;
   uniqueness applies to the complete batch. Result metadata records mode and
   bundle hash so the same request can be replayed.
@@ -266,13 +272,15 @@ pending until their acceptance checks pass.
 - Acceptance: canonical rebuild identical from locked cache; bundle validates
   offline; source traceability and notices complete; all core target gaps are
   resolved or explicitly reported before marking complete. Once M4 is ready,
-  publish generation smoke results for each included category (track separately
-  from extraction completion so M3 and M4 can progress independently).
+  publish generation smoke results for each included Latin-profile category and
+  verify that non-Latin categories return the documented unsupported-script
+  error (track separately from extraction completion so M3 and M4 can progress
+  independently).
 - Commits: `feat(source): extract pinned Faker name arrays`,
   `feat(data): bundle licensed European and Mediterranean name packs`,
   `chore(data): add reproducible corpus verification tasks`.
 
-### M4 — Markov engine and generation service (pending; depends M2)
+### M4 — Markov engine and generation service (complete; depends M2)
 
 - Implement section 3 independently of TUI/extractor. Use sourced fixtures and
   clearly non-name token sequences for small transition-count tests.
@@ -281,13 +289,29 @@ pending until their acceptance checks pass.
   tiny/empty corpus, impossible requests and cancellation.
 - Acceptance: fixed-seed golden cases stable; bounded exhaustion returns the
   documented partial result; model supports independent concurrent requests
-  without races; benchmark training and a 100-name batch with corpus size noted.
+  without races; benchmark training and 100 model samples with corpus size noted.
   Test category-order invariance, equal category choice, category attribution,
   blended deduplication, script compatibility, automatic bounds, unknown IDs,
   empty filtered categories and generic/unisex distinction.
-- Commits: `feat(markov): train deterministic Unicode transition models`,
-  `feat(generator): add bounded seeded name generation`,
-  `feat(generator): support category selection and blended models`.
+- Completed the immutable Unicode-rune Markov model, deterministic sorted
+  transitions and PCG sampling, category/blend generation, per-category bounds,
+  request-local seeded metadata, novelty/uniqueness filters, casing, Latin-only
+  output enforcement, and typed bounded/cancellation errors. The review follow-up
+  checks rune limits after NFC with a separate 128-rune raw sampling cap. A second
+  review follow-up prioritizes supported apostrophe separators before Unicode
+  letter classification. Tests cover the listed engine and selection semantics,
+  including a fixed-seed `Alix` golden derived from the committed Faker v10.6.0
+  French schema fixture and the U+02BC separator.
+- Acceptance checks passed: `mise run check`, `mise exec -- go test -race ./...`,
+  `mise exec -- go mod verify`, and the training/100-sample benchmark below.
+- Baseline on Apple M2 Max (`darwin/arm64`), using the only available corpus at
+  this point (three sourced French schema-fixture records): order-2 training
+  14,667 ns/op; 100 model samples 22,625 ns/op. These measurements are not
+  representative of corpus coverage or name quality. A 100-distinct-name
+  end-to-end benchmark and per-category generation smoke checks await M3's
+  multilingual data; the current fixture correctly exhausts diversity early.
+- Next ready milestone: M3 — Bundled multilingual dataset.
+- Commit: `feat(generator): add deterministic Latin-only Markov generation`.
 
 ### M5 — Headless vertical slice (pending; depends M3, M4)
 
@@ -296,7 +320,8 @@ pending until their acceptance checks pass.
   empty home and network disabled; repeat seeds across both multi-category modes;
   invalid flags fail before expensive work; insufficient diversity actionable;
   stdout clean; `licenses` displays full embedded notices. Run and record the
-  M3 per-category generation smoke checks using default settings and fixed seeds.
+  M3 Latin-profile generation smoke checks using default settings and fixed
+  seeds; verify explicit unsupported-script errors for non-Latin categories.
 - Commit: `feat(cli): generate reproducible names from embedded categories`.
 
 ### M6 — Interactive UI (pending; depends M5)
