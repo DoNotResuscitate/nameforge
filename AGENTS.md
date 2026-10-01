@@ -51,12 +51,19 @@ the plan before handing off. This initial repository is a planning deliverable.
 
 - Inspect status and existing work before changing files. Do not overwrite another
   agent's changes. Follow milestone dependencies and avoid speculative features.
+- Before each task, fetch `origin` and fast-forward local `main` to `origin/main`.
+  If that cannot be done safely, preserve existing work and resolve the divergence
+  before branching. Start each task on a new branch created from the updated
+  `main`; do not work directly on `main` or reuse an old task branch.
 - Use atomic Conventional Commits: `feat(scope):`, `fix(scope):`,
   `test(scope):`, `docs(scope):`, `chore(scope):`, `ci(scope):`.
 - Keep one coherent change per commit; include tests and docs that belong to it.
   Do not combine unrelated refactors, data refreshes, and UI changes.
 - Run relevant acceptance checks before committing. Before commit, inspect
   `git status`, `git diff`, and recent history; stage intended files explicitly.
-- Never add AI co-author trailers. Do not push or create a remote unless asked.
+- After checks pass, commit the intended changes, push the task branch to `origin`,
+  and create a pull request targeting `main`. If pushing or creating the PR is
+  blocked, report the blocker and leave the work on its task branch. Never add AI
+  co-author trailers.
 - Handoff with completed milestone IDs, checks actually run, limitations, and the
   next ready milestone. Do not mark a milestone complete based on scaffolding.
