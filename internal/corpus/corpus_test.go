@@ -165,6 +165,19 @@ func TestLoadRejectsUnknownSchemaInvalidUTF8AndBadHashes(t *testing.T) {
 			t.Fatalf("Load() error = %v, want unknown field", err)
 		}
 	})
+	t.Run("duplicate manifest fields", func(t *testing.T) {
+		files := validTestFiles(t)
+		manifest := files["bundle/manifest.json"].Data
+		files["bundle/manifest.json"] = &fstest.MapFile{Data: bytes.Replace(
+			manifest,
+			[]byte(`"schema_version":1`),
+			[]byte(`"schema_version":0,"schema_version":1`),
+			1,
+		)}
+		if _, err := Load(fstest.MapFS(files), "bundle"); err == nil || !strings.Contains(err.Error(), `duplicate JSON object key "schema_version"`) {
+			t.Fatalf("Load() error = %v, want duplicate manifest field error", err)
+		}
+	})
 }
 
 func TestLoadRejectsMissingLicense(t *testing.T) {
