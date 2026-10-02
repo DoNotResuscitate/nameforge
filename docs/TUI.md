@@ -123,4 +123,5 @@ active work. It checks terminal modes and alternate-screen restoration. On macOS
 each runtime subprocess also has OS-enforced network and home-write denial.
 Linux CI also enforces network denial using an empty network namespace. Supported
 verification/release targets are macOS/Linux amd64/arm64; [RELEASE.md](RELEASE.md)
-describes native packaged-binary checks and the remaining first-release walkthrough.
+describes native packaged-binary checks and the completed owner-reported
+first-release human acceptance.

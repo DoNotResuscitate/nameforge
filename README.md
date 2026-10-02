@@ -6,13 +6,14 @@ Select one or more naming categories, generate a batch, and save favorites.
 The initial focus is Mediterranean and Western Europe, plus Turkish, with
 accurately sourced North African categories as a possible expansion.
 
-**Status: M1–M6 implemented.** The embedded multilingual corpus contains 10,851
+**Status: M1–M7 complete; [v0.1.0 released](https://github.com/DoNotResuscitate/nameforge/releases/tag/v0.1.0).** The embedded multilingual corpus contains 10,851
 category-specific records from pinned Faker arrays, Wikipedia and Wikidata.
 Corpus inspection and reproducible Latin-only generation work offline for all
 ten categories, including romanized Greek and Arabic. The interactive picker,
 settings, session favorites, and text/JSON exports are available. M7 adds
 checksummed four-target release archives, full legal notices, three-target native verification
-and a merge-driven automatic tag/release pipeline; first public release verification is pending.
+and a merge-driven automatic tag/release pipeline. The owner confirmed human
+all-feature testing of v0.1.0 on macOS 15 arm64 and CachyOS amd64.
 The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 

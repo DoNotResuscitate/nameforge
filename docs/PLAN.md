@@ -18,7 +18,8 @@ The corpus contains 10,851 category-specific records: eight unchanged Faker pack
 Latin-only generation works in both modes through the CLI and TUI. M7's verification
 and binary-distribution implementation has passed hosted verification. Current
 native checks cover macOS arm64 and Linux amd64/arm64; Intel macOS is cross-built
-only. A human walkthrough and the first public release remain pending. The Go module
+only. The first public release and owner-reported human acceptance are complete;
+see the M7 closeout evidence below. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
@@ -563,7 +564,7 @@ pending until their acceptance checks pass.
 - Next ready milestone: M7 — Verification and binary distribution.
 - Commit: `feat(tui): add offline interactive generation and session exports`.
 
-### M7 — Verification and binary distribution (implemented; acceptance pending; depends M6)
+### M7 — Verification and binary distribution (complete; depends M6)
 
 - Run `mise run check`, race tests on supported runners, parser/normalizer fuzz
   smoke tests with non-private seeds, CLI integration and manual TUI walkthrough.
@@ -638,10 +639,10 @@ pending until their acceptance checks pass.
   native artifact CLI/PTY smoke jobs passed. There are no cross-build-only targets
   in this verified CI artifact set. Linux runtimes use the corrected non-root
   empty-network-namespace wrapper; macOS runtimes use sandbox-exec.
-- Remaining acceptance: perform the human terminal walkthrough and exercise the
+- Historical pre-release status: perform the human terminal walkthrough and exercise the
   tag-triggered publication path for the first release. Local artifacts are
   dirty-tree `dev` builds; CI artifacts are clean-checkout `dev` verification
-  builds, not public releases. M7 remains acceptance-pending until its manual and
+  builds, not public releases. At that point M7 remained acceptance-pending until its manual and
   first-publication checks actually pass; no later mandatory milestone is ready
   before M7 closeout. No corpus, source lock or seeded algorithm changes occurred.
 - CI follow-up: preserve the ruleset's required `check` context with a stable
@@ -670,7 +671,7 @@ pending until their acceptance checks pass.
   numeric tag ordering, bootstrap, prerelease/branch exclusion and annotated-tag
   retry behavior. Checks passed: `mise run check`, `mise exec -- go test -race
   ./cmd/release-version`, `mise run release:version` (v0.1.0 for this untagged
-  repository), and `git diff --check`. First merge-driven publication is still
+  repository), and `git diff --check`. First merge-driven publication was then
   pending the merge. actionlint 1.7.12 predates GitHub's documented concurrency
   `queue` property; workflow validation suppresses only that stale-schema diagnostic.
 - Owner-requested platform follow-up: removed Intel macOS native check/race and
@@ -680,6 +681,29 @@ pending until their acceptance checks pass.
   four-native-target CI measurements above remain historical run records.
   Checks: `mise run workflow:check`, `git diff --check`, and a focused native-runner
   and verification-claim search passed.
+
+### M7 closeout evidence (#15)
+
+- [Release run 36976504868](https://github.com/DoNotResuscitate/nameforge/actions/runs/36976504868)
+  succeeded at revision `d5941a6991ddf7bec5bfbebdd7f1339a893221f4` and published
+  [v0.1.0](https://github.com/DoNotResuscitate/nameforge/releases/tag/v0.1.0)
+  on 2026-10-02. It distributed all four binary targets, corresponding source,
+  SHA256SUMS and verification notes. Native verification covers macOS arm64 and
+  Linux amd64/arm64; Intel macOS remains cross-built-only.
+- On 2026-10-02 the project owner confirmed human testing of **all features of
+  the published v0.1.0 release** on macOS 15 arm64 and CachyOS amd64. This is
+  owner-reported acceptance, separate from the automated PTY walkthrough and
+  hosted sandbox checks. The confirmation date is recorded; exact test dates
+  and terminal versions were not supplied. No failures or remaining human
+  acceptance blockers were reported.
+- Together the publication exercise and owner confirmation close M7's remaining
+  acceptance criteria. Session-only favorites, reserved local-pack support,
+  Latin-only generation and source gender/coverage gaps remain documented MVP
+  limitations, not unimplemented mandatory milestones. Next ready review work:
+  #16 (README/docs cleanup); surname/full-name enhancements remain later work.
+- Documentation checks: `git diff --check`, a focused pending-status/platform
+  search, and verification of the public release/run metadata. No code, corpus,
+  source lock or generation contract changes.
 
 ## 6. Execution and handoff
 
