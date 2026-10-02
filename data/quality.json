@@ -1,0 +1,243 @@
+{
+  "source_revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+  "extractor_version": "faker-static-v1",
+  "bundle_hash": "81f119c0cbc35c9c28a52f8d2709021cde3c474df4d880730878c39f8bd94498",
+  "categories": [
+    {
+      "category_id": "arabic",
+      "source_counts": {
+        "female": 10,
+        "male": 331
+      },
+      "accepted_occurrences": 341,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 341,
+      "gender_counts": {
+        "feminine": 10,
+        "masculine": 331,
+        "unisex": 0,
+        "unspecified": 0
+      },
+      "scripts": [
+        "Arabic"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 9
+    },
+    {
+      "category_id": "dutch",
+      "source_counts": {
+        "female": 499,
+        "generic": 15,
+        "male": 572
+      },
+      "accepted_occurrences": 1085,
+      "rejected_occurrences": 1,
+      "merged_occurrences": 0,
+      "distinct_names": 1085,
+      "gender_counts": {
+        "feminine": 499,
+        "masculine": 571,
+        "unisex": 0,
+        "unspecified": 15
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 2,
+      "max_length_runes": 11
+    },
+    {
+      "category_id": "english",
+      "source_counts": {
+        "female": 1563,
+        "generic": 232,
+        "male": 1391
+      },
+      "accepted_occurrences": 3186,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 3186,
+      "gender_counts": {
+        "feminine": 1563,
+        "masculine": 1391,
+        "unisex": 0,
+        "unspecified": 232
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 2,
+      "max_length_runes": 11
+    },
+    {
+      "category_id": "french",
+      "source_counts": {
+        "female": 435,
+        "generic": 16,
+        "male": 480
+      },
+      "accepted_occurrences": 931,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 931,
+      "gender_counts": {
+        "feminine": 435,
+        "masculine": 480,
+        "unisex": 0,
+        "unspecified": 16
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 12
+    },
+    {
+      "category_id": "german",
+      "source_counts": {
+        "female": 573,
+        "generic": 10,
+        "male": 562
+      },
+      "accepted_occurrences": 1145,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 1145,
+      "gender_counts": {
+        "feminine": 573,
+        "masculine": 562,
+        "unisex": 0,
+        "unspecified": 10
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 2,
+      "max_length_runes": 11
+    },
+    {
+      "category_id": "greek",
+      "source_counts": {
+        "female": 19,
+        "male": 36
+      },
+      "accepted_occurrences": 55,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 55,
+      "gender_counts": {
+        "feminine": 19,
+        "masculine": 36,
+        "unisex": 0,
+        "unspecified": 0
+      },
+      "scripts": [
+        "Greek"
+      ],
+      "min_length_runes": 4,
+      "max_length_runes": 11
+    },
+    {
+      "category_id": "italian",
+      "source_counts": {
+        "female": 617,
+        "male": 1083
+      },
+      "accepted_occurrences": 1700,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 1700,
+      "gender_counts": {
+        "feminine": 617,
+        "masculine": 1083,
+        "unisex": 0,
+        "unspecified": 0
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 12
+    },
+    {
+      "category_id": "portuguese-pt",
+      "source_counts": {
+        "female": 93,
+        "male": 95
+      },
+      "accepted_occurrences": 188,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 188,
+      "gender_counts": {
+        "feminine": 93,
+        "masculine": 95,
+        "unisex": 0,
+        "unspecified": 0
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 9
+    },
+    {
+      "category_id": "spanish",
+      "source_counts": {
+        "female": 120,
+        "male": 107
+      },
+      "accepted_occurrences": 227,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 227,
+      "gender_counts": {
+        "feminine": 120,
+        "masculine": 107,
+        "unisex": 0,
+        "unspecified": 0
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 20
+    },
+    {
+      "category_id": "turkish",
+      "source_counts": {
+        "female": 392,
+        "generic": 679,
+        "male": 723
+      },
+      "accepted_occurrences": 1794,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 1794,
+      "gender_counts": {
+        "feminine": 392,
+        "masculine": 723,
+        "unisex": 0,
+        "unspecified": 679
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 2,
+      "max_length_runes": 17
+    }
+  ],
+  "rejections": [
+    {
+      "source_ref": {
+        "revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+        "path": "src/locales/nl/person/first_name.ts",
+        "bucket": "male",
+        "index": 571
+      },
+      "reason": "control character"
+    }
+  ]
+}

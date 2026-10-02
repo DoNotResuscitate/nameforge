@@ -11,10 +11,7 @@ import (
 )
 
 func TestGenerateFromPinnedSourceFixtureIsSeededAndNFC(t *testing.T) {
-	bundle, err := corpus.LoadBuiltin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	bundle := pinnedFrenchFixture(t)
 	seed := uint64(42)
 	request := Request{CategoryIDs: []string{"french"}, Count: 1, Order: 4, Seed: &seed, AllowExisting: true}
 	first, err := Generate(context.Background(), bundle, request)
@@ -213,10 +210,7 @@ func TestGenerateRejectsUnknownAndEmptyFilteredCategories(t *testing.T) {
 }
 
 func TestGenerateExcludesTrainingNamesByDefault(t *testing.T) {
-	bundle, err := corpus.LoadBuiltin()
-	if err != nil {
-		t.Fatal(err)
-	}
+	bundle := pinnedFrenchFixture(t)
 	seed := uint64(19)
 	result, err := Generate(context.Background(), bundle, Request{CategoryIDs: []string{"french"}, Count: 1, Order: 4, Seed: &seed})
 	var generationErr *GenerationError
@@ -377,6 +371,46 @@ func singleTokenBundle(token string) *corpus.Bundle {
 		[]corpus.Category{fixtureCategory("alpha", "Latin")},
 		[]corpus.Record{fixtureRecord("fixture-record", token, "alpha")},
 	)
+}
+
+// Preserve the M4 golden's original three sourced records rather than changing
+// its training input when the embedded data expands. Original bucket/index
+// provenance is retained from the validated full bundle, with its notice.
+func pinnedFrenchFixture(t *testing.T) *corpus.Bundle {
+	t.Helper()
+	bundle, err := corpus.LoadBuiltin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	records := []corpus.Record{}
+	for _, record := range bundle.Records {
+		for _, ref := range record.SourceRefs {
+			if ref.Path == "src/locales/fr/person/first_name.ts" && ref.Index == 0 {
+				records = append(records, record)
+				break
+			}
+		}
+	}
+	if len(records) != 3 {
+		t.Fatalf("source fixture has %d records, want 3", len(records))
+	}
+	category, _ := bundle.Category("french")
+	category.RecordCount = 3
+	bundle.Records = records
+	bundle.Categories = []corpus.Category{category}
+	bundle.Manifest.RecordCount = 3
+	bundle.Manifest.RecordsSHA256, err = corpus.RecordsHash(records)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bundle.Manifest.CategoriesSHA256, err = corpus.CategoriesHash(bundle.Categories)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := bundle.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	return bundle
 }
 
 func ExampleAlgorithmVersion() {

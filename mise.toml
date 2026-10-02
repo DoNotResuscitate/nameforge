@@ -31,3 +31,15 @@ run = "go run ./cmd/nameforge"
 [tasks.check]
 description = "Run formatting, tests, vet, and build checks"
 run = ["mise run fmt-check", "mise run test", "mise run vet", "mise run build"]
+
+[tasks."data:fetch"]
+description = "Explicitly fetch checksum-locked Faker static files into .local/"
+run = "go run ./cmd/corpus-build fetch"
+
+[tasks."data:build"]
+description = "Rebuild canonical public corpus and coverage from locked cache offline"
+run = "go run ./cmd/corpus-build build"
+
+[tasks."data:verify"]
+description = "Verify public schema, coverage, source lock and complete notice offline"
+run = "go run ./cmd/corpus-build verify"
