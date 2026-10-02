@@ -139,14 +139,23 @@ func runData(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 		writer := tabwriter.NewWriter(stdout, 0, 4, 2, ' ', 0)
-		_, _ = fmt.Fprintln(writer, "ID\tLABEL\tLOCALE\tRECORDS\tSCRIPTS\tGENDERS")
+		if _, err := fmt.Fprintln(writer, "ID\tLABEL\tLOCALE\tRECORDS\tSCRIPTS\tGENDERS"); err != nil {
+			_, _ = fmt.Fprintf(stderr, "write data list: %v\n", err)
+			return 1
+		}
 		categories := append([]corpus.Category(nil), bundle.Categories...)
 		sort.Slice(categories, func(i, j int) bool { return categories[i].ID < categories[j].ID })
 		for _, category := range categories {
-			_, _ = fmt.Fprintf(writer, "%s\t%s\t%s\t%d\t%s\t%s\n", category.ID, category.Label,
-				category.SourceLocale, category.RecordCount, strings.Join(category.Scripts, ","), formatGenders(category.SupportedGenders))
+			if _, err := fmt.Fprintf(writer, "%s\t%s\t%s\t%d\t%s\t%s\n", category.ID, category.Label,
+				category.SourceLocale, category.RecordCount, strings.Join(category.Scripts, ","), formatGenders(category.SupportedGenders)); err != nil {
+				_, _ = fmt.Fprintf(stderr, "write data list: %v\n", err)
+				return 1
+			}
 		}
-		_ = writer.Flush()
+		if err := writer.Flush(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "write data list: %v\n", err)
+			return 1
+		}
 		return 0
 	case "inspect":
 		if len(args) != 3 || args[1] != "--category" || args[2] == "" {
@@ -158,9 +167,12 @@ func runData(args []string, stdout, stderr io.Writer) int {
 			_, _ = fmt.Fprintf(stderr, "unknown category %q\n", args[2])
 			return 2
 		}
-		_, _ = fmt.Fprintf(stdout, "ID: %s\nLabel: %s\nGroup: %s\nSource locale: %s\nRecords: %d\nScripts: %s\nSupported genders: %s\n",
+		if _, err := fmt.Fprintf(stdout, "ID: %s\nLabel: %s\nGroup: %s\nSource locale: %s\nRecords: %d\nScripts: %s\nSupported genders: %s\n",
 			category.ID, category.Label, category.Group, category.SourceLocale, category.RecordCount,
-			strings.Join(category.Scripts, ", "), formatGenders(category.SupportedGenders))
+			strings.Join(category.Scripts, ", "), formatGenders(category.SupportedGenders)); err != nil {
+			_, _ = fmt.Fprintf(stderr, "write data inspect: %v\n", err)
+			return 1
+		}
 		return 0
 	default:
 		_, _ = fmt.Fprintf(stderr, "unknown data command %q\n", args[0])
