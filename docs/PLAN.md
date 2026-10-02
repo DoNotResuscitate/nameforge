@@ -741,6 +741,31 @@ pending until their acceptance checks pass.
   search, and verification of the public release/run metadata. No code, corpus,
   source lock or generation contract changes.
 
+### M7 source archive review follow-up (#14)
+
+- Corresponding-source packaging now enumerates only tracked public inputs and
+  refuses untracked files in source/documentation directories. This avoids both
+  accidental private-file inclusion and silently omitting untracked code needed
+  by a development build. Untracked local files outside the boundary are excluded;
+  intended source must be reviewed and tracked, even when Git ignore rules hide it.
+- Integration tests use an isolated Git index and packed archive to check retained
+  corpus/notice/source inputs, excluded local canaries, and explicit refusal of
+  untracked notes, personal-data files, Go source and fetched HTML. `mise run check`,
+  `mise exec -- go test -race ./cmd/release-build`, two four-target `release:build`
+  runs with identical SHA256SUMS, archive checksum verification, and
+  `git diff --check` passed on Linux amd64. No corpus or seeded algorithm changes.
+- M7 human acceptance was not newly claimed by this fix. At that point the next
+  review work was #15 (human acceptance evidence/publication status), then #16
+  (documentation cleanup); both are now recorded above and below.
+- Codex review follow-up: validation now includes ignored untracked inputs inside
+  the source boundary. Regression tests reproduce omission under `.gitignore`,
+  `.git/info/exclude` and a global excludes file, while designated local-data and
+  build-output directories remain excluded. These tests failed before the fix.
+  Follow-up checks passed on Linux amd64: `mise run check`,
+  `mise exec -- go test -race ./cmd/release-build`, two four-target release builds
+  with identical SHA256SUMS, checksum verification, extracted vendored-source
+  compilation with module downloads disabled, and `git diff --check`.
+
 ## 6. Execution and handoff
 
 ### Documentation consolidation (#16)
@@ -760,9 +785,13 @@ pending until their acceptance checks pass.
   the developer guide is present verbatim in the platform documentation set.
 - Codex review on #19: the #13 handoff's stale pending-human-acceptance statement
   is explicitly historical/past tense and points to completed M7 closeout evidence.
+- PR #19 conflict resolution: integrated main's #18 archive safeguards, preserving
+  both release-build regression tests and both acceptance/review records. Checks
+  passed on Linux amd64: `mise run check`, `mise exec -- go test -race
+  ./cmd/release-build`, `mise run data:verify`, and `git diff --check`.
 - Next ready work is explicit later enhancement work after review/merge; M1–M7
-  remain complete. Archive privacy hardening remains separately tracked in #14/#18
-  until merged, not newly claimed by this documentation change.
+  remain complete. Archive privacy hardening landed separately in #18 and is
+  recorded in the #14 follow-up above, not newly claimed by this documentation change.
 
 ### Historical post-implementation review fixes
 

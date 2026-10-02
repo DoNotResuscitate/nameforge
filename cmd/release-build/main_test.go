@@ -6,6 +6,9 @@ import (
 	"compress/gzip"
 	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -29,6 +32,90 @@ func TestDistributionDeveloperGuide(t *testing.T) {
 		}
 	}
 	t.Fatal("platform archive omits the developer guide linked from the README")
+}
+
+func TestTrackedSourceFilesBoundary(t *testing.T) {
+	root := t.TempDir()
+	git := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", root}, args...)...)
+		if output, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v: %s", args, err, output)
+		}
+	}
+	write := func(path, content string) {
+		t.Helper()
+		fullPath := filepath.Join(root, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(fullPath, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	git("init", "--quiet")
+	write(".gitignore", "/.local/\n/internal/ignored-private/\n")
+	tracked := []string{"go.mod", "cmd/nameforge/main.go", "internal/corpus/assets/builtin/names.jsonl", "internal/legal/assets/DEPENDENCIES.txt", "docs/DATA.md", "data/sources.lock.json", ".github/workflows/release.yml"}
+	for _, path := range tracked {
+		write(path, "public-source-token")
+	}
+	git(append([]string{"add", ".gitignore"}, tracked...)...)
+	// Neither ignored data nor unrelated untracked files enter the archive.
+	for _, path := range []string{".local/page.html", "data/local/personal.jsonl", "exports/batch.json", "bin/nameforge", "dist/archive.tar.gz"} {
+		write(path, "private-canary-token")
+	}
+	files, err := trackedSourceFiles(root)
+	if err != nil || len(files) != len(tracked)+1 {
+		t.Fatalf("tracked source files: %d entries, %v", len(files), err)
+	}
+	archive, err := pack("source", files, time.Unix(0, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gz, err := gzip.NewReader(bytes.NewReader(archive))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer gz.Close()
+	reader := tar.NewReader(gz)
+	for range files {
+		header, err := reader.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err := io.ReadAll(reader)
+		expected := "public-source-token"
+		if header.Name == "source/.gitignore" {
+			expected = "/.local/\n/internal/ignored-private/\n"
+		}
+		if err != nil || string(data) != expected {
+			t.Fatalf("unexpected archive content %q: %v", data, err)
+		}
+	}
+	if _, err := reader.Next(); err != io.EOF {
+		t.Fatalf("unexpected extra archive entry: %v", err)
+	}
+	// Git's local/global excludes must not hide source files from validation.
+	write(".git/info/exclude", "/cmd/nameforge/local.go\n")
+	globalExclude := filepath.Join(t.TempDir(), "global-ignore")
+	if err := os.WriteFile(globalExclude, []byte("/internal/global.go\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	git("config", "core.excludesFile", globalExclude)
+	for _, path := range []string{"cmd/private.txt", "internal/personal/corpus.jsonl", "internal/new.go", "docs/fetched.html", ".github/workflows/correspondence.txt", "internal/ignored-private/notes.txt", "cmd/nameforge/local.go", "internal/global.go"} {
+		t.Run(path, func(t *testing.T) {
+			write(path, "private-canary-token")
+			if path == "internal/ignored-private/notes.txt" || path == "cmd/nameforge/local.go" || path == "internal/global.go" {
+				git("check-ignore", "--quiet", path)
+			}
+			if _, err := trackedSourceFiles(root); err == nil || !strings.Contains(err.Error(), "untracked file in source archive boundary: "+path) {
+				t.Fatalf("expected refusal for %s, got %v", path, err)
+			}
+			if err := os.Remove(filepath.Join(root, path)); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
 }
 
 func TestArchiveReproducibilityAndSafety(t *testing.T) {
