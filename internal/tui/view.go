@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/DoNotResuscitate/nameforge/internal/corpus"
+	"github.com/DoNotResuscitate/nameforge/internal/legal"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
@@ -81,7 +82,10 @@ func (m *Model) settingsLines() []string {
 }
 
 func (m *Model) helpLines() []string {
-	text := "Status: " + m.status + "\n"
+	if m.legal {
+		return strings.Split(ansi.Hardwrap(m.legalText, max(1, m.width), true), "\n")
+	}
+	text := legal.Summary + "\nl: read complete legal notices here (up/down scroll; Esc dismisses)\nStatus: " + m.status + "\n"
 	if m.result != nil {
 		text += fmt.Sprintf("Batch seed: %d\nBatch mode: %s; complete: %t\nCorpus: %s\nAlgorithm: %s\n", m.result.Seed, m.result.Mode, m.result.Complete, m.result.BundleHash, m.result.AlgorithmVersion)
 		for _, id := range m.result.CategoryIDs {
@@ -97,7 +101,7 @@ a: select ALL categories; c: clear selection; /: search
 Enter: generate using settings and entered seed (blank = random)
 r: regenerate using settings and a fresh seed; entered seed is retained
 e: export dialog; Tab moves target / format / path; Space toggles
-?: help; Esc: dismiss / cancel; q: quit outside text entry
+?: help; l: full legal notices; Esc: dismiss / cancel; q: quit outside text entry
 Ctrl-C: quit globally, including text entry and active operations
 Settings: up/down chooses a field; blank lengths use observed bounds
 Text editing: Ctrl-A/E start/end; Ctrl-U clears before cursor
@@ -118,19 +122,7 @@ Sources (revision-pinned; full notices: nameforge licenses)`
 	return strings.Split(ansi.Hardwrap(text, max(1, m.width), true), "\n")
 }
 
-func (m *Model) helpPageSize() int {
-	header, maxStatus := 4, 2
-	if m.height < 12 {
-		header, maxStatus = 2, 1
-	}
-	status := min(maxStatus, len(strings.Split(ansi.Hardwrap(m.status, max(1, m.width), true), "\n")))
-	return max(1, m.height-header-status-2) // help heading and footer
-}
-
-func (m *Model) View() string {
-	if m.width < 20 || m.height < 8 {
-		return ansi.Truncate("Resize terminal (20x8 minimum); Ctrl-C quits.", m.width, "")
-	}
+func (m *Model) headerLines() []string {
 	var selected []string
 	for _, c := range m.categories {
 		if m.selected[c.ID] {
@@ -141,7 +133,7 @@ func (m *Model) View() string {
 	if selection == "" {
 		selection = "none"
 	}
-	title := "Nameforge — offline TTRPG names"
+	title := "Nameforge © 2026 contributors — GPLv3; NO WARRANTY; l: licenses"
 	if !m.noColor {
 		title = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("99")).Render(title)
 	}
@@ -156,9 +148,35 @@ func (m *Model) View() string {
 	} else {
 		lines = append(lines, "Batch: none | seed: not generated")
 	}
-	if m.height < 12 {
-		lines = []string{fmt.Sprintf("Selected %d | favorites %d", len(selected), len(m.favorites)), lines[3]}
+	// Both essentials fit at the minimum supported width. Narrow layouts wrap
+	// the legal heading into two fixed lines instead of truncating its terms.
+	if m.width < 60 {
+		lines = append([]string{"©2026 Nameforge team", "GPLv3 NO WARRANTY; l"}, lines[1:]...)
 	}
+	if m.height < 12 {
+		seed := "none"
+		if m.result != nil {
+			seed = fmt.Sprint(m.result.Seed)
+		}
+		lines = []string{"©2026 Nameforge team", "GPLv3 NO WARRANTY; l", fmt.Sprintf("Selected %d | seed %s", len(selected), seed)}
+	}
+	return lines
+}
+
+func (m *Model) helpPageSize() int {
+	maxStatus := 2
+	if m.height < 12 {
+		maxStatus = 1
+	}
+	status := min(maxStatus, len(strings.Split(ansi.Hardwrap(m.status, max(1, m.width), true), "\n")))
+	return max(1, m.height-len(m.headerLines())-status-2) // help heading and footer
+}
+
+func (m *Model) View() string {
+	if m.width < 20 || m.height < 8 {
+		return ansi.Truncate("Resize terminal (20x8 minimum); Ctrl-C quits.", m.width, "")
+	}
+	lines := m.headerLines()
 	// Reserve two status lines and a key-hint line, always visible.
 	statusLines := strings.Split(ansi.Hardwrap(m.status, m.width, true), "\n")
 	statusLines = statusLines[:min(2, len(statusLines))]
@@ -168,7 +186,11 @@ func (m *Model) View() string {
 	space := m.height - len(lines) - len(statusLines) - 1
 	var body []string
 	if m.help {
-		body = append(body, "HELP — up/down scroll; Esc dismisses")
+		heading := "HELP — up/down scroll; l legal notices; Esc dismisses"
+		if m.legal {
+			heading = "LICENSES — up/down scroll; l help; Esc dismisses"
+		}
+		body = append(body, heading)
 		help := m.helpLines()
 		page := m.helpPageSize()
 		mOffset := min(m.helpOffset, max(0, len(help)-page))

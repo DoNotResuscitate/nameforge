@@ -1,5 +1,6 @@
 [tools]
 go = "1.27.1"
+actionlint = "1.7.12"
 
 [env]
 GOTOOLCHAIN = "local"
@@ -29,8 +30,8 @@ description = "Run Nameforge"
 run = "go run ./cmd/nameforge"
 
 [tasks.check]
-description = "Run formatting, tests, vet, and build checks"
-run = ["mise run fmt-check", "mise run test", "mise run vet", "mise run build"]
+description = "Run formatting, tests, vet, workflow, notice, and build checks"
+run = ["mise run fmt-check", "mise run test", "mise run vet", "mise run workflow:check", "mise run notices:verify", "mise run build"]
 
 [tasks."data:fetch"]
 description = "Explicitly fetch checksum-locked Faker and Wikimedia sources into .local/"
@@ -43,3 +44,37 @@ run = "go run ./cmd/corpus-build build"
 [tasks."data:verify"]
 description = "Verify public schema, coverage, source lock and complete notice offline"
 run = "go run ./cmd/corpus-build verify"
+
+[tasks."notices:build"]
+description = "Derive embedded GPL and full pinned dependency notices"
+run = "go run ./cmd/notices"
+
+[tasks."notices:verify"]
+description = "Verify embedded legal texts against the pinned toolchain/modules"
+run = "go run ./cmd/notices --verify"
+
+[tasks.race]
+description = "Run race tests on a native macOS/Linux runner"
+run = "go test -race ./..."
+
+[tasks.fuzz]
+description = "Fuzz the static parser and Unicode normalizer with public token seeds"
+run = ["go test ./internal/source/faker -run '^$' -fuzz '^FuzzParse$' -fuzztime 10s -parallel 2", "go test ./internal/corpus -run '^$' -fuzz '^FuzzNormalizeName$' -fuzztime 10s -parallel 2"]
+
+[tasks."release:build"]
+description = "Cross-build four standalone binaries, notices, archives and SHA-256 checksums"
+run = "go run ./cmd/release-build"
+
+[tasks."release:version"]
+description = "Calculate the next stable Conventional Commit version without creating a tag"
+run = "go run ./cmd/release-version"
+
+[tasks."release:smoke"]
+description = "Exercise an extracted native release binary (set NAMEFORGE_TEST_BINARY)"
+run = "test -n \"$NAMEFORGE_TEST_BINARY\" && go test -count=1 -v ./cmd/nameforge -run '^TestBinary(Headless|TUI)$'"
+
+[tasks."workflow:check"]
+description = "Check GitHub workflow syntax and expressions"
+# actionlint 1.7.12 predates GitHub's supported concurrency queue property.
+# Suppress only that stale-schema diagnostic; all other checks remain enabled.
+run = "actionlint -shellcheck= -pyflakes= -ignore '^unexpected key \"queue\" for \"concurrency\" section[.]'"

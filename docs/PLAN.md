@@ -15,8 +15,10 @@ engine, M5 headless CLI generation, M5a sourced romanized Greek/Arabic packs, an
 M6 interactive UI with session favorites and exports.
 The corpus contains 10,851 category-specific records: eight unchanged Faker packs,
 486 Wikipedia Greek spellings and 109 Wikidata Arabic spellings. All-category
-Latin-only generation works in both modes through the CLI and TUI. M7 verification
-and binary distribution is next; the release pipeline remains pending. The Go module
+Latin-only generation works in both modes through the CLI and TUI. M7's verification
+and binary-distribution implementation has passed hosted verification. Current
+native checks cover macOS arm64 and Linux amd64/arm64; Intel macOS is cross-built
+only. A human walkthrough and the first public release remain pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
@@ -561,7 +563,7 @@ pending until their acceptance checks pass.
 - Next ready milestone: M7 — Verification and binary distribution.
 - Commit: `feat(tui): add offline interactive generation and session exports`.
 
-### M7 — Verification and binary distribution (pending; depends M6)
+### M7 — Verification and binary distribution (implemented; acceptance pending; depends M6)
 
 - Run `mise run check`, race tests on supported runners, parser/normalizer fuzz
   smoke tests with non-private seeds, CLI integration and manual TUI walkthrough.
@@ -580,6 +582,104 @@ pending until their acceptance checks pass.
   build, offline first-launch generation works, no runtime dependency beyond binary.
 - Commits: `ci(release): build checksummed cross-platform binaries`,
   `docs: document bundled categories and terminal usage`.
+- Implemented: pinned actionlint 1.7.12 and workflow validation in `check`;
+  native macOS arm64 and Linux amd64/arm64 CI and race tasks; public non-name token parser
+  and NFC normalizer fuzz targets; extracted-binary CLI/PTY acceptance support;
+  opt-in Linux empty-network-namespace enforcement alongside macOS sandboxing.
+- Added `release:build` for all four CGO-disabled, trimpath targets with version,
+  exact revision and corpus metadata; deterministic sorted tar/gzip archives,
+  revision-derived timestamps, explicit public-file boundaries, private-path/build
+  audits and SHA-256 checksums. Builds retain complete application/dependency/data
+  notices and documentation. The corresponding-source archive includes committed
+  corpus/provenance and pinned vendored dependencies for download-free module builds.
+- Pull-request/main CI and tag-triggered releases share distribution jobs that
+  compare two independent archive builds and test the three native targets.
+  Tag-triggered release CI reuses clean-checkout/native verification, compares two
+  independent archive builds, rebuilds vendored source with module downloads off,
+  smoke-tests macOS arm64 and both Linux targets natively, and publishes after all pass.
+  Release verification notes identify each actual runner and network sandbox;
+  unavailable runners block publication rather than receiving a native-check claim.
+- Full GNU GPLv3 and pinned Go/runtime/test dependency legal texts are derived into
+  an explicit embedded notice directory. `licenses` exposes these plus unchanged
+  corpus notices offline; the TUI shows copyright/license/no-warranty information
+  and an `l`-activated scrollable full-notice screen. Tests check exact embedded
+  GPL bytes, offline notice availability, text-entry semantics, legal/help switching
+  and export-help recovery. Added installation, source/release, architecture and
+  troubleshooting guides. Corpus assets, source locks, bundle hash, generation
+  algorithm and seeded outputs are unchanged.
+- Local checks passed on `darwin/arm64`: `mise install`, `mise run check`,
+  `mise run race`, `mise run fuzz` (10-second parser and normalizer smoke runs),
+  `mise run data:verify`, `mise run notices:verify`, `mise exec -- go mod verify`,
+  and `git diff --check`. `mise run release:build -- --version dev` and a second
+  build with `--out dist/rebuild` produced byte-identical SHA256SUMS for all four
+  binary archives and the vendored source archive; `shasum -a 256 -c SHA256SUMS`
+  passed. Native extracted macOS arm64 `release:smoke` passed with empty read-only
+  home, no tools/data and OS-enforced network denial, including legal screens,
+  both modes, exports, replay and terminal restoration. A vendored source rebuild
+  with `GOPROXY=off GOSUMDB=off` passed the same binary acceptance suite.
+- Native Linux arm64 acceptance also passed in Ubuntu 24.04 under the local
+  ARM64 Linux container engine: the cross-compiled Go test executable runs the
+  extracted release binary with no Go or data installation. Both Docker network
+  denial/read-only filesystem and the CI `sudo unshare --net` wrapper passed full
+  CLI/PTY tests, including active Ctrl-C/SIGINT forwarding and terminal restoration.
+  The Ubuntu image digest was
+  `sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60`.
+  This is native Linux arm64 container acceptance, not a hosted-runner/race claim.
+- First hosted run: both macOS check/race jobs passed. Linux exposed root-owned
+  exports from the test network wrapper. The wrapper now drops back to the test
+  runner's UID/GID after creating the network namespace, preserving normal home
+  and export permissions. The full compiled CLI/PTY suite passed as a non-root
+  Ubuntu container user using this corrected wrapper.
+- Hosted acceptance passed in [CI run 36970584654](https://github.com/DoNotResuscitate/nameforge/actions/runs/36970584654)
+  for [PR #12](https://github.com/DoNotResuscitate/nameforge/pull/12), revision
+  `d99a531`: all four clean-checkout native `check`/`data:verify`/notice/module/race
+  jobs, Linux amd64 fuzz smoke, reproducible four-target/source distribution build,
+  vendored-source download-free rebuild plus acceptance, and all four extracted
+  native artifact CLI/PTY smoke jobs passed. There are no cross-build-only targets
+  in this verified CI artifact set. Linux runtimes use the corrected non-root
+  empty-network-namespace wrapper; macOS runtimes use sandbox-exec.
+- Remaining acceptance: perform the human terminal walkthrough and exercise the
+  tag-triggered publication path for the first release. Local artifacts are
+  dirty-tree `dev` builds; CI artifacts are clean-checkout `dev` verification
+  builds, not public releases. M7 remains acceptance-pending until its manual and
+  first-publication checks actually pass; no later mandatory milestone is ready
+  before M7 closeout. No corpus, source lock or seeded algorithm changes occurred.
+- CI follow-up: preserve the ruleset's required `check` context with a stable
+  aggregate job that fails if any native/distribution job fails or is skipped.
+  The native matrix otherwise changes status names and leaves `check` expected
+  forever. Checks: `mise run workflow:check` (also in `mise run check`) and
+  `git diff --check` passed. The aggregate uses `always()` and explicitly requires
+  success from both dependencies, so failure/skipping cannot satisfy branch rules.
+- Codex review follow-up: narrow/short headers retain copyright, GPLv3 and NO
+  WARRANTY down to the supported 20x8 minimum, rather than truncating the legal
+  terms or removing them in compact mode. Header-aware help paging and resize
+  regression checks preserve legal visibility and the compact picker row. Checks:
+  `mise run check`, `mise exec -- go test -race ./internal/tui` and `git diff
+  --check` passed, including the real-binary CLI/PTY walkthrough.
+- Owner-requested release automation: merging to main now calculates a stable
+  version, creates its tag and directly invokes verification/publication in the
+  same workflow, rather than requiring a manual tag. Initial version is v0.1.0;
+  breaking changes bump major, `feat` bumps minor and every other main update
+  bumps patch, including docs/CI/chore-only merges. Main release runs replace
+  duplicate main `dev` CI; PR verification and the stable required `check` remain.
+  Existing tags at the same revision are reused on retries, and publication uploads
+  through an automatically published draft. A serialized `queue: max` retains
+  pending merge runs while an earlier release runs. GITHUB_TOKEN-created tags do not
+  trigger another run, so no PAT, release PR or separate version file is needed.
+  `release:version` is a read-only preview; tests cover conventional bump priority,
+  numeric tag ordering, bootstrap, prerelease/branch exclusion and annotated-tag
+  retry behavior. Checks passed: `mise run check`, `mise exec -- go test -race
+  ./cmd/release-version`, `mise run release:version` (v0.1.0 for this untagged
+  repository), and `git diff --check`. First merge-driven publication is still
+  pending the merge. actionlint 1.7.12 predates GitHub's documented concurrency
+  `queue` property; workflow validation suppresses only that stale-schema diagnostic.
+- Owner-requested platform follow-up: removed Intel macOS native check/race and
+  packaged-binary smoke jobs. Four binary targets still cross-build; macOS arm64
+  and Linux amd64/arm64 receive native acceptance, with darwin/amd64 explicitly
+  labeled cross-built-only in docs and release verification notes. Earlier
+  four-native-target CI measurements above remain historical run records.
+  Checks: `mise run workflow:check`, `git diff --check`, and a focused native-runner
+  and verification-claim search passed.
 
 ## 6. Execution and handoff
 

@@ -1,9 +1,11 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: dev
   pull_request:
     branches:
       - main
@@ -12,8 +14,14 @@ permissions:
   contents: read
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+    runs-on: ${{ matrix.runner }}
+    env:
+      NAMEFORGE_TEST_LINUX_SANDBOX: ${{ startsWith(matrix.runner, 'ubuntu-') && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
@@ -21,3 +29,27 @@ jobs:
           install: true
       - run: mise run check
       - run: mise run data:verify
+      - run: mise run notices:verify
+      - run: mise exec -- go mod verify
+      - run: mise run race
+      - if: matrix.runner == 'ubuntu-24.04'
+        run: mise run fuzz
+
+  distribution:
+    needs: native
+    uses: ./.github/workflows/distribution.yml
+    with:
+      version: ${{ inputs.version || 'dev' }}
+
+  # Keep the exact status context required by the repository ruleset stable,
+  # regardless of matrix names or nested distribution jobs.
+  check:
+    if: always()
+    needs: [native, distribution]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require all verification jobs to succeed
+        env:
+          NATIVE_RESULT: ${{ needs.native.result }}
+          DISTRIBUTION_RESULT: ${{ needs.distribution.result }}
+        run: test "$NATIVE_RESULT" = success && test "$DISTRIBUTION_RESULT" = success

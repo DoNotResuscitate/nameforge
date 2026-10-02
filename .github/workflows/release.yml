@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nameforge-release
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: jdx/mise-action@v2
+        with:
+          install: true
+      - name: Select or create the release tag for this exact revision
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF_TYPE" == tag ]]; then
+            TAG="$REF_NAME"
+          else
+            TAG=$(mise run release:version)
+            if git show-ref --verify --quiet "refs/tags/$TAG"; then
+              test "$(git rev-parse "$TAG^{commit}")" = "$GITHUB_SHA"
+            else
+              gh api --method POST "repos/$GH_REPO/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA"
+            fi
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  # GITHUB_TOKEN-created tags do not start another Actions workflow. Invoke the
+  # full verification/publication chain here for both main merges and manual tags.
+  verify:
+    needs: version
+    uses: ./.github/workflows/ci.yml
+    with:
+      version: ${{ needs.version.outputs.tag }}
+
+  publish:
+    needs: [version, verify]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-archives
+          path: dist
+      - name: Publish only after every native target passes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          (cd dist && sha256sum -c SHA256SUMS)
+          cat > dist/VERIFICATION.md <<'EOF'
+          ## Artifact verification
+
+          All four binaries were cross-built with Go 1.27.1, CGO disabled and trimpath.
+          The three natively verified targets passed offline CLI and keyboard-driven
+          TUI tests (including exports, seed replay and terminal restoration).
+          Intel macOS artifacts are cross-built only:
+
+          | Target | Native runner | Network denial |
+          | --- | --- | --- |
+          | linux/amd64 | ubuntu-24.04 | empty network namespace |
+          | linux/arm64 | ubuntu-24.04-arm | empty network namespace |
+          | darwin/amd64 | cross-built only; no native checks | not natively exercised |
+          | darwin/arm64 | macos-15 | macOS sandbox |
+
+          Archive byte reproducibility,
+          full notices, corpus verification, race tests and public-seed fuzz smoke
+          checks passed. The corresponding source archive contains pinned vendored
+          dependencies and was rebuilt with module downloads disabled. See RELEASE.md
+          inside the archive's docs/ directory for installation and build instructions.
+          EOF
+          sha256sum dist/VERIFICATION.md | sed 's|dist/||' >> dist/SHA256SUMS
+          extra=()
+          if [[ "$TAG" == *-* ]]; then extra+=(--prerelease); fi
+          if gh release view "$TAG" --json isDraft --jq .isDraft > dist/release-state.txt; then
+            if [[ "$(<dist/release-state.txt)" == false ]]; then
+              exit 0 # Successful workflow rerun: this release is already public.
+            fi
+            gh release upload "$TAG" dist/*.tar.gz dist/SHA256SUMS dist/VERIFICATION.md --clobber
+          else
+            gh release create "$TAG" dist/*.tar.gz dist/SHA256SUMS dist/VERIFICATION.md --draft --verify-tag --title "Nameforge $TAG" --notes-file dist/VERIFICATION.md "${extra[@]}"
+          fi
+          gh release edit "$TAG" --draft=false

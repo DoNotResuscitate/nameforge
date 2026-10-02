@@ -388,6 +388,9 @@ func TestResizeNoColorAndSourceLabels(t *testing.T) {
 		for _, f := range []focus{pickerFocus, searchFocus, settingsFocus, resultsFocus} {
 			m.setFocus(f)
 			view := m.View()
+			if size.Width >= 20 && size.Height >= 8 && (!strings.Contains(view, "GPLv3") || !strings.Contains(view, "NO WARRANTY") || !strings.Contains(view, "©2026") && !strings.Contains(view, "© 2026")) {
+				t.Fatalf("supported %dx%d layout hid startup legal terms: %s", size.Width, size.Height, view)
+			}
 			if strings.Contains(view, "\x1b") {
 				t.Fatal("no-color view emitted ANSI styling")
 			}
@@ -455,5 +458,42 @@ func TestCompactLayoutAndLongPathEditing(t *testing.T) {
 	m.setFocus(pickerFocus)
 	if !strings.Contains(m.View(), "[ ]") {
 		t.Fatal("compact picker has no category rows")
+	}
+}
+
+func TestInteractiveLegalNoticesAndHelpRecovery(t *testing.T) {
+	m := testModel(t)
+	if !strings.Contains(m.View(), "NO WARRANTY") || !strings.Contains(m.View(), "GPLv3") {
+		t.Fatal("startup legal summary missing")
+	}
+	key(m, "l")
+	if !m.help || !m.legal || !strings.Contains(m.View(), "LICENSES") || !strings.Contains(strings.Join(m.helpLines(), "\n"), "GNU GENERAL PUBLIC LICENSE") {
+		t.Fatal("interactive full GPL unavailable")
+	}
+	for range 10 {
+		key(m, "down")
+	}
+	if m.helpOffset == 0 {
+		t.Fatal("legal notices cannot scroll")
+	}
+	key(m, "l")
+	if m.legal || m.helpOffset != 0 || !strings.Contains(m.View(), "HELP") {
+		t.Fatal("legal-to-help switch failed")
+	}
+	key(m, "l")
+	key(m, "esc")
+	m.selected["french"] = true
+	complete(t, m, key(m, "enter"))
+	key(m, "e")
+	key(m, "?")
+	if m.legal || !m.help || m.dialog == nil {
+		t.Fatal("export help reused stale legal screen")
+	}
+	key(m, "esc")
+	key(m, "esc")
+	m.setFocus(searchFocus)
+	key(m, "l")
+	if m.help || m.search.Value() != "l" {
+		t.Fatal("legal shortcut intercepted text entry")
 	}
 }

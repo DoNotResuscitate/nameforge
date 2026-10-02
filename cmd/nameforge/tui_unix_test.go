@@ -169,14 +169,10 @@ func (s *terminalSession) finish(keys string, code int) {
 
 // Real offline first-launch walkthrough: keyboard selection/settings, generation,
 // exports, CLI replay, resize, and cleanup. macOS enforces network/home-write
-// denial; Linux exercises the same workflow without claiming an OS sandbox.
+// denial; Linux CI opts into an empty network namespace.
 func TestBinaryTUI(t *testing.T) {
 	root := t.TempDir()
-	binary := filepath.Join(root, "nameforge")
-	build := exec.Command("mise", "exec", "--", "go", "build", "-trimpath", "-o", binary, ".")
-	if output, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("build: %v\n%s", err, output)
-	}
+	binary := testBinary(t, root)
 	home := filepath.Join(root, "home")
 	if err := os.Mkdir(home, 0o555); err != nil {
 		t.Fatal(err)
@@ -189,6 +185,10 @@ func TestBinaryTUI(t *testing.T) {
 		}
 		cmd.Dir = root
 		cmd.Env = []string{"HOME=" + home, "PATH=" + filepath.Join(root, "no-tools"), "TERM=xterm-256color", "NO_COLOR=1"}
+		if runtime.GOOS == "linux" && os.Getenv("NAMEFORGE_TEST_LINUX_SANDBOX") == "1" {
+			cmd = linuxSandbox(binary, cmd.Env, args...)
+			cmd.Dir = root
+		}
 		return cmd
 	}
 	for _, mode := range []string{"category", "blend"} {
@@ -200,6 +200,18 @@ func TestBinaryTUI(t *testing.T) {
 					args = []string{"tui", "--no-color", "--data-dir", filepath.Join(root, "absent-state")}
 				}
 				s := startTerminal(t, command(args...))
+				if mode == "category" && categories[0] == "french" {
+					if !strings.Contains(s.text(), "NO WARRANTY") {
+						t.Fatal("interactive warranty notice absent")
+					}
+					s.send("l")
+					s.wait("LICENSES")
+					s.wait("Copyright (C) 2026")
+					s.send(strings.Repeat("\x1b[B", 4))
+					s.wait("GNU GENERAL PUBLIC LICENSE")
+					s.send("\x1b")
+					time.Sleep(40 * time.Millisecond)
+				}
 				for _, id := range categories {
 					if id == "all" {
 						s.send("a")

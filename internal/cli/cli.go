@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
-	"path"
 	"sort"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/DoNotResuscitate/nameforge/internal/corpus"
+	"github.com/DoNotResuscitate/nameforge/internal/legal"
 )
 
 var (
@@ -28,7 +27,7 @@ Commands:
   tui        Open the offline interactive category picker (default with a TTY)
   generate   Generate reproducible names from selected bundled categories
   data       List and inspect bundled corpus categories
-  licenses   Display complete embedded corpus license notices
+  licenses   Display GPL, dependency and corpus license notices
   version    Show version information
 
 Use "nameforge <command> --help" for command-specific help.
@@ -70,7 +69,7 @@ func RunWithInput(ctx context.Context, args []string, stdin io.Reader, stdout, s
 		return runData(args[1:], stdout, stderr)
 	case "licenses":
 		if isHelp(args[1:]) {
-			return writeOutput(stdout, stderr, "Usage: nameforge licenses\nDisplay complete embedded corpus license notices.\n")
+			return writeOutput(stdout, stderr, "Usage: nameforge licenses\nDisplay complete embedded GPL, dependency and corpus license notices.\n")
 		}
 		if len(args) != 1 {
 			_, _ = fmt.Fprintln(stderr, "licenses does not accept arguments")
@@ -106,18 +105,12 @@ func runLicenses(stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintf(stderr, "load bundled corpus: %v\n", err)
 		return 1
 	}
-	var output strings.Builder
-	for _, license := range bundle.Manifest.Licenses {
-		notice, err := fs.ReadFile(corpus.BuiltinFS(), path.Join("assets/builtin", license.Path))
-		if err != nil {
-			_, _ = fmt.Fprintf(stderr, "read embedded license %q: %v\n", license.Name, err)
-			return 1
-		}
-		fmt.Fprintf(&output, "=== %s ===\n", license.Name)
-		output.Write(notice)
-		output.WriteByte('\n')
+	output, err := legal.Text(bundle)
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, err)
+		return 1
 	}
-	return writeOutput(stdout, stderr, output.String())
+	return writeOutput(stdout, stderr, output)
 }
 
 func isHelp(args []string) bool {

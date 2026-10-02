@@ -10,18 +10,24 @@ accurately sourced North African categories as a possible expansion.
 category-specific records from pinned Faker arrays, Wikipedia and Wikidata.
 Corpus inspection and reproducible Latin-only generation work offline for all
 ten categories, including romanized Greek and Arabic. The interactive picker,
-settings, session favorites, and text/JSON exports are available. Next is
-verification and binary distribution (M7). The Go module path is
+settings, session favorites, and text/JSON exports are available. M7 adds
+checksummed four-target release archives, full legal notices, three-target native verification
+and a merge-driven automatic tag/release pipeline; first public release verification is pending.
+The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
-Supported platforms are macOS and Linux; planned release binaries target arm64
-and amd64.
+Supported platforms are macOS and Linux, arm64 and amd64. See
+[installation and releases](docs/RELEASE.md) for standalone binaries, checksums,
+corresponding source, offline builds and troubleshooting.
+Native checks cover macOS arm64 and Linux arm64/amd64; Intel macOS binaries are
+cross-built only.
 
 ## Development handoff
 
 - [Implementation plan](docs/PLAN.md): architecture, behavior, ordered work items,
   acceptance criteria, and suggested atomic Conventional Commits.
 - [Data sources](docs/DATA.md): embeddable multilingual datasets and provenance.
+- [Architecture](docs/ARCHITECTURE.md): boundaries and deterministic generation.
 - [Agent instructions](AGENTS.md): workflow and non-negotiable constraints.
 
 ## Toolchain
@@ -37,7 +43,8 @@ mise run check
 ```
 
 Available tasks are `fmt`, `fmt-check`, `test`, `vet`, `build`, `run`, `check`,
-`data:fetch`, `data:build`, and `data:verify`.
+`data:fetch`, `data:build`, `data:verify`, `race`, `fuzz`, `workflow:check`,
+`notices:build`, `notices:verify`, `release:version`, `release:build`, and `release:smoke`.
 For example, `mise run run -- version` runs the version command. Go
 libraries are pinned in `go.mod` / `go.sum`, not installed globally.
 
@@ -126,3 +133,11 @@ TTRPG experimentation. Locale labels describe source lists, not promised origins
 [Behind the Name](https://www.behindthename.com/random/) is the category-selection
 UX reference. Ancient, mythological, and fictional categories need independently
 sourced lists before they can be bundled.
+
+## License
+
+Nameforge is free software under [GNU GPLv3](LICENSE), with no warranty.
+Full application, dependency and corpus notices are embedded: run
+`nameforge licenses` or press `l` in the TUI. Redistributable training data retains
+its MIT / CC BY-SA 4.0 / CC0 terms. Release archives preserve these notices and
+provide corresponding source with vendored dependencies; see [RELEASE.md](docs/RELEASE.md).

@@ -1,0 +1,92 @@
+name: Distribution verification
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: jdx/mise-action@v2
+        with:
+          install: true
+      - name: Verify clean revision (tagged releases must be on main)
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          test -z "$(git status --porcelain)"
+          if [[ "$VERSION" != dev ]]; then
+            git merge-base --is-ancestor HEAD origin/main
+            test "$(git rev-parse "$VERSION^{commit}")" = "$GITHUB_SHA"
+          fi
+      - name: Build standalone archives and corresponding source
+        env:
+          VERSION: ${{ inputs.version }}
+        run: mise run release:build -- --version "$VERSION"
+      - name: Check reproducible archive bytes
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          mise run release:build -- --version "$VERSION" --out dist/rebuild
+          diff dist/SHA256SUMS dist/rebuild/SHA256SUMS
+          (cd dist && sha256sum -c SHA256SUMS)
+      - name: Build from the bundled source without module downloads
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          tar -xzf "dist/nameforge_${VERSION}_source.tar.gz" -C dist
+          GOPROXY=off GOSUMDB=off mise exec -- go build -C "dist/nameforge_${VERSION}_source" -mod=vendor -trimpath -o nameforge ./cmd/nameforge
+          NAMEFORGE_TEST_BINARY="$PWD/dist/nameforge_${VERSION}_source/nameforge" NAMEFORGE_TEST_LINUX_SANDBOX=1 mise run release:smoke
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-archives
+          path: |
+            dist/*.tar.gz
+            dist/SHA256SUMS
+          if-no-files-found: error
+
+  smoke:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            os: linux
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            os: linux
+            arch: arm64
+          - runner: macos-15
+            os: darwin
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        with:
+          install: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-archives
+          path: dist
+      - name: Verify checksums and exercise the extracted native binary
+        env:
+          VERSION: ${{ inputs.version }}
+          TARGET_OS: ${{ matrix.os }}
+          TARGET_ARCH: ${{ matrix.arch }}
+          NAMEFORGE_TEST_LINUX_SANDBOX: ${{ matrix.os == 'linux' && '1' || '0' }}
+        run: |
+          (cd dist && shasum -a 256 -c SHA256SUMS)
+          tar -xzf "dist/nameforge_${VERSION}_${TARGET_OS}_${TARGET_ARCH}.tar.gz" -C dist
+          NAMEFORGE_TEST_BINARY="$PWD/dist/nameforge_${VERSION}_${TARGET_OS}_${TARGET_ARCH}/nameforge" NAMEFORGE_TEST_VERSION="$VERSION" NAMEFORGE_TEST_COMMIT="$GITHUB_SHA" mise run release:smoke

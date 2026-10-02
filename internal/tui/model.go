@@ -15,6 +15,7 @@ import (
 	"github.com/DoNotResuscitate/nameforge/internal/corpus"
 	"github.com/DoNotResuscitate/nameforge/internal/export"
 	"github.com/DoNotResuscitate/nameforge/internal/generator"
+	"github.com/DoNotResuscitate/nameforge/internal/legal"
 	"github.com/DoNotResuscitate/nameforge/internal/store"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -99,6 +100,8 @@ type Model struct {
 	favorites   []favorite
 	dialog      *exportDialog
 	help        bool
+	legal       bool
+	legalText   string
 	helpOffset  int
 	status      string
 	width       int
@@ -119,6 +122,10 @@ func input(value, placeholder string) textinput.Model {
 func New(ctx context.Context, bundle *corpus.Bundle, noColor bool) *Model {
 	categories := append([]corpus.Category(nil), bundle.Categories...)
 	sort.Slice(categories, func(i, j int) bool { return categories[i].ID < categories[j].ID })
+	notices, err := legal.Text(bundle)
+	if err != nil {
+		notices = "Installation error: " + err.Error()
+	}
 	return &Model{
 		ctx: ctx, bundle: bundle, categories: categories, selected: make(map[string]bool),
 		search: input("", "filter categories"),
@@ -129,7 +136,8 @@ func New(ctx context.Context, bundle *corpus.Bundle, noColor bool) *Model {
 		},
 		mode: generator.ModeCategory, gender: generator.GenderAny,
 		width: 80, height: 24, noColor: noColor,
-		status: "Choose one or more categories; no category is selected by default.",
+		legalText: notices,
+		status:    "Choose one or more categories; no category is selected by default.",
 	}
 }
 
@@ -315,6 +323,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch key {
 			case "?":
 				m.help = false
+			case "l":
+				m.legal, m.helpOffset = !m.legal, 0
 			case "down", "j":
 				m.helpOffset = min(limit, m.helpOffset+1)
 			case "up", "k":
@@ -344,7 +354,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.stopWork()
 				return m, tea.Quit
 			case "?":
-				m.help, m.helpOffset = true, 0
+				m.help, m.legal, m.helpOffset = true, false, 0
+				return m, nil
+			case "l":
+				m.help, m.legal, m.helpOffset = true, true, 0
 				return m, nil
 			case "r":
 				return m, m.generate(true)
@@ -507,7 +520,7 @@ func (m *Model) updateDialog(msg tea.KeyMsg) tea.Cmd {
 			return tea.Quit
 		}
 		if key == "?" {
-			m.help, m.helpOffset = true, 0
+			m.help, m.legal, m.helpOffset = true, false, 0
 			return nil
 		}
 	}
