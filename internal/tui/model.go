@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -580,6 +581,19 @@ func (m *Model) updateDialog(msg tea.KeyMsg) tea.Cmd {
 			d.favorites = !d.favorites
 		} else {
 			d.json = !d.json
+			if path := d.path.Value(); path != "" {
+				ext := filepath.Ext(path)
+				if ext == filepath.Base(path) {
+					// A dotfile without another suffix is a basename, not an extension.
+					ext = ""
+				}
+				suffix := ".txt"
+				if d.json {
+					suffix = ".json"
+				}
+				d.path.SetValue(strings.TrimSuffix(path, ext) + suffix)
+				d.path.CursorEnd()
+			}
 		}
 		return nil
 	}

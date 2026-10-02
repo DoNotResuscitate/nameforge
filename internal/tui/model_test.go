@@ -313,6 +313,9 @@ func TestTextExportCancelAndGlobalQuit(t *testing.T) {
 	key(m, "e")
 	key(m, "tab")
 	key(m, " ") // text
+	if m.dialog.path.Value() != "names.txt" {
+		t.Fatal("text format did not update the default filename")
+	}
 	path := filepath.Join(t.TempDir(), "names.txt")
 	m.dialog.path.SetValue(path)
 	cmd := key(m, "enter")
@@ -350,6 +353,31 @@ func TestTextExportCancelAndGlobalQuit(t *testing.T) {
 	}
 	if _, ok := quit().(tea.QuitMsg); !ok {
 		t.Fatal("Ctrl-C did not quit")
+	}
+}
+
+func TestExportFormatUpdatesCustomFilename(t *testing.T) {
+	m := testModel(t)
+	m.selected["french"] = true
+	complete(t, m, key(m, "enter"))
+	key(m, "e")
+	key(m, "tab") // format
+	for _, tc := range []struct{ path, text, json string }{
+		{"exports.v1/custom.json", "exports.v1/custom.txt", "exports.v1/custom.json"},
+		{"custom.batch.json", "custom.batch.txt", "custom.batch.json"},
+		{"custom", "custom.txt", "custom.json"},
+		{".session", ".session.txt", ".session.json"},
+		{"", "", ""},
+	} {
+		m.dialog.path.SetValue(tc.path)
+		key(m, " ")
+		if m.dialog.json || m.dialog.path.Value() != tc.text {
+			t.Fatalf("text format for %q: path=%q", tc.path, m.dialog.path.Value())
+		}
+		key(m, " ")
+		if !m.dialog.json || m.dialog.path.Value() != tc.json {
+			t.Fatalf("JSON format for %q: path=%q", tc.path, m.dialog.path.Value())
+		}
 	}
 }
 

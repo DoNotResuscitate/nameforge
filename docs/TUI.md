@@ -30,7 +30,9 @@ path, but no local packs, preferences, or favorites are loaded or saved there.
    remains in settings, so Enter can replay it; each batch displays its actual seed.
 5. Press `e` to export. Tab moves through target, format, and destination path;
    Space toggles current batch/session favorites and JSON/text. Enter writes the
-   file. Existing destinations require `y` confirmation; `n` declines and allows
+   file. Changing format automatically updates the filename extension to `.txt`
+   or `.json`, preserving its directory and basename. Existing destinations require
+   `y` confirmation; `n` declines and allows
    editing the destination. Esc dismisses the dialog. Parent directories must
    already exist. Write failures keep the batch and favorites available for retry.
 6. Press `?` for scrollable controls, full current status, effective length bounds,

@@ -129,6 +129,7 @@ func (s *terminalSession) exportText(path string) {
 	s.wait("EXPORT")
 	s.send("\t ")
 	s.wait("Format: text")
+	s.wait("names.txt")
 	s.send("\t\x15" + path + "\r")
 	s.wait("RESULTS")
 }

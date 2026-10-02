@@ -547,6 +547,12 @@ pending until their acceptance checks pass.
 - Platform scope clarified after acceptance: macOS and Linux are the supported
   verification/release targets. The documentation follow-up passed `git diff
   --check` and a focused platform-target review.
+- Export follow-up: switching format updates the filename extension to `.txt`
+  or `.json`, preserving the directory/basename and adding a suffix when absent.
+  Regression checks cover default/custom paths, dotfiles, empty input and switching
+  back to JSON; the binary walkthrough checks the automatic text filename. Checks:
+  `mise run check`, `mise exec -- go test -count=1 -v ./cmd/nameforge -run
+  'TestBinaryTUI/category/french'`, and `git diff --check` passed.
 - Next ready milestone: M7 — Verification and binary distribution.
 - Commit: `feat(tui): add offline interactive generation and session exports`.
 
