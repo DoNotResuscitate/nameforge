@@ -12,7 +12,7 @@ Corpus inspection and reproducible Latin-only generation work offline for all
 ten categories, including romanized Greek and Arabic. The interactive picker,
 settings, session favorites, and text/JSON exports are available. M7 adds
 checksummed release archives, full legal notices, four-target native verification
-and a tag-triggered release pipeline; first public release verification is pending.
+and a merge-driven automatic tag/release pipeline; first public release verification is pending.
 The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
@@ -42,7 +42,7 @@ mise run check
 
 Available tasks are `fmt`, `fmt-check`, `test`, `vet`, `build`, `run`, `check`,
 `data:fetch`, `data:build`, `data:verify`, `race`, `fuzz`, `workflow:check`,
-`notices:build`, `notices:verify`, `release:build`, and `release:smoke`.
+`notices:build`, `notices:verify`, `release:version`, `release:build`, and `release:smoke`.
 For example, `mise run run -- version` runs the version command. Go
 libraries are pinned in `go.mod` / `go.sum`, not installed globally.
 

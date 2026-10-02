@@ -109,14 +109,41 @@ Corpus refresh is a separate, explicit maintenance operation described in
 
 ## CI/release workflow and target claims
 
-Pull requests and main-branch CI run the shared distribution workflow with version
+Pull requests run the shared distribution workflow with version
 `dev`: reproducible four-target archives, vendored-source rebuild, and native tests
 of each extracted binary. Those CI artifacts are verification builds, not published
-releases. Tagged releases reuse the same jobs with the tag as their version.
+releases. **Merging a PR to `main` automatically creates a version tag and publishes
+a GitHub Release once its verification succeeds.** Main-branch releases reuse the
+same CI/distribution jobs with the real release version, rather than running a
+second `dev` build. Manually pushed version tags are also supported.
 
-After a reviewed change is merged and its CI passes, a maintainer creates/pushes
-a `v<major>.<minor>.<patch>` tag (optional prerelease suffix). The tag-triggered
-workflow rejects non-main revisions, checks the clean checkout, runs `check`,
+Automatic versioning starts at **`v0.1.0`** when no stable release tag exists in the
+main history. After that, commit messages since the highest stable ancestor tag
+determine the next version:
+
+| Changes since the previous stable release | Bump |
+| --- | --- |
+| `BREAKING CHANGE:` / `BREAKING-CHANGE:` footer, or a Conventional Commit header with `!` | Major |
+| `feat:` or `feat(scope):` | Minor |
+| All other changes, including fixes, docs, CI and chores | Patch |
+
+The highest applicable bump wins. Standard merges/rebases retain commit messages;
+for squash merges, use a Conventional Commit PR title and retain any breaking-change
+footer in the squash message. Prerelease/unrelated-branch tags do not advance stable
+versions. There is no release-only follow-up PR or manually maintained version file.
+`mise run release:version` previews the calculated tag without changing Git.
+
+The release workflow creates the tag at the exact main push revision with its
+repository-scoped `GITHUB_TOKEN`, then calls verification and publication directly.
+Release runs share a serialized queue, retaining pending merges instead of replacing
+them while another release is running.
+This avoids relying on a second tag-triggered run: tags created by that token do
+not trigger other Actions workflows. No personal access token or additional secret
+is required. The tag remains available if verification fails; rerunning that
+workflow reuses the same tag. Uploads complete in an automatically published draft,
+so an interrupted upload can be retried without a duplicate public release.
+
+The workflow rejects non-main revisions, checks the clean checkout, runs `check`,
 `data:verify`, notices/module verification, native race tests and fuzz smoke checks,
 and builds all four targets with CGO disabled and trimpath. It compares two full
 archive builds and verifies SHA-256. It also rebuilds the bundled source with
@@ -151,8 +178,10 @@ NAMEFORGE_TEST_BINARY="$PWD/dist/nameforge_dev_darwin_arm64/nameforge" mise run 
 Publication depends on every native job passing. `VERIFICATION.md` in the release
 lists the actual runner coverage; the workflow claims no cross-build-only targets
 because all four must pass. If a runner is unavailable, publication is blocked.
-Local cross-building does **not** imply native verification. There is no automatic
-tag creation, version bump, package-manager publication or data refresh.
+Local cross-building does **not** imply native verification. Merging to main handles
+versioning, tagging and GitHub publication automatically; package-manager publishing
+and data refreshes remain separate work. Manual prerelease tags such as
+`v0.1.0-rc.1` produce GitHub prereleases.
 
 ## Troubleshooting
 

@@ -655,6 +655,23 @@ pending until their acceptance checks pass.
   regression checks preserve legal visibility and the compact picker row. Checks:
   `mise run check`, `mise exec -- go test -race ./internal/tui` and `git diff
   --check` passed, including the real-binary CLI/PTY walkthrough.
+- Owner-requested release automation: merging to main now calculates a stable
+  version, creates its tag and directly invokes verification/publication in the
+  same workflow, rather than requiring a manual tag. Initial version is v0.1.0;
+  breaking changes bump major, `feat` bumps minor and every other main update
+  bumps patch, including docs/CI/chore-only merges. Main release runs replace
+  duplicate main `dev` CI; PR verification and the stable required `check` remain.
+  Existing tags at the same revision are reused on retries, and publication uploads
+  through an automatically published draft. A serialized `queue: max` retains
+  pending merge runs while an earlier release runs. GITHUB_TOKEN-created tags do not
+  trigger another run, so no PAT, release PR or separate version file is needed.
+  `release:version` is a read-only preview; tests cover conventional bump priority,
+  numeric tag ordering, bootstrap, prerelease/branch exclusion and annotated-tag
+  retry behavior. Checks passed: `mise run check`, `mise exec -- go test -race
+  ./cmd/release-version`, `mise run release:version` (v0.1.0 for this untagged
+  repository), and `git diff --check`. First merge-driven publication is still
+  pending the merge. actionlint 1.7.12 predates GitHub's documented concurrency
+  `queue` property; workflow validation suppresses only that stale-schema diagnostic.
 
 ## 6. Execution and handoff
 

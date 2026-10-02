@@ -79,6 +79,9 @@ sandboxing or an empty Linux network namespace.
 
 Release builds disable CGO and use trimpath. Deterministic archive ordering,
 owner/mode fields and revision-derived timestamps avoid local path/user leakage.
-Release CI compares independent build checksums, rebuilds vendored corresponding
+Merging to main calculates a stable Conventional Commit version and creates its
+tag at the exact merged revision. Release CI compares independent build checksums, rebuilds vendored corresponding
 source without module downloads, then tests each extracted binary on its native
-runner before publication. See [RELEASE.md](RELEASE.md).
+runner before automatic GitHub publication. The same run handles tag creation and
+publication using `GITHUB_TOKEN`; no recursive tag workflow is needed.
+`cmd/release-version` previews versions without mutation. See [RELEASE.md](RELEASE.md).

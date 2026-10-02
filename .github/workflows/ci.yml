@@ -6,9 +6,6 @@ on:
       version:
         type: string
         default: dev
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
