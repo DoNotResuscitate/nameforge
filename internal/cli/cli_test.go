@@ -2,9 +2,54 @@ package cli
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"strings"
 	"testing"
 )
+
+type limitedWriter struct {
+	remaining int
+	written   int
+}
+
+func (w *limitedWriter) Write(data []byte) (int, error) {
+	n := min(len(data), w.remaining)
+	w.remaining -= n
+	w.written += n
+	if n < len(data) {
+		return n, errors.New("test output full")
+	}
+	return n, nil
+}
+
+func TestDataOutputFailures(t *testing.T) {
+	// The list's tab-separated rows stay buffered until Flush, so these cases
+	// cover delayed flush failures as well as inspect's immediate writes.
+	for _, command := range []struct {
+		name string
+		args []string
+	}{
+		{"list", []string{"data", "list"}},
+		{"inspect", []string{"data", "inspect", "--category", "french"}},
+	} {
+		for _, capacity := range []int{0, 17} {
+			t.Run(command.name+"/"+fmt.Sprint(capacity), func(t *testing.T) {
+				stdout := &limitedWriter{remaining: capacity}
+				var stderr bytes.Buffer
+				if code := Run(command.args, stdout, &stderr); code != 1 {
+					t.Fatalf("exit code = %d, want 1", code)
+				}
+				if stdout.written != capacity {
+					t.Fatalf("written = %d, want %d", stdout.written, capacity)
+				}
+				if !strings.Contains(stderr.String(), "write data "+command.name+": test output full") {
+					t.Fatalf("missing output diagnostic: %q", stderr.String())
+				}
+			})
+		}
+	}
+}
 
 func TestRun(t *testing.T) {
 	tests := []struct {

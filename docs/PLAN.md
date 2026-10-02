@@ -683,6 +683,16 @@ pending until their acceptance checks pass.
 
 ## 6. Execution and handoff
 
+### Post-implementation review fixes
+
+- Issue #13: `data list` now checks tabwriter writes and its final flush;
+  `data inspect` checks its stdout write. Both report output failures on stderr
+  and return exit 1. Regression tests cover immediate and partial writes,
+  including buffered list output failures. `mise run check` and Linux binary
+  checks redirecting both commands to `/dev/full` passed. No corpus, generation
+  algorithm or successful output contracts changed. M7's human acceptance remains
+  pending; the next review fix is #14 (corresponding-source archive privacy).
+
 Critical path: M1 -> M2 -> M3/M4 -> M5 -> M5a -> M6 -> M7. M3 and M4 may be worked on
 independently after M2 contracts settle; coordinate go.mod changes. This is a
 dependency map for future implementers, not an instruction to spawn agents.
