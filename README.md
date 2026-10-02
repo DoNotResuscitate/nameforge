@@ -6,10 +6,10 @@ Select one or more naming categories, generate a batch, and save favorites.
 The initial focus is Mediterranean and Western Europe, plus Turkish, with
 accurately sourced North African categories as a possible expansion.
 
-**Status: M1–M4 implemented.** The embedded multilingual corpus contains 10,652
+**Status: M1–M5 implemented.** The embedded multilingual corpus contains 10,652
 locale-specific records from pinned Faker static arrays. Corpus inspection and
-the deterministic Latin-script generation engine are implemented; CLI generation
-and the TUI are next (M5/M6). The Go module path is
+scriptable, reproducible Latin-script generation work offline. The interactive
+TUI is next (M6). The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
 ## Development handoff
@@ -36,6 +36,27 @@ Available tasks are `fmt`, `fmt-check`, `test`, `vet`, `build`, `run`, `check`,
 For example, `mise run run -- version` runs the version command. Go
 libraries are pinned in `go.mod` / `go.sum`, not installed globally.
 
+## Generate names
+
+```sh
+mise run build
+./bin/nameforge data list
+./bin/nameforge generate --category french --category italian --seed 42
+./bin/nameforge generate --category spanish --category turkish --mode blend --seed 42 --format json
+./bin/nameforge licenses
+```
+
+Select categories explicitly. The default `category` mode chooses a selected
+category uniformly for each name; `blend` learns from the deduplicated union and
+produces hybrid TTRPG styles. Defaults are 20 distinct novel names, Markov order 2,
+and observed category-derived length bounds. Text writes one name per line to
+stdout and reproduction metadata to stderr. JSON writes one versioned result
+containing names, category attribution, seed, corpus hash, options and counters.
+Keep the reported seed to replay a batch; omitted seeds are random.
+
+See [CLI usage](docs/CLI.md) for all flags, formats, replay rules and exit codes.
+The binary requires no separate data, writable home, Go installation or network.
+
 ## Data and operation
 
 The bundled source is the MIT-licensed static name data from
@@ -51,7 +72,10 @@ Turkish, German, Dutch, English, and broadly labelled Arabic. Use
 Greek (55 records) and Arabic (341) retain native scripts and return explicit
 unsupported-script errors in the current Latin-only generation engine. Arabic is
 not a North African regional pack. Generic buckets have unspecified gender;
-none of these lists has a spelling explicitly in both gendered arrays.
+none of these lists has a spelling explicitly in both gendered arrays, so
+`--gender unisex` returns an actionable empty-selection error. `--all-categories`
+explicitly includes Greek and Arabic and therefore returns an unsupported-script
+error; select Latin-profile categories for generation.
 
 ### Reproducible corpus maintenance
 

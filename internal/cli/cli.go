@@ -1,8 +1,11 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"io/fs"
+	"path"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -21,7 +24,9 @@ Usage:
   nameforge <command> [options]
 
 Commands:
+  generate   Generate reproducible names from selected bundled categories
   data       List and inspect bundled corpus categories
+  licenses   Display complete embedded corpus license notices
   version    Show version information
 
 Use "nameforge <command> --help" for command-specific help.
@@ -29,30 +34,78 @@ Use "nameforge <command> --help" for command-specific help.
 
 // Run routes one Nameforge command and returns its process exit code.
 func Run(args []string, stdout, stderr io.Writer) int {
+	return RunContext(context.Background(), args, stdout, stderr)
+}
+
+// RunContext propagates process cancellation into generation.
+func RunContext(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
 		_, _ = io.WriteString(stderr, usage)
 		return 2
 	}
 
-	if isHelp(args) {
-		_, _ = io.WriteString(stdout, usage)
-		return 0
+	if len(args) == 1 && isHelp(args) {
+		return writeOutput(stdout, stderr, usage)
 	}
 
 	switch args[0] {
+	case "generate":
+		return runGenerate(ctx, args[1:], stdout, stderr)
 	case "data":
+		if isHelp(args[1:]) {
+			return writeOutput(stdout, stderr, "Usage: nameforge data list\n       nameforge data inspect --category <id>\n")
+		}
 		return runData(args[1:], stdout, stderr)
+	case "licenses":
+		if isHelp(args[1:]) {
+			return writeOutput(stdout, stderr, "Usage: nameforge licenses\nDisplay complete embedded corpus license notices.\n")
+		}
+		if len(args) != 1 {
+			_, _ = fmt.Fprintln(stderr, "licenses does not accept arguments")
+			return 2
+		}
+		return runLicenses(stdout, stderr)
 	case "version":
+		if isHelp(args[1:]) {
+			return writeOutput(stdout, stderr, usage)
+		}
 		if len(args) != 1 {
 			_, _ = fmt.Fprintf(stderr, "version does not accept arguments\n\n%s", usage)
 			return 2
 		}
-		_, _ = fmt.Fprintf(stdout, "nameforge version %s (commit %s)\n", version, commit)
-		return 0
+		return writeOutput(stdout, stderr, fmt.Sprintf("nameforge version %s (commit %s)\n", version, commit))
 	default:
 		_, _ = fmt.Fprintf(stderr, "unknown command %q\n\n%s", args[0], usage)
 		return 2
 	}
+}
+
+func writeOutput(stdout, stderr io.Writer, text string) int {
+	if _, err := io.WriteString(stdout, text); err != nil {
+		_, _ = fmt.Fprintf(stderr, "write output: %v\n", err)
+		return 1
+	}
+	return 0
+}
+
+func runLicenses(stdout, stderr io.Writer) int {
+	bundle, err := corpus.LoadBuiltin()
+	if err != nil {
+		_, _ = fmt.Fprintf(stderr, "load bundled corpus: %v\n", err)
+		return 1
+	}
+	var output strings.Builder
+	for _, license := range bundle.Manifest.Licenses {
+		notice, err := fs.ReadFile(corpus.BuiltinFS(), path.Join("assets/builtin", license.Path))
+		if err != nil {
+			_, _ = fmt.Fprintf(stderr, "read embedded license %q: %v\n", license.Name, err)
+			return 1
+		}
+		fmt.Fprintf(&output, "=== %s ===\n", license.Name)
+		output.Write(notice)
+		output.WriteByte('\n')
+	}
+	return writeOutput(stdout, stderr, output.String())
 }
 
 func isHelp(args []string) bool {

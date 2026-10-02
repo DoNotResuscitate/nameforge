@@ -10,9 +10,9 @@ Prioritize Mediterranean and Western European lists plus Turkish; optional North
 African packs require specific provenance, not just generic Arabic labels.
 
 The repository includes completed M1 bootstrap, M2 corpus schema and embedded
-loading, M3 pinned multilingual data extraction, and M4 deterministic generation
-engine. The corpus contains 10,652 locale-specific records from Faker v10.6.0.
-CLI generation, the TUI, and the release pipeline remain pending. The Go module
+loading, M3 pinned multilingual data extraction, M4 deterministic generation
+engine, and M5 headless CLI generation. The corpus contains 10,652 locale-specific
+records from Faker v10.6.0. The TUI and release pipeline remain pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
@@ -158,7 +158,7 @@ explicitly version any intentional change to this behavior.
 
 ## 4. CLI and TUI contract
 
-Planned commands (not yet available):
+Commands (headless commands available; TUI entry points planned for M6):
 
 ```sh
 nameforge
@@ -356,7 +356,7 @@ pending until their acceptance checks pass.
 - Next ready milestone after M3 completion: M5 — Headless vertical slice.
 - Commit: `feat(generator): add deterministic Latin-only Markov generation`.
 
-### M5 — Headless vertical slice (pending; depends M3, M4)
+### M5 — Headless vertical slice (complete; depends M3, M4)
 
 - Implement generation flags, stream formats, metadata, exit codes and docs.
 - Acceptance: first-run bundled-data -> training -> JSON/text works with an
@@ -365,6 +365,37 @@ pending until their acceptance checks pass.
   stdout clean; `licenses` displays full embedded notices. Run and record the
   M3 Latin-profile generation smoke checks using default settings and fixed
   seeds; verify explicit unsupported-script errors for non-Latin categories.
+- Completed: repeatable category/all-category selection; every planned generation
+  flag; decimal uint64 seeds including zero/max; text names with separate JSON
+  metadata and a shared versioned JSON export format; clean machine streams;
+  full embedded Faker notices via `licenses`; actionable bounded failures with
+  no partial stdout; context/SIGINT cancellation and exit 130; documented command,
+  option, stream, replay and exit-code semantics in `docs/CLI.md`.
+- Exposed `generator.NormalizeRequest` for shared pre-I/O option validation;
+  defaults retain their Go API semantics, while frontends reject explicit zero
+  numeric settings. Explicit contradictory length bounds now fail before model
+  training. Corpus assets, source lock and algorithm version are unchanged.
+- Acceptance checks passed on `darwin/arm64`: `mise run check`,
+  `mise run data:verify`, `mise exec -- go test -race ./...`,
+  `mise exec -- go mod verify`, `mise exec -- go test -v ./cmd/nameforge`, and
+  both `mise exec -- go test -v ./internal/generator -run
+  TestBuiltinCategoryGenerationSmoke` and `mise exec -- go test -v
+  ./internal/cli -run TestGenerateBuiltinCategorySmoke`. All eight Latin categories
+  produce 20 distinct novel names at seed 42/defaults; Greek and Arabic return
+  `unsupported_script`. M3 smoke counters and the original M4 golden are unchanged.
+- The actual executable runs outside the checkout with an empty read-only home,
+  no developer tools on PATH, and macOS sandbox denial of network/filesystem writes.
+  Text/JSON and ordered seeded replay pass in both French + Italian modes;
+  command help/licenses/invalid options and Unix SIGINT are tested at the process
+  boundary. CLI tests additionally verify random-seed replay, maximum seed,
+  selection-order invariance, source novelty, attribution, I/O failures, gender
+  gaps, and suppression of a nonempty partial batch on diversity exhaustion.
+- Limitations: interactive startup is deferred to M6; Greek/Arabic and therefore
+  `--all-categories` fail under the unchanged Latin-only policy; current unisex
+  pools are empty. Other OSes are not natively checked here; the binary acceptance
+  test only claims OS-enforced network denial on macOS. No generated batches or
+  personal data are committed.
+- Next ready milestone: M6 — Interactive UI.
 - Commit: `feat(cli): generate reproducible names from embedded categories`.
 
 ### M6 — Interactive UI (pending; depends M5)
