@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
 	"path"
 	"sort"
 	"strings"
@@ -24,6 +25,7 @@ Usage:
   nameforge <command> [options]
 
 Commands:
+  tui        Open the offline interactive category picker (default with a TTY)
   generate   Generate reproducible names from selected bundled categories
   data       List and inspect bundled corpus categories
   licenses   Display complete embedded corpus license notices
@@ -39,7 +41,15 @@ func Run(args []string, stdout, stderr io.Writer) int {
 
 // RunContext propagates process cancellation into generation.
 func RunContext(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	return RunWithInput(ctx, args, os.Stdin, stdout, stderr)
+}
+
+// RunWithInput keeps terminal detection and input explicit for frontends/tests.
+func RunWithInput(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
+		if terminal(stdin) && terminal(stdout) {
+			return runTUI(ctx, nil, stdin, stdout, stderr)
+		}
 		_, _ = io.WriteString(stderr, usage)
 		return 2
 	}
@@ -49,6 +59,8 @@ func RunContext(ctx context.Context, args []string, stdout, stderr io.Writer) in
 	}
 
 	switch args[0] {
+	case "tui":
+		return runTUI(ctx, args[1:], stdin, stdout, stderr)
 	case "generate":
 		return runGenerate(ctx, args[1:], stdout, stderr)
 	case "data":

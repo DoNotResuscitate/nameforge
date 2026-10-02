@@ -11,7 +11,7 @@ import (
 
 const SchemaVersion = 1
 
-// Result is the versioned JSON wire format, shared by CLI and future TUI exports.
+// Result is the versioned JSON wire format, shared by CLI and TUI exports.
 type Result struct {
 	SchemaVersion int `json:"schema_version"`
 	generator.Result
@@ -38,4 +38,18 @@ func WriteMetadata(w io.Writer, result generator.Result) error {
 		Names []generator.GeneratedName `json:"names,omitempty"`
 	}{Result: Result{SchemaVersion: SchemaVersion, Result: result}}
 	return json.NewEncoder(w).Encode(metadata)
+}
+
+// FavoriteBatch retains the original batch and its full reproduction metadata,
+// separately identifying the names selected from it. A batch may be incomplete.
+type FavoriteBatch struct {
+	Result Result                    `json:"result"`
+	Names  []generator.GeneratedName `json:"selected_names"`
+}
+
+func WriteFavoritesJSON(w io.Writer, batches []FavoriteBatch) error {
+	return json.NewEncoder(w).Encode(struct {
+		SchemaVersion int             `json:"schema_version"`
+		Batches       []FavoriteBatch `json:"batches"`
+	}{SchemaVersion: SchemaVersion, Batches: batches})
 }

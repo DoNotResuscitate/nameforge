@@ -11,11 +11,12 @@ African packs require specific provenance, not just generic Arabic labels.
 
 The repository includes completed M1 bootstrap, M2 corpus schema and embedded
 loading, M3 pinned multilingual data extraction, M4 deterministic generation
-engine, M5 headless CLI generation, and M5a sourced romanized Greek/Arabic packs.
+engine, M5 headless CLI generation, M5a sourced romanized Greek/Arabic packs, and
+M6 interactive UI with session favorites and exports.
 The corpus contains 10,851 category-specific records: eight unchanged Faker packs,
 486 Wikipedia Greek spellings and 109 Wikidata Arabic spellings. All-category
-Latin-only generation works in both modes. M6 UI is next; the TUI and release
-pipeline remain pending. The Go module
+Latin-only generation works in both modes through the CLI and TUI. M7 verification
+and binary distribution is next; the release pipeline remains pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
@@ -29,7 +30,7 @@ lands.
 - Configurable Markov order, length bounds, count and random seed.
 - TUI generation, regenerate, selection, session favorites and text/JSON export.
 - Scriptable generation sharing the exact same engine and validation.
-- macOS/Linux/Windows binaries, arm64/amd64 where supported by Go.
+- macOS/Linux binaries, arm64/amd64 where supported by Go.
 
 ### Later work
 
@@ -162,7 +163,7 @@ explicitly version any intentional change to this behavior.
 
 ## 4. CLI and TUI contract
 
-Commands (headless commands available; TUI entry points planned for M6):
+Commands (headless and interactive entry points available):
 
 ```sh
 nameforge
@@ -208,7 +209,8 @@ An explicit entered seed is replayable; show each regenerated batch's new seed.
 Export dialog selects current batch or session favorites and text/JSON plus
 destination path. Preserve per-batch metadata for favorites from different
 generations. Handle write failures without losing results; confirm overwrite of
-an existing destination. No clipboard dependency in MVP. Provide resize handling,
+an existing destination. Clipboard integration is deferred; transitive clipboard
+dependencies from UI libraries are acceptable in the MVP. Provide resize handling,
 a compact layout, readable no-color mode, and terminal restoration on all exits.
 
 ## 5. Ordered implementation milestones
@@ -488,7 +490,7 @@ pending until their acceptance checks pass.
   research pages, synthetic training names or generated batches enter public assets.
 - Next ready milestone: M6 — Interactive UI.
 
-### M6 — Interactive UI (pending; depends M5a)
+### M6 — Interactive UI (complete; depends M5a)
 
 - Implement state machine, settings, results, source/seed display, keyboard
   navigation, cancellable asynchronous work, favorites and exports.
@@ -502,6 +504,62 @@ pending until their acceptance checks pass.
 - Commits: `feat(tui): add corpus and generation controls`,
   `feat(tui): show cancellable generation results`,
   `feat(tui): add session favorites and export`.
+- Completed: terminal-only default/explicit startup and headless help; searchable
+  multi-select picker with no implicit selection, all/clear, script/count/gender
+  labels and source scope; shared generator validation, every generation setting,
+  explicit/fresh seeds; asynchronous cancellable generation and export commands
+  with stale-request rejection; result navigation/attribution, incomplete states,
+  error recovery; session favorites and atomic JSON/text exports with explicit
+  overwrite confirmation; compact resize-aware focused panels, no-color mode,
+  scrollable help/source/reproduction details, and terminal restoration.
+- Current-batch JSON retains the CLI v1 result format. Favorites JSON uses a
+  versioned `batches` collection with each original result and its `selected_names`,
+  preserving full per-batch reproduction metadata and completion/counters.
+  Built-ins still need no local state; `tui --data-dir` is reserved and does not
+  load/persist packs or preferences. Clipboard bindings are disabled. Existing
+  corpus assets, provenance, licenses, algorithm and seeded goldens are unchanged.
+- Model tests cover focus/text-entry semantics, category selection/filtering,
+  validation before work, replay/fresh seeds, supersession/cancellation, missing
+  gender recovery, sourced tiny-pool partial exhaustion, favorite toggling,
+  cross-batch metadata, export cancellation/write errors/overwrite protection,
+  resize, compact confirmation, long-path cursor visibility, help overscroll,
+  source scope, no-color views and global quit. Filesystem tests check
+  no-clobber publication, cancellation and temporary-file cleanup.
+- Acceptance checks passed on `darwin/arm64`: `mise exec -- go test -count=1 -v
+  ./cmd/nameforge -run TestBinaryTUI`, `mise run check`,
+  `mise exec -- go test -race ./...`, `git diff --check`,
+  `mise run data:verify`, and `mise exec -- go mod verify`. After compact-layout
+  review fixes, `mise run check`, `mise exec -- go test -race ./internal/tui
+  ./internal/store ./internal/cli`, and the uncached `TestBinaryTUI` walkthrough
+  passed again. The real-binary
+  pseudo-terminal walkthrough starts outside the checkout with an empty read-only
+  home, no developer tools on PATH, and macOS sandbox network/home-write denial.
+  Keyboard-driven French + Italian, romanized Greek + Arabic, and all-category
+  generation pass in both modes with JSON/text exports and exact CLI replay of
+  displayed seed 42. It also verifies multi-batch favorites, source/Latin labels,
+  gender-error recovery, 40x12 resize/no-color, and Ctrl-C plus external SIGINT
+  during active generation, including terminal-mode/alternate-screen restoration.
+- Limitations: favorites are session-only; local packs/preferences remain later
+  work. Below 20x8 the UI asks for resizing. Native acceptance ran on macOS arm64;
+  Ubuntu CI also passed `mise run check` (including the real-binary PTY walkthrough)
+  and `mise run data:verify`, without claiming an OS-enforced network sandbox there.
+  Release artifacts and their native macOS/Linux checks remain M7. Full corpus
+  notices remain available through `licenses`; no generated batches are committed.
+- Platform scope clarified after acceptance: macOS and Linux are the supported
+  verification/release targets. The documentation follow-up passed `git diff
+  --check` and a focused platform-target review.
+- Export follow-up: switching format updates the filename extension to `.txt`
+  or `.json`, preserving the directory/basename and adding a suffix when absent.
+  Regression checks cover default/custom paths, dotfiles, empty input and switching
+  back to JSON; the binary walkthrough checks the automatic text filename. Checks:
+  `mise run check`, `mise exec -- go test -count=1 -v ./cmd/nameforge -run
+  'TestBinaryTUI/category/french'`, and `git diff --check` passed.
+- Clipboard review disposition: the project owner accepted Bubbles text input's
+  transitive clipboard dependency and relaxed the former dependency prohibition.
+  Clipboard paste remains disabled. Documentation checks: `git diff --check` and
+  a focused clipboard-contract review passed.
+- Next ready milestone: M7 — Verification and binary distribution.
+- Commit: `feat(tui): add offline interactive generation and session exports`.
 
 ### M7 — Verification and binary distribution (pending; depends M6)
 
@@ -509,7 +567,7 @@ pending until their acceptance checks pass.
   smoke tests with non-private seeds, CLI integration and manual TUI walkthrough.
 - Add mise release-build task and tag-triggered workflow with CGO_ENABLED=0,
   trimpath, version/commit metadata, archives, notices and SHA-256 checksums.
-  Target darwin/linux/windows x amd64/arm64; cross-build all, smoke-test natively
+  Target darwin/linux x amd64/arm64; cross-build all, smoke-test natively
   on available OS runners, and clearly identify targets only cross-built.
 - Verify artifacts contain intended built-in packs/notices but no personal corpus,
   cached pages or private paths; run a binary outside the checkout with an empty
