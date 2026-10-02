@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  native:
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +39,20 @@ jobs:
         run: mise run fuzz
 
   distribution:
-    needs: check
+    needs: native
     uses: ./.github/workflows/distribution.yml
     with:
       version: ${{ inputs.version || 'dev' }}
+
+  # Keep the exact status context required by the repository ruleset stable,
+  # regardless of matrix names or nested distribution jobs.
+  check:
+    if: always()
+    needs: [native, distribution]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require all verification jobs to succeed
+        env:
+          NATIVE_RESULT: ${{ needs.native.result }}
+          DISTRIBUTION_RESULT: ${{ needs.distribution.result }}
+        run: test "$NATIVE_RESULT" = success && test "$DISTRIBUTION_RESULT" = success

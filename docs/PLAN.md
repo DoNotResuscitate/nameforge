@@ -643,6 +643,12 @@ pending until their acceptance checks pass.
   builds, not public releases. M7 remains acceptance-pending until its manual and
   first-publication checks actually pass; no later mandatory milestone is ready
   before M7 closeout. No corpus, source lock or seeded algorithm changes occurred.
+- CI follow-up: preserve the ruleset's required `check` context with a stable
+  aggregate job that fails if any native/distribution job fails or is skipped.
+  The native matrix otherwise changes status names and leaves `check` expected
+  forever. Checks: `mise run workflow:check` (also in `mise run check`) and
+  `git diff --check` passed. The aggregate uses `always()` and explicitly requires
+  success from both dependencies, so failure/skipping cannot satisfy branch rules.
 
 ## 6. Execution and handoff
 
