@@ -136,7 +136,9 @@ runtime PATH, and no separate data. They verify both modes, Latin-only output,
 seed replay, complete licenses, export/favorites/error recovery, compact/no-color
 layout, interruptions and terminal restoration. Local Linux tests enforce network
 denial only when `NAMEFORGE_TEST_LINUX_SANDBOX=1` is set and passwordless sudo is
-available. macOS tests always enforce it. The PTY walkthrough is automated;
+available. The Linux wrapper drops to the original runner UID/GID after creating
+the namespace, so runtime files and unwritable-home checks keep ordinary user
+permissions. macOS tests always enforce network denial. The PTY walkthrough is automated;
 maintainers should also follow the [interactive walkthrough](TUI.md#walkthrough)
 in their own terminal before a first public release.
 

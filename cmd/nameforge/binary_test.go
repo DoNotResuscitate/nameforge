@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
 
@@ -30,7 +31,9 @@ func testBinary(t *testing.T, root string) string {
 // Linux CI opts into an OS-enforced empty network namespace. sudo is available
 // on hosted runners; local developers need no elevated permissions by default.
 func linuxSandbox(binary string, env []string, args ...string) *exec.Cmd {
-	wrapped := []string{"-n", "/usr/bin/unshare", "--net", "--", "/usr/bin/env", "-i"}
+	// Elevation is only for creating the namespace. Run the application with the
+	// original identity so unwritable homes and private exports retain meaning.
+	wrapped := []string{"-n", "/usr/bin/unshare", "--net", "--setgid", strconv.Itoa(os.Getgid()), "--setuid", strconv.Itoa(os.Getuid()), "--", "/usr/bin/env", "-i"}
 	wrapped = append(wrapped, env...)
 	wrapped = append(wrapped, binary)
 	wrapped = append(wrapped, args...)

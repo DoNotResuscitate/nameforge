@@ -624,6 +624,12 @@ pending until their acceptance checks pass.
   The Ubuntu image digest was
   `sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60`.
   This is native Linux arm64 container acceptance, not a hosted-runner/race claim.
+- First hosted run: both macOS check/race jobs passed. Linux exposed root-owned
+  exports from the test network wrapper. The wrapper now drops back to the test
+  runner's UID/GID after creating the network namespace, preserving normal home
+  and export permissions. The full compiled CLI/PTY suite passed as a non-root
+  Ubuntu container user using this corrected wrapper. Hosted verification
+  continues on the same M7 PR.
 - Remaining acceptance: execute the new clean-checkout hosted workflow on all four
   runners, including native amd64 binaries and Linux/native-runner race checks;
   perform the human terminal walkthrough; exercise the tag-triggered publication
