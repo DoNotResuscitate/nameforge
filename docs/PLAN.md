@@ -209,7 +209,8 @@ An explicit entered seed is replayable; show each regenerated batch's new seed.
 Export dialog selects current batch or session favorites and text/JSON plus
 destination path. Preserve per-batch metadata for favorites from different
 generations. Handle write failures without losing results; confirm overwrite of
-an existing destination. No clipboard dependency in MVP. Provide resize handling,
+an existing destination. Clipboard integration is deferred; transitive clipboard
+dependencies from UI libraries are acceptable in the MVP. Provide resize handling,
 a compact layout, readable no-color mode, and terminal restoration on all exits.
 
 ## 5. Ordered implementation milestones
@@ -553,6 +554,10 @@ pending until their acceptance checks pass.
   back to JSON; the binary walkthrough checks the automatic text filename. Checks:
   `mise run check`, `mise exec -- go test -count=1 -v ./cmd/nameforge -run
   'TestBinaryTUI/category/french'`, and `git diff --check` passed.
+- Clipboard review disposition: the project owner accepted Bubbles text input's
+  transitive clipboard dependency and relaxed the former dependency prohibition.
+  Clipboard paste remains disabled. Documentation checks: `git diff --check` and
+  a focused clipboard-contract review passed.
 - Next ready milestone: M7 — Verification and binary distribution.
 - Commit: `feat(tui): add offline interactive generation and session exports`.
 
