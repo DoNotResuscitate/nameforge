@@ -30,7 +30,7 @@ lands.
 - Configurable Markov order, length bounds, count and random seed.
 - TUI generation, regenerate, selection, session favorites and text/JSON export.
 - Scriptable generation sharing the exact same engine and validation.
-- macOS/Linux/Windows binaries, arm64/amd64 where supported by Go.
+- macOS/Linux binaries, arm64/amd64 where supported by Go.
 
 ### Later work
 
@@ -540,9 +540,13 @@ pending until their acceptance checks pass.
   during active generation, including terminal-mode/alternate-screen restoration.
 - Limitations: favorites are session-only; local packs/preferences remain later
   work. Below 20x8 the UI asks for resizing. Native acceptance ran on macOS arm64;
-  the PTY test also targets Linux, without claiming an OS-enforced sandbox there.
-  Windows native terminal testing and release artifacts remain M7. Full corpus
+  Ubuntu CI also passed `mise run check` (including the real-binary PTY walkthrough)
+  and `mise run data:verify`, without claiming an OS-enforced network sandbox there.
+  Release artifacts and their native macOS/Linux checks remain M7. Full corpus
   notices remain available through `licenses`; no generated batches are committed.
+- Platform scope clarified after acceptance: macOS and Linux are the supported
+  verification/release targets. The documentation follow-up passed `git diff
+  --check` and a focused platform-target review.
 - Next ready milestone: M7 — Verification and binary distribution.
 - Commit: `feat(tui): add offline interactive generation and session exports`.
 
@@ -552,7 +556,7 @@ pending until their acceptance checks pass.
   smoke tests with non-private seeds, CLI integration and manual TUI walkthrough.
 - Add mise release-build task and tag-triggered workflow with CGO_ENABLED=0,
   trimpath, version/commit metadata, archives, notices and SHA-256 checksums.
-  Target darwin/linux/windows x amd64/arm64; cross-build all, smoke-test natively
+  Target darwin/linux x amd64/arm64; cross-build all, smoke-test natively
   on available OS runners, and clearly identify targets only cross-built.
 - Verify artifacts contain intended built-in packs/notices but no personal corpus,
   cached pages or private paths; run a binary outside the checkout with an empty

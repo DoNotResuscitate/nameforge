@@ -116,5 +116,6 @@ JSON/text exports, displayed-seed CLI replay, cross-batch favorites, source/scri
 labels, gender-error recovery, narrow/no-color layout, and Ctrl-C/SIGINT during
 active work. It checks terminal modes and alternate-screen restoration. On macOS,
 each runtime subprocess also has OS-enforced network and home-write denial.
-The current native acceptance run is macOS arm64; other native platforms and
-release packaging remain M7 work.
+Native acceptance passed on macOS arm64 and in Ubuntu CI. Supported verification
+and release targets are macOS and Linux; release packaging and artifact checks
+remain M7 work.

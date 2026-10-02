@@ -14,6 +14,9 @@ settings, session favorites, and text/JSON exports are available. Next is
 verification and binary distribution (M7). The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
+Supported platforms are macOS and Linux; planned release binaries target arm64
+and amd64.
+
 ## Development handoff
 
 - [Implementation plan](docs/PLAN.md): architecture, behavior, ordered work items,
