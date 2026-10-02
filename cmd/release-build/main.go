@@ -179,29 +179,9 @@ func distributionFiles() ([]entry, error) {
 }
 
 func sourceFiles(stage string) ([]entry, error) {
-	// Git's public file set plus an explicit path allowlist: ignored corpora,
-	// fetched pages, exports, build outputs and home configuration cannot enter.
-	data, err := command("git", "ls-files", "-z", "-co", "--exclude-standard")
+	result, err := trackedSourceFiles(".")
 	if err != nil {
 		return nil, err
-	}
-	var result []entry
-	for _, path := range strings.Split(strings.TrimSuffix(string(data), "\x00"), "\x00") {
-		if !publicSourcePath(path) {
-			continue
-		}
-		info, err := os.Lstat(path)
-		if err != nil {
-			return nil, err
-		}
-		if !info.Mode().IsRegular() {
-			return nil, fmt.Errorf("source entry is not a regular file: %s", path)
-		}
-		content, err := os.ReadFile(path)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, entry{path, content, 0o644})
 	}
 	vendor := filepath.Join(stage, "vendor")
 	if _, err := command("go", "mod", "vendor", "-o", vendor); err != nil {
@@ -226,6 +206,47 @@ func sourceFiles(stage string) ([]entry, error) {
 		return nil
 	})
 	return result, err
+}
+
+// Only tracked, reviewed inputs may enter the source archive. Refuse untracked
+// files in source directories instead of silently including private content or
+// omitting code that a dirty development binary might need. Git ignore rules do
+// not exempt source files: ignored build inputs can still enter a Go binary.
+// Untracked files outside the public source boundary are never packaged.
+func trackedSourceFiles(root string) ([]entry, error) {
+	untracked, err := command("git", "-C", root, "ls-files", "-z", "--others")
+	if err != nil {
+		return nil, err
+	}
+	for _, path := range strings.Split(string(untracked), "\x00") {
+		if publicSourcePath(path) {
+			return nil, fmt.Errorf("untracked file in source archive boundary: %s; review and track intended source or move private files to ignored local storage", path)
+		}
+	}
+	data, err := command("git", "-C", root, "ls-files", "-z", "--cached")
+	if err != nil {
+		return nil, err
+	}
+	var result []entry
+	for _, path := range strings.Split(string(data), "\x00") {
+		if !publicSourcePath(path) {
+			continue
+		}
+		fullPath := filepath.Join(root, path)
+		info, err := os.Lstat(fullPath)
+		if err != nil {
+			return nil, err
+		}
+		if !info.Mode().IsRegular() {
+			return nil, fmt.Errorf("source entry is not a regular file: %s", path)
+		}
+		content, err := os.ReadFile(fullPath)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, entry{path, content, 0o644})
+	}
+	return result, nil
 }
 
 func publicSourcePath(path string) bool {
