@@ -1,6 +1,7 @@
 # Interactive Nameforge
 
-Build with `mise run build`, then start `./bin/nameforge` in a terminal. Both
+Install via [RELEASE.md](RELEASE.md#install-a-standalone-binary), or build
+`./bin/nameforge` via [DEVELOPING.md](DEVELOPING.md), then start it in a terminal. Both
 stdin and stdout must be terminals. `nameforge tui` is the explicit entry point;
 `nameforge tui --help` works without a terminal. Headless no-argument invocation
 returns usage and exit 2; use `generate` for scripts.
@@ -22,9 +23,7 @@ path, but no local packs, preferences, or favorites are loaded or saved there.
    automatic; an empty seed requests a random seed.
 3. Enter generates using current settings. Results appear asynchronously, with
    the actual seed, completion state, category attribution, and batch size.
-   `category` chooses categories uniformly; `blend` learns from the deduplicated
-   union and labels the output as blended. Larger lists influence more transitions
-   in blend mode.
+   Mode selection uses the same [category/blend semantics as the CLI](CLI.md#category-gender-and-script-semantics).
 4. Up/down or j/k selects a result; Space toggles it as a session favorite.
    `r` generates with a fresh random seed using current settings. An entered seed
    remains in settings, so Enter can replay it; each batch displays its actual seed.
@@ -74,13 +73,10 @@ available on cancellation or a failure with no accepted names. Bounded exhaustio
 with accepted names displays an **INCOMPLETE** batch and recovery suggestions;
 exporting that batch preserves `complete: false` and rejection/attempt metadata.
 
-Gender filters use source evidence. Greek has unspecified gender, not unisex;
-use `any`. The current bundle has no unisex pools. Missing filtered data is an
-explicit recoverable error, with no dropped categories or English fallback.
-Greek and Arabic use source-provided romanized spellings, and all output remains
-Latin-only. Greek mixes ancient, mythological, Christian and modern material;
-Arabic is broad, without a North African regional claim. Source details and full
-notices are available via `nameforge licenses` and [the source review](ROMANIZED.md).
+Gender/script filters use the same [CLI semantics](CLI.md#category-gender-and-script-semantics):
+use `any` for Greek or all-category requests; current unisex pools are empty.
+Missing filtered data is a recoverable error, never an English fallback. All output
+remains Latin-only. See [source scope and notices](ROMANIZED.md) for Greek/Arabic.
 
 ## Export formats and session lifetime
 
@@ -114,14 +110,11 @@ mise exec -- go test ./internal/tui ./internal/store ./internal/cli
 mise exec -- go test -count=1 -v ./cmd/nameforge -run TestBinaryTUI
 ```
 
-The macOS/Linux pseudo-terminal test runs the real executable outside the checkout
-with an empty read-only home and no developer tools on PATH. It exercises French +
+The macOS/Linux pseudo-terminal test exercises French +
 Italian, romanized Greek + Arabic, and all categories in both modes; settings,
 JSON/text exports, displayed-seed CLI replay, cross-batch favorites, source/script
 labels, gender-error recovery, narrow/no-color layout, and Ctrl-C/SIGINT during
-active work. It checks terminal modes and alternate-screen restoration. On macOS,
-each runtime subprocess also has OS-enforced network and home-write denial.
-Linux CI also enforces network denial using an empty network namespace. Supported
-verification/release targets are macOS/Linux amd64/arm64; [RELEASE.md](RELEASE.md)
-describes native packaged-binary checks and the completed owner-reported
-first-release human acceptance.
+active work, including terminal modes and alternate-screen restoration.
+[RELEASE.md](RELEASE.md#ci-release-workflow-and-target-claims) describes isolated
+home/PATH, native runners, network-denial scope, artifact tests and owner-reported
+human acceptance; cross-building alone does not claim native verification.

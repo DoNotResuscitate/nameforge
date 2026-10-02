@@ -87,3 +87,8 @@ cross-built only and is explicitly labeled that way in release verification note
 The same run handles tag creation and
 publication using `GITHUB_TOKEN`; no recursive tag workflow is needed.
 `cmd/release-version` previews versions without mutation. See [RELEASE.md](RELEASE.md).
+
+Developer tasks and explicit corpus/notice maintenance live in
+[DEVELOPING.md](DEVELOPING.md). Current milestone status and historical acceptance
+evidence live in [PLAN.md](PLAN.md#current-status); neither changes the generation
+or data contracts described above.

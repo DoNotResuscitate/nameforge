@@ -157,7 +157,7 @@ func distributionFiles() ([]entry, error) {
 		"data/manifest.json":   "internal/corpus/assets/builtin/manifest.json",
 		"data/categories.json": "internal/corpus/assets/builtin/categories.json",
 	}
-	for _, name := range []string{"CLI", "TUI", "COVERAGE", "DATA", "ROMANIZED", "ARCHITECTURE", "RELEASE", "PLAN"} {
+	for _, name := range []string{"CLI", "TUI", "COVERAGE", "DATA", "ROMANIZED", "ARCHITECTURE", "RELEASE", "PLAN", "DEVELOPING"} {
 		files["docs/"+name+".md"] = "docs/" + name + ".md"
 	}
 	bundle, err := corpus.LoadBuiltin()

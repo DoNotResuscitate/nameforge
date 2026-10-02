@@ -1,6 +1,7 @@
 # Headless Nameforge usage
 
-Build with `mise run build`, then run `./bin/nameforge` (or your installed binary).
+Install a standalone binary using [RELEASE.md](RELEASE.md#install-a-standalone-binary),
+or build `./bin/nameforge` using [DEVELOPING.md](DEVELOPING.md).
 Generation uses embedded, licensed Faker arrays and sourced romanized Greek/Arabic
 lists. It works on first run
 without network access, a writable home, a cache, Go, or separately installed data.
@@ -144,7 +145,7 @@ suggests a smaller count, broader lengths, lower order or `--allow-existing`.
 No fallback names are returned. Existing-name allowance does not create unlimited
 diversity, and an unsatisfiable category remains an explicit failure.
 
-## Acceptance checks
+## Developer checks
 
 ```sh
 mise run check
@@ -155,12 +156,7 @@ mise exec -- go test -v ./internal/cli -run TestGenerateBuiltinCategorySmoke
 mise exec -- go test -v ./cmd/nameforge -run TestBinaryHeadless
 ```
 
-The real-binary test builds through pinned mise Go, runs outside the checkout with
-an empty read-only home and no developer tools on PATH, compares seeded JSON/text
-in both modes, checks help/notices/options, and verifies Unix SIGINT exits 130 with
-empty stdout. On macOS every runtime subprocess also runs under `sandbox-exec`
-with network access and filesystem writes denied. Linux CI opts into an empty
-network namespace using `NAMEFORGE_TEST_LINUX_SANDBOX=1` and passwordless sudo;
-ordinary local Linux tests exercise isolated home/PATH without claiming a network
-sandbox. `NAMEFORGE_TEST_BINARY` selects an extracted release binary instead of
-building a new one; see [RELEASE.md](RELEASE.md).
+The real-binary tests exercise seeded JSON/text replay, help/notices/options and
+SIGINT exit 130 outside the checkout with isolated home/PATH. See
+[release verification](RELEASE.md#ci-release-workflow-and-target-claims) for native
+runners, network-denial scope and testing extracted artifacts with `NAMEFORGE_TEST_BINARY`.

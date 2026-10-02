@@ -1,5 +1,35 @@
 # Nameforge implementation plan
 
+## Current status
+
+**M1–M7 are complete.** Standalone releases are available from
+[GitHub Releases](https://github.com/DoNotResuscitate/nameforge/releases/latest).
+The first release and owner-reported human checks are recorded in
+[M7 closeout evidence](#m7-closeout-evidence-15).
+
+| Milestone | Delivered capability | Status |
+| --- | --- | --- |
+| M1 | Pinned tooling, module, CLI routing and CI | Complete |
+| M2 | Corpus schema, normalization, selection and embedded loading | Complete |
+| M3 | Pinned multilingual static-array extraction | Complete |
+| M4 | Deterministic Latin-only Markov generation | Complete |
+| M5 | Headless CLI, formats, replay and process checks | Complete |
+| M5a | Sourced romanized Greek/Arabic and all-category generation | Complete |
+| M6 | TUI, session favorites and exports | Complete |
+| M7 | Native verification, binary/source archives and publication | Complete |
+
+Sections 1–4 below retain the behavioral contracts; [DATA.md](DATA.md) retains
+the data contract. Section 5 is a **historical implementation/acceptance log**:
+its scaffold limitations, old corpus counts and “next ready” notes describe each
+stage at the time, not current missing functionality. Current corpus measurements
+are in [COVERAGE.md](COVERAGE.md); current tooling and release procedures are in
+[DEVELOPING.md](DEVELOPING.md) and [RELEASE.md](RELEASE.md).
+
+Current limitations: session-only favorites, reserved local-pack/preferences
+support, Latin-only generation, no Greek gender labels, empty unisex pools, and
+cross-built-only Intel macOS. No mandatory MVP milestone remains. Later work is
+listed below and tracked in GitHub issues; it is not implicit implementation scope.
+
 ## 1. Goal and delivery boundary
 
 Build a local command-line TUI in Go for TTRPG character/NPC names. Learn character
@@ -46,15 +76,14 @@ linguistically valid names or source meanings.
 
 ## 2. Tooling and architecture
 
-`mise.toml` pins Go 1.27.1 (resolved with `mise latest go` during planning).
-M1 creates the Go module and pins compatible library releases. Use Bubble Tea,
-Bubbles and Lip Gloss for the UI; select mutually compatible current module
-paths/major versions at M1, committing `go.mod` and `go.sum`. Use stdlib flags,
+`mise.toml` pins Go 1.27.1. The Go module and compatible Bubble Tea,
+Bubbles and Lip Gloss library releases are pinned in `go.mod` and `go.sum`.
+Use stdlib flags,
 JSON, HTTP, filesystem and testing; `x/text/unicode/norm` for NFC and `x/term`
 for terminal detection. Add dependencies only when a milestone needs them.
 Use `GOTOOLCHAIN=local` in mise task environment to avoid implicit Go downloads.
 
-Suggested layout:
+Implemented layout (see [ARCHITECTURE.md](ARCHITECTURE.md) for all boundaries):
 
 ```text
 cmd/nameforge/main.go        # composition, exit code only
@@ -78,8 +107,7 @@ Use concrete types and small interfaces at I/O boundaries; avoid a plugin system
 Use the canonical module path from the GitHub remote:
 `github.com/DoNotResuscitate/nameforge`.
 
-Define these contracts in M1 before implementing consumers (signatures may use
-idiomatic concrete Go types, preserving these semantics):
+Boundary contracts (concrete Go types preserve these semantics):
 
 - `corpus.Record` and `corpus.Manifest`: DATA.md v1 fields.
 - `corpus.Select(records, categoryIDs, gender)`: stable ordered category pools;
@@ -88,7 +116,7 @@ idiomatic concrete Go types, preserving these semantics):
   Selecting a category with zero matches is an actionable error identifying it;
   never silently drop categories or substitute English.
 - `markov.Train(spellings, order)`: immutable model; no filesystem or RNG.
-- `generator.Generate(ctx, models, request)`: result plus typed error, using a
+- `generator.Generate(ctx, bundle, request)`: result plus typed error, using a
   request-local seeded RNG. Result includes actual seed, algorithm version,
   bundle hash, sorted category IDs, mode, per-category effective bounds, options,
   accepted names with category attribution, attempts/rejections and completeness.
@@ -217,6 +245,14 @@ dependencies from UI libraries are acceptable in the MVP. Provide resize handlin
 a compact layout, readable no-color mode, and terminal restoration on all exits.
 
 ## 5. Ordered implementation milestones
+
+### Reading the historical record
+
+The milestone requirements and completed checks below are retained for traceability.
+Commands, limitations and future-tense notes in each entry belong to that stage;
+consult [current status](#current-status) and the user/developer guides for the
+shipped implementation. In particular, native-script Greek/Arabic limitations
+before M5a and pending UI/release notes before M6/M7 are superseded.
 
 Each suggested commit is a coherent unit, not a requirement to batch the entire
 milestone. Include relevant tests with the feature they verify. Milestones remain
@@ -699,23 +735,45 @@ pending until their acceptance checks pass.
 - Together the publication exercise and owner confirmation close M7's remaining
   acceptance criteria. Session-only favorites, reserved local-pack support,
   Latin-only generation and source gender/coverage gaps remain documented MVP
-  limitations, not unimplemented mandatory milestones. Next ready review work:
-  #16 (README/docs cleanup); surname/full-name enhancements remain later work.
+  limitations, not unimplemented mandatory milestones. README/docs cleanup (#16)
+  is recorded below; surname/full-name enhancements remain later work.
 - Documentation checks: `git diff --check`, a focused pending-status/platform
   search, and verification of the public release/run metadata. No code, corpus,
   source lock or generation contract changes.
 
 ## 6. Execution and handoff
 
-### Post-implementation review fixes
+### Documentation consolidation (#16)
+
+- Reorganized the README around installation, TUI/CLI use and limitations; moved
+  detailed tooling/maintenance into DEVELOPING.md. Added that guide to the explicit
+  platform-archive documentation set so packaged README links remain usable.
+- Distinguished current milestone status from historical acceptance logs, clarified
+  original Faker coverage versus current romanized packs, and linked user-facing
+  modes/gender/replay semantics instead of repeating conflicting descriptions.
+  No provenance, full legal notices, corpus bytes or generation contracts changed.
+- Checks passed on Linux amd64: `mise run check`, `mise run data:verify`,
+  `mise exec -- go mod verify`, release-build race tests, documented CLI command
+  examples with text/JSON replay, 71 relative file/heading links in both the
+  checkout and extracted platform documentation, a four-target release build,
+  archive SHA-256 verification, and `git diff --check`. A regression test verifies
+  the developer guide is present verbatim in the platform documentation set.
+- Codex review on #19: the #13 handoff's stale pending-human-acceptance statement
+  is explicitly historical/past tense and points to completed M7 closeout evidence.
+- Next ready work is explicit later enhancement work after review/merge; M1–M7
+  remain complete. Archive privacy hardening remains separately tracked in #14/#18
+  until merged, not newly claimed by this documentation change.
+
+### Historical post-implementation review fixes
 
 - Issue #13: `data list` now checks tabwriter writes and its final flush;
   `data inspect` checks its stdout write. Both report output failures on stderr
   and return exit 1. Regression tests cover immediate and partial writes,
   including buffered list output failures. `mise run check` and Linux binary
   checks redirecting both commands to `/dev/full` passed. No corpus, generation
-  algorithm or successful output contracts changed. M7's human acceptance remains
-  pending; the next review fix is #14 (corresponding-source archive privacy).
+  algorithm or successful output contracts changed. At that point M7's human
+  acceptance was pending and the next review fix was #14 (corresponding-source
+  archive privacy). Human acceptance is now recorded in the M7 closeout above.
 
 Critical path: M1 -> M2 -> M3/M4 -> M5 -> M5a -> M6 -> M7. M3 and M4 may be worked on
 independently after M2 contracts settle; coordinate go.mod changes. This is a
