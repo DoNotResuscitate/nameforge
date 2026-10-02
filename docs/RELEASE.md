@@ -62,15 +62,10 @@ access to corresponding source when redistributing GPL binaries.
 
 ## Build from source
 
-In a reviewed checkout, install the pinned developer tools through mise:
+In a reviewed checkout, follow [DEVELOPING.md](DEVELOPING.md#pinned-tools-and-checks)
+to install pinned tools and run the normal checks. To package local archives:
 
 ```sh
-mise trust
-mise install
-mise run check
-mise run data:verify
-mise run race
-mise run fuzz
 mise run release:build -- --version dev
 ```
 
@@ -111,10 +106,11 @@ as well as Go. Neither is a runtime dependency.
 toolchain/module licenses; `notices:verify` compares them byte-for-byte. Ordinary
 builds read committed notices. Regenerate/review notices when changing libraries
 or Go; `go mod verify` checks the cached modules against their pinned checksums.
-Corpus refresh is a separate, explicit maintenance operation described in
-[DATA.md](DATA.md).
+Corpus refresh is a separate, explicit maintenance operation documented in
+[DEVELOPING.md](DEVELOPING.md#reproducible-corpus-maintenance), under the
+[DATA.md](DATA.md) contract.
 
-## CI/release workflow and target claims
+## CI release workflow and target claims
 
 Pull requests run the shared distribution workflow with version
 `dev`: reproducible four-target archives, vendored-source rebuild, and native tests
@@ -177,7 +173,10 @@ available. The Linux wrapper drops to the original runner UID/GID after creating
 the namespace, so runtime files and unwritable-home checks keep ordinary user
 permissions. macOS tests always enforce network denial. The PTY walkthrough is automated;
 maintainers should also follow the [interactive walkthrough](TUI.md#walkthrough)
-in their own terminal before a first public release.
+in their own terminal. On 2026-10-02, the owner confirmed all-feature human
+testing of published v0.1.0 on macOS 15 arm64 and CachyOS amd64;
+this owner-reported acceptance is separate from hosted verification.
+Publication succeeded in [release run 36976504868](https://github.com/DoNotResuscitate/nameforge/actions/runs/36976504868).
 
 For a local native artifact, use an absolute extracted binary path:
 

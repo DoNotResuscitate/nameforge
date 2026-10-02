@@ -1,4 +1,9 @@
-# Bundled coverage and M5a acceptance
+# Bundled coverage and verification history
+
+The source table and bundle identity describe the current committed corpus.
+Date-labeled smoke/acceptance records below retain historical measurements, not
+new verification claims. See [DATA.md](DATA.md) for contracts and
+[RELEASE.md](RELEASE.md#ci-release-workflow-and-target-claims) for current platform checks.
 
 Eight packs use Faker **v10.6.0**, immutable revision
 `2cb04231a6ace91a59ebe577c653f4ec66478ca3`, literal
@@ -84,7 +89,7 @@ filtered-selection error; it is never inferred or filled from another source.
 Unisex filtering returns an actionable empty-selection error for every current
 category.
 
-## M5a acceptance (2026-10-01)
+## Historical M5a acceptance (2026-10-01)
 
 - `mise run check`, `mise run data:verify`, `mise exec -- go test -race ./...`
   and `mise exec -- go mod verify` passed on `darwin/arm64`.
@@ -117,7 +122,8 @@ empty. Both replacements use heterogeneous source spellings rather than a single
 romanization standard. Wikipedia/Wikidata are community-maintained and generally
 not frequency data; Arabic's Latin-statement citations are sparse. Native checks
 here are macOS arm64, with OS-enforced network denial claimed only on macOS.
-No generated batches or raw research pages are committed. Next ready milestone: M6.
+No generated batches or raw research pages are committed. At that time the next
+ready milestone was M6; M1–M7 are now complete (see [PLAN.md](PLAN.md#current-status)).
 
 ## Historical M5 CLI acceptance (2026-10-01, original Faker bundle)
 

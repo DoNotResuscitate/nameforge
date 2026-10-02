@@ -13,6 +13,27 @@ import (
 	"time"
 )
 
+func TestDistributionDeveloperGuide(t *testing.T) {
+	t.Chdir("../..")
+	files, err := distributionFiles()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := os.ReadFile("docs/DEVELOPING.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		if file.name == "docs/DEVELOPING.md" {
+			if !bytes.Equal(file.data, want) {
+				t.Fatal("packaged developer guide differs from the source")
+			}
+			return
+		}
+	}
+	t.Fatal("platform archive omits the developer guide linked from the README")
+}
+
 func TestTrackedSourceFilesBoundary(t *testing.T) {
 	root := t.TempDir()
 	git := func(args ...string) {

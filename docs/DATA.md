@@ -1,8 +1,8 @@
 # Bundled data and category design
 
-## Decision (updated 2026-10-01)
+## Current sources
 
-Use **Faker's static locale name lists** for eight embedded packs. M5a replaces
+Use **Faker's static locale name lists** for eight embedded packs. M5a replaced
 the native-script Greek/Arabic packs with Wikipedia's supplied Latin/Greek name
 pairs (CC BY-SA 4.0) and Wikidata's supplied Latin name statements (CC0). See
 [ROMANIZED.md](ROMANIZED.md) for pinned sources and the reviewed selection. This
@@ -12,17 +12,23 @@ immediately. Prioritize Mediterranean and Western European names, plus Turkish;
 North African coverage is desirable when accurately sourced. All training names
 must come from existing resources, never agents.
 
-### Sources evaluated
+Current counts, gender gaps, rune ranges and corpus identity are in
+[COVERAGE.md](COVERAGE.md#observed-source-coverage). The schema and normalization
+rules below remain behavioral contracts. Original M3 targets and extraction
+history are labeled separately; they do not describe current Greek/Arabic training.
+For maintenance commands, see [DEVELOPING.md](DEVELOPING.md#reproducible-corpus-maintenance).
+
+### Sources evaluated (selection history, 2026-10-01)
 
 | Source | Redistribution / format | Fit and decision |
 | --- | --- | --- |
 | [faker-js/faker](https://github.com/faker-js/faker) | MIT, static TypeScript arrays, more than 70 locales advertised | Primary: broad multilingual coverage, maintained, easy to extract and embed with notices. Locale count is not a promise of that many usable name lists. |
-| [Wikidata](https://www.wikidata.org/wiki/Wikidata:Licensing) | Structured data CC0, JSON/SPARQL | Later enrichment for historical/name-language categories. Requires explicit queries, entity validation and coverage review; not a ready-made curated name pack. |
+| [Wikidata](https://www.wikidata.org/wiki/Wikidata:Licensing) | Structured data CC0, JSON/SPARQL | Selected for reviewed Arabic Latin statements; further enrichment requires explicit queries, entity validation and coverage review. Not a ready-made curated name pack. |
 | [Behind the Name](https://www.behindthename.com/names/list) | HTML | Category-selection UX reference and possible later import adapter. |
 | [smashew/NameDatabases](https://github.com/smashew/NameDatabases) | Plain text, repository Unlicense | Not selected: `NamesDatabases/credits.txt` lists mixed web sources including Behind the Name and says only “so far as I know” lists are not copyrighted. The repository license alone does not resolve that provenance. |
 | [aruljohn/popular-baby-names](https://github.com/aruljohn/popular-baby-names) | MIT, SSA-derived CSV/JSON | Easy but US popularity categories do not meet the desired breadth alone. |
 
-Verified Faker stable release: **v10.6.0**, commit
+Pinned Faker release: **v10.6.0**, commit
 `2cb04231a6ace91a59ebe577c653f4ec66478ca3`.
 
 - [License at the release](https://github.com/faker-js/faker/blob/v10.6.0/LICENSE)
@@ -33,9 +39,10 @@ Verified Faker stable release: **v10.6.0**, commit
 - These are established lists used by a fake-data library. Use the literal name
   data; do not call its random-name API to manufacture a training corpus.
 
-## Initial category coverage
+## Original M3 category targets (historical)
 
-Target these real source arrays, confirmed present at the pinned release:
+M3 extracted these real source arrays, confirmed present at the pinned release.
+M5a subsequently replaced Greek/Arabic runtime packs with the sources above:
 
 | Category ID | UI label | Source locale |
 | --- | --- | --- |
@@ -50,17 +57,18 @@ Target these real source arrays, confirmed present at the pinned release:
 | `english` | English | `en` |
 | `arabic` | Arabic (broad source list; optional) | `ar` |
 
-This is an initial extraction target, not a measured coverage claim. M3 must
-publish actual distinct-name counts, available gender labels, script inventory,
-length ranges and generation smoke results for each category. Add other genuine
-locale arrays when reviewed; exclude novelty locales such as `en_BORK`. Missing
+This table is the historical extraction target, not current measured coverage.
+M3 published distinct-name counts, gender labels, script inventory,
+length ranges and generation smoke results; see [COVERAGE.md](COVERAGE.md).
+Add other genuine locale arrays when reviewed; exclude novelty locales such as
+`en_BORK`. Missing
 data must not silently fall back to English. Do not label `en_IE` as Irish Gaelic
 or modern Norwegian as Old Norse. Unsupported categories are absent, not filled
 with invented or mislabelled data.
 
 The nine M3 core targets are French, Spanish, Italian, Portuguese (Portugal), Greek,
 Turkish, German, Dutch and English. Arabic was the optional tenth extraction pack;
-M5a requires romanized replacements for both Greek and Arabic before UI work.
+M5a completed romanized replacements for both Greek and Arabic before UI work.
 Prioritize depth and useful Markov output for these targets over worldwide category counts.
 If a core target fails quality/coverage checks, report the gap and investigate
 another licensed source rather than silently replacing its culture or language.
@@ -83,15 +91,15 @@ cultures are real-world ones.
 
 ## Build-time extraction, not runtime acquisition
 
-1. Add `data/sources.lock.json` with repository URL, exact commit, chosen paths,
+1. `data/sources.lock.json` records repository URL, exact revisions, chosen paths,
    raw SHA-256 checksums, license path/hash and extractor/schema versions.
 2. A Go maintenance command under `cmd/corpus-build/` fetches only pinned files
    on an explicit `mise run data:fetch`, using timeouts, bounded retry, caching
    under `.local/`, and checksum validation. No fetch in ordinary build/startup.
 3. `mise run data:build` extracts cached static arrays and emits canonical assets.
-   Parse the required TypeScript literal subset (comments, quoted strings with
-   escapes, arrays, object keys and export wrapper) with a small tested lexer /
-   parser. Fail on unknown expressions/imports/spreads; never eval arbitrary
+   Faker extraction parses the required TypeScript literal subset (comments,
+   quoted strings with escapes, arrays, object keys and export wrapper) with a
+   tested lexer/parser. Fail on unknown expressions/imports/spreads; never eval arbitrary
    code or scrape string-looking fragments with regex. If a selected upstream
    file requires another construct, support it explicitly or report it.
 4. Map upstream `male`/`female` labels; `generic` means unspecified, **not**
@@ -169,7 +177,7 @@ Arabic or other source scripts. Categories without a Latin script profile return
 an explicit unsupported-script error, and sampled candidates containing other
 scripts or characters are rejected. Mixed-script source categories may still be
 listed, but cannot cause non-Latin output. The original Faker Greek and Arabic
-arrays cannot serve as romanized training lists. M5a replaces those training packs
+arrays cannot serve as romanized training lists. M5a replaced those training packs
 with source-provided Latin spellings. Two exact Faker native-script records remain
 only in `internal/generator/testdata/nonlatin.json` for rejection tests and are not
 embedded in the runtime. Generation policy and algorithm version are unchanged.
@@ -185,7 +193,11 @@ Use category-derived automatic length bounds (observed minimum/maximum capped
 at 64) unless the user explicitly sets bounds. The character-level rune model
 is an MVP approximation; document Unicode casing and normalization behavior.
 
-## M5a romanized dataset requirements (before M6 UI)
+## M5a romanized dataset requirements (satisfied before M6)
+
+These are the retained acceptance requirements for the sourced replacements,
+not pending UI prerequisites. Source review and measured acceptance are in
+[ROMANIZED.md](ROMANIZED.md) and [COVERAGE.md](COVERAGE.md#historical-m5a-acceptance-2026-10-01).
 
 Both `greek` and `arabic` must be usable for Latin-only generation before UI work.
 Their original Faker packs used Greek/Arabic scripts; M5a selects the licensed
@@ -227,10 +239,12 @@ saved-page imports and atomic updates.
 The inspected Irish list has pagination, diacritics, numbered disambiguators and
 multiple usage/gender labels. Keep this HTML/data under ignored local storage.
 
-Optional runtime directory precedence remains `--data-dir`,
+The proposed future runtime directory precedence is `--data-dir`,
 `NAMEFORGE_DATA_DIR`, then `filepath.Join(os.UserConfigDir(), "nameforge")`.
-Built-ins load even with an empty/unwritable home directory; never extract them
-to a writable cache as a prerequisite. Local packs cannot replace built-in IDs.
+Current `tui --data-dir` is reserved and performs no local loading/persistence;
+`NAMEFORGE_DATA_DIR` is not implemented. Built-ins load even with an empty/unwritable
+home directory; never extract them to a writable cache as a prerequisite.
+Local packs cannot replace built-in IDs.
 
 ## Historical M3 extraction and measured coverage
 

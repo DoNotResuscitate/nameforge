@@ -1,4 +1,8 @@
-# M5a romanized source review (2026-10-01)
+# Romanized Greek/Arabic source review
+
+Reviewed on 2026-10-01 for M5a. These pinned sources remain the current runtime
+packs; this document preserves selection evidence, not a pending research task.
+See [coverage](COVERAGE.md) for the full bundle and [data contract](DATA.md) for schema.
 
 Greek and Arabic use real source-supplied Latin spellings, with pinned revisions,
 raw SHA-256 checksums, complete notices and per-record references. No generated
@@ -159,4 +163,4 @@ paired Latin `P1705` Greek candidates were small and included misleading foreign
 forms. Wikipedia's broad Arabic given-name page included many unrelated foreign
 names, while its theophoric page had much narrower scope. Those lists were not
 substituted for a broad Arabic pack. Behind-the-Name-derived mixed-provenance
-repositories remain unselected as documented in DATA.md.
+repositories remain unselected as documented in [DATA.md](DATA.md).
