@@ -681,6 +681,22 @@ pending until their acceptance checks pass.
   Checks: `mise run workflow:check`, `git diff --check`, and a focused native-runner
   and verification-claim search passed.
 
+### M7 source archive review follow-up (#14)
+
+- Corresponding-source packaging now enumerates only tracked public inputs and
+  refuses untracked files in source/documentation directories. This avoids both
+  accidental private-file inclusion and silently omitting untracked code needed
+  by a development build. Ignored local files and unrelated untracked files outside
+  the boundary are excluded; intended source must be reviewed and tracked.
+- Integration tests use an isolated Git index and packed archive to check retained
+  corpus/notice/source inputs, excluded local canaries, and explicit refusal of
+  untracked notes, personal-data files, Go source and fetched HTML. `mise run check`,
+  `mise exec -- go test -race ./cmd/release-build`, two four-target `release:build`
+  runs with identical SHA256SUMS, archive checksum verification, and
+  `git diff --check` passed on Linux amd64. No corpus or seeded algorithm changes.
+- M7 human acceptance is not newly claimed by this fix. Next review work: #15
+  (human acceptance evidence/publication status), then #16 (documentation cleanup).
+
 ## 6. Execution and handoff
 
 ### Post-implementation review fixes

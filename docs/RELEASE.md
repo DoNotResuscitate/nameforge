@@ -79,6 +79,10 @@ mise run release:build -- --version dev
 and archive timestamps. Local dirty-tree builds are useful for verification, but
 only clean committed/tagged builds are publishable; `dev`'s download URL is a
 placeholder. Existing unrelated files in `dist/` are not packaged or checksummed.
+The source archive includes only tracked files within its public source boundary.
+Untracked files in source/documentation directories cause an explicit failure:
+review and track intended source, or move private material to ignored local storage.
+Ignored files and unrelated untracked files outside that boundary are excluded.
 `--out <directory>` supports independent reproducibility checks. Go commands run
 through mise with `GOTOOLCHAIN=local`; no implicit toolchain downloads are allowed.
 
