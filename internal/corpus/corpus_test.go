@@ -128,11 +128,52 @@ func TestLoadValidatesAndLoadsReadOnlyFilesystem(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(bundle.Records) != 10652 || len(bundle.Categories) != 10 {
+	if len(bundle.Records) != 10851 || len(bundle.Categories) != 10 {
 		t.Fatalf("unexpected embedded bundle coverage: %d records, %d categories", len(bundle.Records), len(bundle.Categories))
 	}
 	if _, err := fs.Stat(BuiltinFS(), "assets/builtin/licenses/FAKER-LICENSE"); err != nil {
 		t.Fatalf("embedded license missing: %v", err)
+	}
+}
+
+func TestSourceReferencesUseTheirDeclaredFileRevision(t *testing.T) {
+	bundle := testBundle(t)
+	source := &bundle.Manifest.Sources[0]
+	source.Revision = "specific-file-revision"
+	for i := range bundle.Records {
+		for j := range bundle.Records[i].SourceRefs {
+			if bundle.Records[i].SourceRefs[j].Path == source.Path {
+				bundle.Records[i].SourceRefs[j].Revision = source.Revision
+			}
+		}
+	}
+	var err error
+	bundle.Manifest.RecordsSHA256, err = RecordsHash(bundle.Records)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := bundle.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	bundle.Records[0].SourceRefs[0].Revision = "wrong-revision"
+	if err := bundle.Validate(); err == nil || !strings.Contains(err.Error(), "revision mismatch") {
+		t.Fatalf("wrong source revision: %v", err)
+	}
+}
+
+func TestDuplicateSourceOccurrenceCannotDifferOnlyInAnnotations(t *testing.T) {
+	bundle := testBundle(t)
+	ref := bundle.Records[0].SourceRefs[0]
+	ref.NativeName = "ΩΩΩ"
+	ref.Evidence = []string{"non-name-fixture-evidence"}
+	bundle.Records[0].SourceRefs = append(bundle.Records[0].SourceRefs, ref)
+	var err error
+	bundle.Manifest.RecordsSHA256, err = RecordsHash(bundle.Records)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := bundle.Validate(); err == nil || !strings.Contains(err.Error(), "duplicate source reference") {
+		t.Fatalf("duplicate annotated occurrence: %v", err)
 	}
 }
 

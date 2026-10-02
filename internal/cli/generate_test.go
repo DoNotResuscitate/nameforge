@@ -156,12 +156,6 @@ func TestGenerateBuiltinCategorySmoke(t *testing.T) {
 	for _, category := range bundle.Categories {
 		t.Run(category.ID, func(t *testing.T) {
 			code, stdout, stderr := runCaptured(t, "generate", "--category", category.ID, "--seed", "42", "--format", "json")
-			if category.ID == "arabic" || category.ID == "greek" {
-				if code != 1 || stdout != "" || !strings.Contains(stderr, "unsupported_script") || !strings.Contains(stderr, category.ID) {
-					t.Fatalf("script failure: code=%d stdout=%q stderr=%q", code, stdout, stderr)
-				}
-				return
-			}
 			if code != 0 || stderr != "" {
 				t.Fatalf("category failed: %d %s", code, stderr)
 			}
@@ -198,7 +192,7 @@ func TestGenerateFailuresDoNotWritePartialStdout(t *testing.T) {
 	}{
 		{[]string{"--category", "missing"}, 2, `unknown category "missing"`},
 		{[]string{"--category", "french", "--gender", "unisex"}, 1, "empty_selection"},
-		{[]string{"--all-categories"}, 1, "unsupported_script"},
+		{[]string{"--category", "greek", "--gender", "masculine"}, 1, "empty_selection"},
 		{[]string{"--category", "french", "--min-length", "64"}, 2, "effective length bounds"},
 		{[]string{"--category", "french", "--order", "4", "--count", "20", "--min-length", "3", "--max-length", "3", "--allow-existing"}, 1, "Try a smaller --count"},
 	}
@@ -244,12 +238,14 @@ func TestGenerateCancellationAndIO(t *testing.T) {
 
 func TestLicensesCompleteAndHelp(t *testing.T) {
 	code, stdout, stderr := runCaptured(t, "licenses")
-	notice, err := fs.ReadFile(corpus.BuiltinFS(), "assets/builtin/licenses/FAKER-LICENSE")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if code != 0 || stderr != "" || !strings.Contains(stdout, string(notice)) {
-		t.Fatal("licenses omitted or changed upstream notice bytes")
+	for _, path := range []string{"FAKER-LICENSE", "WIKIMEDIA-NOTICE", "CC0-1.0", "CC-BY-SA-4.0"} {
+		notice, err := fs.ReadFile(corpus.BuiltinFS(), "assets/builtin/licenses/"+path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if code != 0 || stderr != "" || !strings.Contains(stdout, string(notice)) {
+			t.Fatalf("licenses omitted or changed notice bytes: %s", path)
+		}
 	}
 	for _, args := range [][]string{{"generate", "--help"}, {"generate", "-h"}, {"licenses", "--help"}, {"data", "--help"}} {
 		code, stdout, stderr := runCaptured(t, args...)

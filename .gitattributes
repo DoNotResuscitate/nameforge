@@ -1,0 +1,3 @@
+# Preserve the checksum-locked upstream legal text, including its final blank line.
+internal/corpus/assets/builtin/licenses/* -text
+internal/corpus/assets/builtin/licenses/CC-BY-SA-4.0 whitespace=-blank-at-eof

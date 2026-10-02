@@ -125,19 +125,33 @@ func (bundle *Bundle) Validate() error {
 		if len(record.SourceRefs) == 0 {
 			return fmt.Errorf("record %q has no source references", record.ID)
 		}
-		seenRefs := make(map[SourceRef]struct{}, len(record.SourceRefs))
+		type occurrenceID struct {
+			Revision, Path, Bucket, StatementID string
+			Index                               int
+		}
+		seenRefs := make(map[occurrenceID]struct{}, len(record.SourceRefs))
 		fromMale, fromFemale := false, false
 		for _, ref := range record.SourceRefs {
-			if ref.Revision != manifest.SourceRevision || !fs.ValidPath(ref.Path) || ref.Path == "." || ref.Index < 0 {
+			if !fs.ValidPath(ref.Path) || ref.Path == "." || ref.Index < 0 {
 				return fmt.Errorf("record %q has invalid source reference", record.ID)
 			}
 			if _, exists := sourcePaths[ref.Path]; !exists {
 				return fmt.Errorf("record %q references undeclared source file %q", record.ID, ref.Path)
 			}
-			if _, exists := seenRefs[ref]; exists {
+			revision := manifest.SourceRevision
+			for _, source := range manifest.Sources {
+				if source.Path == ref.Path && source.Revision != "" {
+					revision = source.Revision
+				}
+			}
+			if ref.Revision != revision {
+				return fmt.Errorf("record %q source revision mismatch", record.ID)
+			}
+			identity := occurrenceID{Revision: ref.Revision, Path: ref.Path, Bucket: ref.Bucket, StatementID: ref.StatementID, Index: ref.Index}
+			if _, exists := seenRefs[identity]; exists {
 				return fmt.Errorf("record %q has duplicate source reference", record.ID)
 			}
-			seenRefs[ref] = struct{}{}
+			seenRefs[identity] = struct{}{}
 			switch ref.Bucket {
 			case "generic":
 			case "male":

@@ -1,0 +1,93 @@
+{
+  "manifest": {
+    "schema_version": 1,
+    "source_revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+    "sources": [
+      {
+        "path": "src/locales/ar/person/first_name.ts",
+        "sha256": "25032a6b37531a018166d8dc489fe970f6dbf9bfc83b1ddfdf97a3109f5e6fd4"
+      },
+      {
+        "path": "src/locales/el/person/first_name.ts",
+        "sha256": "799b08355c9769b5088a9c9967f4ccf66de66a7d953da8676487b3ce7943d791"
+      }
+    ],
+    "licenses": [
+      {
+        "name": "Faker (MIT)",
+        "path": "licenses/FAKER-LICENSE"
+      }
+    ],
+    "extractor_version": "faker-static-v1",
+    "normalization_version": "nfc-v1",
+    "record_count": 2,
+    "records_sha256": "a54acba312feb3071edbabd0b51086ed7ed4eb59282f530b156efc335ddcf74e",
+    "categories_sha256": "a7c7d9c0e903041c8960a8aecfb4daf63efdc67ec629b4bfc16df6cf894d40d5"
+  },
+  "categories": [
+    {
+      "id": "arabic",
+      "label": "Arabic (broad source list)",
+      "group": "language-region",
+      "source_locale": "ar",
+      "scripts": [
+        "Arabic"
+      ],
+      "supported_genders": [
+        "masculine"
+      ],
+      "record_count": 1
+    },
+    {
+      "id": "greek",
+      "label": "Greek",
+      "group": "language-region",
+      "source_locale": "el",
+      "scripts": [
+        "Greek"
+      ],
+      "supported_genders": [
+        "feminine"
+      ],
+      "record_count": 1
+    }
+  ],
+  "records": [
+    {
+      "id": "faker:ar:003cc85c2db76da68a8c7e8268cd75b48c58f4b3a02d33bb9ea68e7683c3015b",
+      "name": "حمدي",
+      "categories": [
+        "arabic"
+      ],
+      "genders": [
+        "masculine"
+      ],
+      "source_refs": [
+        {
+          "revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+          "path": "src/locales/ar/person/first_name.ts",
+          "bucket": "male",
+          "index": 74
+        }
+      ]
+    },
+    {
+      "id": "faker:el:0eb02d57ff2d0c0c52c233c06a1cd29c7462afbca9aaadf72cceb74106360825",
+      "name": "Χριστινα",
+      "categories": [
+        "greek"
+      ],
+      "genders": [
+        "feminine"
+      ],
+      "source_refs": [
+        {
+          "revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+          "path": "src/locales/el/person/first_name.ts",
+          "bucket": "female",
+          "index": 17
+        }
+      ]
+    }
+  ]
+}

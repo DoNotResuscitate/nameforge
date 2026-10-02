@@ -8,7 +8,7 @@ import (
 
 // Only the explicit redistributable bundle files are embedded.
 //
-//go:embed assets/builtin/manifest.json assets/builtin/categories.json assets/builtin/names.jsonl assets/builtin/licenses/FAKER-LICENSE
+//go:embed assets/builtin/manifest.json assets/builtin/categories.json assets/builtin/names.jsonl assets/builtin/licenses/FAKER-LICENSE assets/builtin/licenses/WIKIMEDIA-NOTICE assets/builtin/licenses/CC0-1.0 assets/builtin/licenses/CC-BY-SA-4.0
 var builtinAssets embed.FS
 
 // LoadBuiltin validates and returns the bundled corpus without filesystem writes.

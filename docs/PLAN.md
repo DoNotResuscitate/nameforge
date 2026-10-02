@@ -11,9 +11,10 @@ African packs require specific provenance, not just generic Arabic labels.
 
 The repository includes completed M1 bootstrap, M2 corpus schema and embedded
 loading, M3 pinned multilingual data extraction, M4 deterministic generation
-engine, and M5 headless CLI generation. The corpus contains 10,652 locale-specific
-records from Faker v10.6.0. M5a must add externally sourced romanized Greek/Arabic
-data and working all-category generation before M6 UI work. The TUI and release
+engine, M5 headless CLI generation, and M5a sourced romanized Greek/Arabic packs.
+The corpus contains 10,851 category-specific records: eight unchanged Faker packs,
+486 Wikipedia Greek spellings and 109 Wikidata Arabic spellings. All-category
+Latin-only generation works in both modes. M6 UI is next; the TUI and release
 pipeline remain pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
@@ -404,7 +405,7 @@ pending until their acceptance checks pass.
   data notes and agent instructions to UX inspiration and a future import adapter.
   Checks: `git diff --check` and a focused documentation content search.
 
-### M5a — Romanized Greek/Arabic and all-category generation (pending; depends M5)
+### M5a — Romanized Greek/Arabic and all-category generation (complete; depends M5)
 
 - Required before UI work. Keep generation Latin-only; replace the native-script
   training packs behind `greek` and `arabic` with real, externally sourced
@@ -414,7 +415,7 @@ pending until their acceptance checks pass.
   Arabic names in Latin spelling. Record reviewed category scope, romanization
   conventions, source gender evidence and measured coverage. Keep Arabic broadly
   labeled unless a source establishes a more specific region; no North African
-  claim follows from a generic Arabic list. Source selection remains open.
+  claim follows from a generic Arabic list. Selected sources and review are recorded below.
 - Extend the maintenance-only source lock, extractors and offline verification
   for the selected sources. Pin exact revisions/URLs and raw checksums, preserve
   full license notices and per-record references, and commit reproducibly derived
@@ -446,6 +447,46 @@ pending until their acceptance checks pass.
 - Suggested commits: `feat(data): bundle sourced romanized Greek and Arabic names`,
   `test(cli): verify Latin-only all-category generation`.
 - Planning check: `git diff --check` and a focused dependency/script-policy review.
+- Completed: Luna source research and pairing review; revision-pinned Wikipedia
+  Latin/Greek static lists (CC BY-SA 4.0) and 119 Wikidata entity snapshots (CC0);
+  multi-source maintenance lock/fetch/extraction/offline verification; exact
+  statement/row provenance and native associations; reviewed rejection accounting;
+  complete embedded attribution/legal texts; Latin-profile category labels and
+  10-category generation. Other eight packs' records/metadata are unchanged.
+- Greek mixes ancient, mythological, Christian and modern material, as requested
+  for the early-modern fantasy setting (mid-1600s, forty years after a cataclysm).
+  Its 526 source spelling occurrences yield 486 records after 31 rejections and
+  nine merges. All gender evidence remains unspecified. Arabic's 137 class/spelling
+  occurrences yield 109 records after 25 rejections and three merges: 22 feminine,
+  87 masculine, no dual-labeled spellings or regional North African claim.
+- Backward-compatible corpus v1 fields add per-file revision/URL and optional
+  statement/native/evidence provenance; references match their declared source's
+  revision. Original Faker references and sourced French algorithm golden remain
+  unchanged. Extractor version is `multisource-static-v1`; sampling/normalization
+  algorithm remains `markov-v2/nfc-v1/latin-v1/math-rand-v2-pcg`. Bundle hash:
+  `36cd9b6d35049fcd815b233ba12f1565e852157438b5333af7621526a41a4da9`.
+- Acceptance checks passed: `mise run check`, `mise run data:fetch`,
+  `mise run data:build`, `mise run data:verify`, `mise exec -- go run
+  ./cmd/corpus-build verify --rebuild`, `mise exec -- go run ./cmd/corpus-build
+  verify --cache .local/absent-cache`, `mise exec -- go test -race ./...`,
+  `mise exec -- go mod verify`, individual category smoke tests and
+  `TestAllCategoriesLatinNovelReplayAndAttribution`. Rebuild compares all public
+  artifacts, notices, quality and the non-embedded native-script fixture byte-for-byte.
+- `TestBinaryHeadless` now verifies Greek, Arabic, all-category and French + Italian
+  requests in both modes and JSON/text, including ordered replay and complete
+  metadata. The actual executable runs outside the checkout with an empty read-only
+  home, no developer tools, and macOS sandbox denial of network/filesystem writes.
+  Every built-in category produces/replays 20 distinct novel Latin-only names with
+  seed 42/defaults. Sourced native-script rejection, gender gaps, Unicode and bounded
+  exhaustion remain tested. Coverage, CLI help/docs and source review are updated.
+  A final uncached process check, `mise exec -- go test -count=1 -v ./cmd/nameforge`,
+  also passed for all eight selection/mode combinations and SIGINT.
+- Limitations: no Greek gender labels, empty current unisex pools, heterogeneous
+  spelling conventions and community-maintained data with sparse Arabic citations;
+  no historical frequency or linguistic-quality guarantee. Native binary checks
+  ran on macOS arm64, with OS-enforced network denial only claimed there. No raw
+  research pages, synthetic training names or generated batches enter public assets.
+- Next ready milestone: M6 — Interactive UI.
 
 ### M6 — Interactive UI (pending; depends M5a)
 

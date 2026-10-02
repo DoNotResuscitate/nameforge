@@ -2,9 +2,10 @@
 
 ## Decision (updated 2026-10-01)
 
-Use **Faker's static locale name lists** for the initial embedded dataset. M5a
-will replace the native-script Greek/Arabic training packs with externally sourced,
-redistributable romanized lists before UI work; see the requirements below. This
+Use **Faker's static locale name lists** for eight embedded packs. M5a replaces
+the native-script Greek/Arabic packs with Wikipedia's supplied Latin/Greek name
+pairs (CC BY-SA 4.0) and Wikidata's supplied Latin name statements (CC0). See
+[ROMANIZED.md](ROMANIZED.md) for pinned sources and the reviewed selection. This
 replaces mandatory Behind the Name imports. The user's goal is TTRPG names,
 multiple selectable categories, and a distributable binary that works offline
 immediately. Prioritize Mediterranean and Western European names, plus Turkish;
@@ -70,7 +71,7 @@ Irish Gaelic, Breton, Basque, Catalan and historical Mediterranean lists need
 separate source validation. Northern/Eastern European and worldwide packs can
 follow after the primary region works well.
 
-The generic `ar` list does not establish Moroccan, Algerian, Tunisian, Egyptian
+Neither the original generic `ar` list nor the replacement Wikidata pack establishes Moroccan, Algerian, Tunisian, Egyptian
 or Amazigh/Berber provenance. Label it Arabic, not North African. Region-specific
 North African packs are a later data-research task; broad Arabic can be used now
 only under its accurate source label.
@@ -122,7 +123,9 @@ Each UTF-8 JSONL record has:
 - `categories`: sorted unique category IDs.
 - `genders`: sorted subset of `masculine`, `feminine`; empty is unspecified.
 - `source_refs`: source revision, file path, bucket and entry index for each
-  original occurrence; preserve provenance when duplicates merge.
+  original occurrence; preserve provenance when duplicates merge. Optional
+  `statement_id`, `native_name` and `evidence` retain Wikimedia statement/row
+  identity, untouched native associations and statement IDs supporting classification.
 
 Each category has stable ID, display label, group (`language-region` initially;
 allow `historical`, `mythological`, `fictional` later), source locale, observed
@@ -133,6 +136,16 @@ Manifest: schema/source revision, source paths/checksums, license references,
 extractor/normalization versions, record counts and SHA-256 of canonical records
 and category metadata. Bundle identity hashes names + categories + normalization
 version; timestamps are excluded from reproducibility hashes.
+
+Source files may additionally carry `revision` and `url`. A record reference must
+match its file's explicit revision; when omitted it matches the manifest's default
+`source_revision` (the original Faker revision). This backward-compatible v1
+extension permits multiple source revisions without rewriting the other eight
+packs' IDs or references. Greek indices count numbered rows within the named
+source section; its `statement_id` identifies section/row/variant. Arabic indices
+address the original `claims.P1705` array, with exact statement IDs retained.
+Replacement IDs are `wikipedia:el:<normalized-spelling SHA-256>` and
+`wikidata:ar:<normalized-spelling SHA-256>`; existing Faker IDs remain unchanged.
 
 For training, deduplicate NFC/lowercase spellings within each selected category;
 in blend mode also deduplicate across categories. Do not strip accents or
@@ -155,10 +168,11 @@ combining diacritics, and spaces/apostrophes/hyphens. Do not transliterate Greek
 Arabic or other source scripts. Categories without a Latin script profile return
 an explicit unsupported-script error, and sampled candidates containing other
 scripts or characters are rejected. Mixed-script source categories may still be
-listed, but cannot cause non-Latin output. The current Faker Greek and Arabic
-arrays are native-script source data and cannot serve as romanized training lists.
-M5a resolves those category gaps using source-provided romanized datasets while
-keeping the Latin-only generator policy.
+listed, but cannot cause non-Latin output. The original Faker Greek and Arabic
+arrays cannot serve as romanized training lists. M5a replaces those training packs
+with source-provided Latin spellings. Two exact Faker native-script records remain
+only in `internal/generator/testdata/nonlatin.json` for rejection tests and are not
+embedded in the runtime. Generation policy and algorithm version are unchanged.
 
 Category mode keeps each candidate within one category. Blend mode requires
 matching script profiles for MVP (e.g. Latin + Latin); reject incompatible
@@ -174,9 +188,9 @@ is an MVP approximation; document Unicode casing and normalization behavior.
 ## M5a romanized dataset requirements (before M6 UI)
 
 Both `greek` and `arabic` must be usable for Latin-only generation before UI work.
-Their current Faker packs use Greek/Arabic scripts, so M5a must source existing
-romanized given-name lists with redistribution-compatible licenses. No source has
-yet been selected. Romanized means the Latin spelling is supplied by the external
+Their original Faker packs used Greek/Arabic scripts; M5a selects the licensed
+Wikipedia/Wikidata sources documented in [ROMANIZED.md](ROMANIZED.md).
+Romanized means the Latin spelling is supplied by the external
 dataset, not generated by Faker, an agent, or a project transliteration step.
 
 - Preserve category IDs and label the replacement packs as Greek (romanized) and
@@ -218,11 +232,11 @@ Optional runtime directory precedence remains `--data-dir`,
 Built-ins load even with an empty/unwritable home directory; never extract them
 to a writable cache as a prerequisite. Local packs cannot replace built-in IDs.
 
-## M3 extraction and measured coverage
+## Historical M3 extraction and measured coverage
 
-M3 replaces the M2 three-record French schema fixture with all ten reviewed
-locale arrays: 10,652 accepted locale-specific records. The source lock is
-`data/sources.lock.json`; canonical assets and the complete upstream notice are
+M3 replaced the M2 three-record French schema fixture with all ten reviewed
+locale arrays: 10,652 accepted locale-specific records. Its original source lock
+is now retained byte-for-byte as `data/faker.lock.json`; canonical assets and the complete upstream notice are
 under `internal/corpus/assets/builtin/`. `data/quality.json` records every source
 bucket count, accepted/rejected/merged occurrence counts, gender counts, observed
 letter scripts and NFC rune-length ranges. [COVERAGE.md](COVERAGE.md) summarizes
@@ -244,7 +258,7 @@ Display spelling is the first accepted source occurrence in sorted bucket order
 remain in provenance. Training/blending deduplication follows the existing engine
 contract. Corpus schema and normalization versions are unchanged.
 
-Offline `data:verify` checks canonical schema/content hashes, exact reviewed
+The M3 verifier checks canonical schema/content hashes, exact reviewed
 targets and source checksums, notice bytes against its locked checksum, script
 metadata, occurrence accounting and the canonical quality report. It needs no raw
 cache. After explicit `data:fetch`, `corpus-build verify --rebuild` re-extracts the
@@ -252,3 +266,30 @@ checksum-validated raw cache and compares every public artifact byte-for-byte.
 Normal tests use embedded sourced data or clearly non-name parser/algorithm tokens.
 The M4 three-record golden still selects the original sourced French bucket/index
 references from the full bundle, so expanding data does not rewrite that golden.
+
+## M5a extraction and measured coverage
+
+The current bundle has **10,851 records**: the same 10,256 records in the eight
+remaining Faker packs, 486 Greek spellings and 109 Arabic spellings. All ten
+categories have Latin script profiles. Greek has no source-supported gender
+labels; Arabic has 22 feminine and 87 masculine spellings. No current spelling has
+both gender labels. Corpus/schema and generation/normalization versions remain
+unchanged; the maintenance extractor is `multisource-static-v1` and the changed
+bundle identity is reported in `data/quality.json` and [COVERAGE.md](COVERAGE.md).
+
+The root source lock checksum-pins the original Faker lock and every supplemental
+revision URL, raw checksum and full license text. Maintenance first reconstructs
+the original Faker assets in memory, preserves eight packs unchanged and produces
+the two sourced native-script test records, then replaces the Greek/Arabic runtime
+training packs. Native-script Faker files remain locked/fetched for this fixture
+and reproducibility, never as romanized training input.
+
+Supplemental extraction keeps exact source spellings; all variants are external,
+not authored or transliterated. The quality report accounts for 10,920 occurrences:
+10,863 accepted, 57 rejected and 12 merged, yielding 10,851 distinct category records.
+Offline verification checks revision-aware provenance, every source file's use,
+contiguous Faker/Greek row accounting, unique occurrences, reviewed exclusions,
+Latin-only training, catalog/gender semantics, hashes, full notices and quality.
+`verify --rebuild` additionally compares every artifact byte, including the
+non-embedded test fixture, against checksum-validated raw caches. Normal build,
+tests and runtime never query upstream sources.
