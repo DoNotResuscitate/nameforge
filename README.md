@@ -1,16 +1,17 @@
 # Nameforge
 
-A planned local, Go-based terminal UI for generating TTRPG character/NPC names
+A local, Go-based terminal UI for generating TTRPG character/NPC names
 with character-level Markov chains trained on real, externally sourced name lists.
 Select one or more naming categories, generate a batch, and save favorites.
 The initial focus is Mediterranean and Western Europe, plus Turkish, with
 accurately sourced North African categories as a possible expansion.
 
-**Status: M1–M5a implemented.** The embedded multilingual corpus contains 10,851
+**Status: M1–M6 implemented.** The embedded multilingual corpus contains 10,851
 category-specific records from pinned Faker arrays, Wikipedia and Wikidata.
 Corpus inspection and reproducible Latin-only generation work offline for all
-ten categories, including romanized Greek and Arabic. Next is the interactive
-TUI (M6). The Go module path is
+ten categories, including romanized Greek and Arabic. The interactive picker,
+settings, session favorites, and text/JSON exports are available. Next is
+verification and binary distribution (M7). The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
 ## Development handoff
@@ -41,6 +42,7 @@ libraries are pinned in `go.mod` / `go.sum`, not installed globally.
 
 ```sh
 mise run build
+./bin/nameforge # opens the TUI with terminal stdin/stdout
 ./bin/nameforge data list
 ./bin/nameforge generate --category french --category italian --seed 42
 ./bin/nameforge generate --category spanish --category turkish --mode blend --seed 42 --format json
@@ -58,6 +60,7 @@ containing names, category attribution, seed, corpus hash, options and counters.
 Keep the reported seed to replay a batch; omitted seeds are random.
 
 See [CLI usage](docs/CLI.md) for all flags, formats, replay rules and exit codes.
+See [TUI usage](docs/TUI.md) for keyboard controls, favorites, exports and no-color mode.
 The binary requires no separate data, writable home, Go installation or network.
 
 ## Data and operation
@@ -113,7 +116,7 @@ The maintenance-only `pin --roster <research.json>` command initializes an absen
 supplemental lock from reviewed QID/revision metadata; it takes spellings only from
 upstream source files and refuses to overwrite an existing lock.
 
-The TUI will offer searchable category checkboxes, a default mode that chooses
+The TUI offers searchable category checkboxes, a default mode that chooses
 one selected category per generated name, and an explicit blended-model mode for
 TTRPG experimentation. Locale labels describe source lists, not promised origins.
 

@@ -4,8 +4,8 @@ Build with `mise run build`, then run `./bin/nameforge` (or your installed binar
 Generation uses embedded, licensed Faker arrays and sourced romanized Greek/Arabic
 lists. It works on first run
 without network access, a writable home, a cache, Go, or separately installed data.
-Runtime does not download or extract corpora. Local packs and the TUI are later
-milestones; `--data-dir` is reserved and is not accepted by generation.
+Runtime does not download or extract corpora. Local packs are later work;
+`--data-dir` is reserved by the TUI and is not accepted by generation.
 
 ## Commands
 
@@ -28,7 +28,9 @@ notices), Wikimedia attribution, CC BY-SA 4.0 and CC0 1.0 legal texts. Wikipedia
 Greek records and adaptations retain CC BY-SA 4.0; Wikidata Arabic records are CC0.
 The application's license is GPLv3; see the repository `LICENSE`.
 No-argument headless invocation returns usage mentioning `generate` and exit 2.
-The interactive no-argument entry point will arrive with M6. Help requires no TTY.
+With terminal stdin/stdout, no arguments open the interactive category picker.
+`nameforge tui` is its explicit entry point; see [TUI usage](TUI.md). Help requires
+no TTY.
 
 ## Generation options
 
@@ -129,7 +131,7 @@ names, origins, or meanings. Generated batches are user output, not training dat
 | 0 | Success, including help/version/licenses. |
 | 1 | I/O, corpus, missing filtered data, unsupported script or bounded generation failure. |
 | 2 | Invalid command/options, unknown category, incompatible blend or invalid effective bounds. |
-| 130 | Interrupted generation (Ctrl-C). |
+| 130 | Interrupted generation or interactive session (Ctrl-C / SIGINT). |
 
 Errors are plain text on stderr, including the stable generation error kind when
 available. Failure and interruption write no partial generated batch to stdout.
