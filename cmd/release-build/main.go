@@ -210,10 +210,11 @@ func sourceFiles(stage string) ([]entry, error) {
 
 // Only tracked, reviewed inputs may enter the source archive. Refuse untracked
 // files in source directories instead of silently including private content or
-// omitting code that a dirty development binary might need. Ignored local data
-// and untracked files outside the public source boundary are never packaged.
+// omitting code that a dirty development binary might need. Git ignore rules do
+// not exempt source files: ignored build inputs can still enter a Go binary.
+// Untracked files outside the public source boundary are never packaged.
 func trackedSourceFiles(root string) ([]entry, error) {
-	untracked, err := command("git", "-C", root, "ls-files", "-z", "--others", "--exclude-standard")
+	untracked, err := command("git", "-C", root, "ls-files", "-z", "--others")
 	if err != nil {
 		return nil, err
 	}
