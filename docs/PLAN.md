@@ -397,6 +397,9 @@ pending until their acceptance checks pass.
   personal data are committed.
 - Next ready milestone: M6 — Interactive UI.
 - Commit: `feat(cli): generate reproducible names from embedded categories`.
+- Documentation follow-up: simplified Behind the Name references in the README,
+  data notes and agent instructions to UX inspiration and a future import adapter.
+  Checks: `git diff --check` and a focused documentation content search.
 
 ### M6 — Interactive UI (pending; depends M5)
 

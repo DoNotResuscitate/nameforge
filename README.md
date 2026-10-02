@@ -108,6 +108,5 @@ one selected category per generated name, and an explicit blended-model mode for
 TTRPG experimentation. Locale labels describe source lists, not promised origins.
 
 [Behind the Name](https://www.behindthename.com/random/) is the category-selection
-UX reference. The owner has permission for personal use of its data; optional
-personal imports are a later extension. Ancient, mythological, and fictional
-categories need independently sourced lists before they can be bundled.
+UX reference. Ancient, mythological, and fictional categories need independently
+sourced lists before they can be bundled.

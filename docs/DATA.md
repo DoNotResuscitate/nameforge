@@ -15,7 +15,7 @@ must come from existing resources, never agents.
 | --- | --- | --- |
 | [faker-js/faker](https://github.com/faker-js/faker) | MIT, static TypeScript arrays, more than 70 locales advertised | Primary: broad multilingual coverage, maintained, easy to extract and embed with notices. Locale count is not a promise of that many usable name lists. |
 | [Wikidata](https://www.wikidata.org/wiki/Wikidata:Licensing) | Structured data CC0, JSON/SPARQL | Later enrichment for historical/name-language categories. Requires explicit queries, entity validation and coverage review; not a ready-made curated name pack. |
-| [Behind the Name](https://www.behindthename.com/names/list) | HTML, user has permission for personal use | Excellent taxonomy and optional personal extension; not the default bundled source. |
+| [Behind the Name](https://www.behindthename.com/names/list) | HTML | Category-selection UX reference and possible later import adapter. |
 | [smashew/NameDatabases](https://github.com/smashew/NameDatabases) | Plain text, repository Unlicense | Not selected: `NamesDatabases/credits.txt` lists mixed web sources including Behind the Name and says only “so far as I know” lists are not copyrighted. The repository license alone does not resolve that provenance. |
 | [aruljohn/popular-baby-names](https://github.com/aruljohn/popular-baby-names) | MIT, SSA-derived CSV/JSON | Easy but US popularity categories do not meet the desired breadth alone. |
 
@@ -169,11 +169,10 @@ is an MVP approximation; document Unicode casing and normalization behavior.
 
 ## Optional personal sources (later, not on the MVP critical path)
 
-Keep a future `btn:<usage>` namespace separate from `builtin:<category>`. The
-user has permission for personal Behind the Name use; do not prompt again. No
-permission to redistribute its corpus is assumed. A later adapter can follow
-selected usage-list pagination, cache pages and parse entry headers only (not
-name links in definitions), supporting saved-page imports and atomic updates.
+Keep a future `btn:<usage>` namespace separate from `builtin:<category>`. A later
+Behind the Name adapter can follow selected usage-list pagination, cache pages
+and parse entry headers only (not name links in definitions), supporting
+saved-page imports and atomic updates.
 The inspected Irish list has pagination, diacritics, numbered disambiguators and
 multiple usage/gender labels. Keep this HTML/data under ignored local storage.
 

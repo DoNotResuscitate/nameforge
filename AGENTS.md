@@ -17,8 +17,8 @@ the plan before handing off. This initial repository is a planning deliverable.
 - Faker's static locale name arrays are the planned bundled source (MIT).
   Extract source arrays, not generated Faker outputs; preserve full notices.
   Never use implicit English fallback or equate unspecified gender with unisex.
-- Behind the Name is an optional later personal source and UX reference; the
-  user has permission for personal use. No repeat permission prompt is required.
+- Behind the Name is a category-selection UX reference and possible later import
+  adapter.
 - Use mise for all developer tool versions and command tasks. Pin exact versions;
   run Go commands through `mise exec --` or mise tasks. Pin dependencies in Go
   module files. Do not introduce another version manager or depend on global Go.
