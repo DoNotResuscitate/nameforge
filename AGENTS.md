@@ -14,11 +14,15 @@ the plan before handing off. This initial repository is a planning deliverable.
 - Real externally sourced training data only. Do not author name corpora or seed
   lists, including demonstration lists. Small algorithm fixtures may use clearly
   non-name token sequences; name-bearing fixtures must have source provenance.
-- Faker's static locale name arrays are the planned bundled source (MIT).
+- Faker's static locale name arrays are the primary bundled source (MIT).
   Extract source arrays, not generated Faker outputs; preserve full notices.
   Never use implicit English fallback or equate unspecified gender with unisex.
-- Behind the Name is an optional later personal source and UX reference; the
-  user has permission for personal use. No repeat permission prompt is required.
+- Complete M5a before UI work: replace Greek/Arabic native-script training packs
+  with externally sourced, redistributable romanized given-name lists. Preserve
+  accurate scope, provenance, pinned checksums and full notices. Do not author or
+  generate romanizations or transliterate the Faker arrays. Output remains Latin-only.
+- Behind the Name is a category-selection UX reference and possible later import
+  adapter.
 - Use mise for all developer tool versions and command tasks. Pin exact versions;
   run Go commands through `mise exec --` or mise tasks. Pin dependencies in Go
   module files. Do not introduce another version manager or depend on global Go.
@@ -38,7 +42,7 @@ the plan before handing off. This initial repository is a planning deliverable.
   check seeded determinism, Unicode rune/NFC handling, category and gender
   semantics, explicit errors for missing data, and the absence of English fallback.
 - For corpus changes, verify training names come from externally sourced static
-  arrays and retain traceable source references, pinned revisions/checksums, and
+  arrays/lists and retain traceable source references, pinned revisions/checksums, and
   complete license notices. Flag authored or generated training names, inaccurate
   cultural labels, and treating unspecified gender as unisex.
 - Preserve the offline architecture: generation stays independent of terminal,

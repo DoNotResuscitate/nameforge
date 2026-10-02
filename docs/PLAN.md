@@ -10,16 +10,19 @@ Prioritize Mediterranean and Western European lists plus Turkish; optional North
 African packs require specific provenance, not just generic Arabic labels.
 
 The repository includes completed M1 bootstrap, M2 corpus schema and embedded
-loading, M3 pinned multilingual data extraction, and M4 deterministic generation
-engine. The corpus contains 10,652 locale-specific records from Faker v10.6.0.
-CLI generation, the TUI, and the release pipeline remain pending. The Go module
+loading, M3 pinned multilingual data extraction, M4 deterministic generation
+engine, and M5 headless CLI generation. The corpus contains 10,652 locale-specific
+records from Faker v10.6.0. M5a must add externally sourced romanized Greek/Arabic
+data and working all-category generation before M6 UI work. The TUI and release
+pipeline remain pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
 
 ### MVP
 
-- Embedded Faker static name arrays, licensed and pinned as defined in DATA.md.
+- Embedded Faker static name arrays plus externally sourced romanized Greek/Arabic
+  lists, licensed and pinned as defined in DATA.md. Generated output stays Latin-only.
 - Searchable multi-select categories, source gender filters and script labels.
 - Default per-name category selection and explicit blended Markov models.
 - Configurable Markov order, length bounds, count and random seed.
@@ -158,7 +161,7 @@ explicitly version any intentional change to this behavior.
 
 ## 4. CLI and TUI contract
 
-Planned commands (not yet available):
+Commands (headless commands available; TUI entry points planned for M6):
 
 ```sh
 nameforge
@@ -356,7 +359,7 @@ pending until their acceptance checks pass.
 - Next ready milestone after M3 completion: M5 — Headless vertical slice.
 - Commit: `feat(generator): add deterministic Latin-only Markov generation`.
 
-### M5 — Headless vertical slice (pending; depends M3, M4)
+### M5 — Headless vertical slice (complete; depends M3, M4)
 
 - Implement generation flags, stream formats, metadata, exit codes and docs.
 - Acceptance: first-run bundled-data -> training -> JSON/text works with an
@@ -365,18 +368,96 @@ pending until their acceptance checks pass.
   stdout clean; `licenses` displays full embedded notices. Run and record the
   M3 Latin-profile generation smoke checks using default settings and fixed
   seeds; verify explicit unsupported-script errors for non-Latin categories.
+- Completed: repeatable category/all-category selection; every planned generation
+  flag; decimal uint64 seeds including zero/max; text names with separate JSON
+  metadata and a shared versioned JSON export format; clean machine streams;
+  full embedded Faker notices via `licenses`; actionable bounded failures with
+  no partial stdout; context/SIGINT cancellation and exit 130; documented command,
+  option, stream, replay and exit-code semantics in `docs/CLI.md`.
+- Exposed `generator.NormalizeRequest` for shared pre-I/O option validation;
+  defaults retain their Go API semantics, while frontends reject explicit zero
+  numeric settings. Explicit contradictory length bounds now fail before model
+  training. Corpus assets, source lock and algorithm version are unchanged.
+- Acceptance checks passed on `darwin/arm64`: `mise run check`,
+  `mise run data:verify`, `mise exec -- go test -race ./...`,
+  `mise exec -- go mod verify`, `mise exec -- go test -v ./cmd/nameforge`, and
+  both `mise exec -- go test -v ./internal/generator -run
+  TestBuiltinCategoryGenerationSmoke` and `mise exec -- go test -v
+  ./internal/cli -run TestGenerateBuiltinCategorySmoke`. All eight Latin categories
+  produce 20 distinct novel names at seed 42/defaults; Greek and Arabic return
+  `unsupported_script`. M3 smoke counters and the original M4 golden are unchanged.
+- The actual executable runs outside the checkout with an empty read-only home,
+  no developer tools on PATH, and macOS sandbox denial of network/filesystem writes.
+  Text/JSON and ordered seeded replay pass in both French + Italian modes;
+  command help/licenses/invalid options and Unix SIGINT are tested at the process
+  boundary. CLI tests additionally verify random-seed replay, maximum seed,
+  selection-order invariance, source novelty, attribution, I/O failures, gender
+  gaps, and suppression of a nonempty partial batch on diversity exhaustion.
+- Limitations: interactive startup is deferred to M6; Greek/Arabic and therefore
+  `--all-categories` fail under the unchanged Latin-only policy; current unisex
+  pools are empty. Other OSes are not natively checked here; the binary acceptance
+  test only claims OS-enforced network denial on macOS. No generated batches or
+  personal data are committed.
+- Next ready milestone: M5a — Romanized Greek/Arabic and all-category generation.
 - Commit: `feat(cli): generate reproducible names from embedded categories`.
+- Documentation follow-up: simplified Behind the Name references in the README,
+  data notes and agent instructions to UX inspiration and a future import adapter.
+  Checks: `git diff --check` and a focused documentation content search.
 
-### M6 — Interactive UI (pending; depends M5)
+### M5a — Romanized Greek/Arabic and all-category generation (pending; depends M5)
+
+- Required before UI work. Keep generation Latin-only; replace the native-script
+  training packs behind `greek` and `arabic` with real, externally sourced
+  romanized given-name datasets. Do not generate romanizations, author lists,
+  transliterate the Faker arrays, or substitute another category's names.
+- Research and select redistributable sources that explicitly provide Greek and
+  Arabic names in Latin spelling. Record reviewed category scope, romanization
+  conventions, source gender evidence and measured coverage. Keep Arabic broadly
+  labeled unless a source establishes a more specific region; no North African
+  claim follows from a generic Arabic list. Source selection remains open.
+- Extend the maintenance-only source lock, extractors and offline verification
+  for the selected sources. Pin exact revisions/URLs and raw checksums, preserve
+  full license notices and per-record references, and commit reproducibly derived
+  assets and quality reports. Keep Faker as the source for the other eight packs.
+- Preserve the public `greek`/`arabic` IDs with clear romanized display labels and
+  accurate source/script metadata. Train on source-provided Latin spellings with
+  the existing NFC/rune and deduplication rules. Use original-script associations
+  only as source provenance where provided, never as generated output. Missing
+  gender evidence stays unspecified; it cannot become inferred or unisex evidence.
+- Ensure every built-in training category has a compatible Latin profile so
+  `--all-categories` succeeds in both category and blend modes. Preserve equal
+  category choice, attribution, novel-name exclusion, batch uniqueness and the
+  existing seeded algorithm; a source refresh changes the bundle hash. Retain
+  explicit unsupported-script errors for genuinely unsupported future data.
+- Acceptance: each of Greek and Arabic produces/replays 20 distinct novel
+  Latin-only names at default settings and seed 42; all ten categories pass the
+  same smoke checks. `--all-categories --seed 42` succeeds and replays identically
+  in both modes and text/JSON, with complete metadata and correct attribution.
+  Non-Latin letters are never emitted. Tests still cover unsupported-script
+  rejection using sourced fixtures, gender gaps, Unicode and bounded exhaustion.
+- Acceptance: pinned-cache rebuild is byte-identical; `data:verify` works offline;
+  provenance/notices are complete; `mise run check` and race tests pass; the actual
+  binary completes Greek, Arabic and all-category first-launch generation outside
+  the checkout with an empty home, no developer tools and network disabled.
+  Update coverage, CLI help/docs and any bundle-dependent expectations; preserve
+  the existing sourced French algorithm golden. Do not mark complete until both
+  sourced datasets and these checks pass.
+- Next ready milestone after completion: M6 — Interactive UI.
+- Suggested commits: `feat(data): bundle sourced romanized Greek and Arabic names`,
+  `test(cli): verify Latin-only all-category generation`.
+- Planning check: `git diff --check` and a focused dependency/script-policy review.
+
+### M6 — Interactive UI (pending; depends M5a)
 
 - Implement state machine, settings, results, source/seed display, keyboard
   navigation, cancellable asynchronous work, favorites and exports.
 - Test update transitions, stale messages, errors, resize and focus without live
   network access; share CLI generation validation rather than duplicate it.
 - Acceptance: actual offline first-launch walkthrough, choose French + Italian,
-  generate in each mode and export; replay displayed seed via CLI; inspect Greek
-  (and Arabic if bundled) script display, error recovery, narrow terminal and
-  no-color mode; Ctrl-C restores terminal during active operations.
+  generate in each mode and export; replay displayed seed via CLI; generate from
+  romanized Greek/Arabic and select all categories in both modes; inspect Latin
+  script/source labels, error recovery, narrow terminal and no-color mode;
+  Ctrl-C restores terminal during active operations.
 - Commits: `feat(tui): add corpus and generation controls`,
   `feat(tui): show cancellable generation results`,
   `feat(tui): add session favorites and export`.
@@ -403,7 +484,7 @@ pending until their acceptance checks pass.
 
 ## 6. Execution and handoff
 
-Critical path: M1 -> M2 -> M3/M4 -> M5 -> M6 -> M7. M3 and M4 may be worked on
+Critical path: M1 -> M2 -> M3/M4 -> M5 -> M5a -> M6 -> M7. M3 and M4 may be worked on
 independently after M2 contracts settle; coordinate go.mod changes. This is a
 dependency map for future implementers, not an instruction to spawn agents.
 

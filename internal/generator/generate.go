@@ -201,24 +201,27 @@ func Generate(ctx context.Context, bundle *corpus.Bundle, request Request) (Resu
 	return result, nil
 }
 
-func normalizeRequest(bundle *corpus.Bundle, request Request) (Request, []string, error) {
+// NormalizeRequest applies defaults and checks options without loading data or
+// training models. Zero count/order and zero length bounds mean automatic defaults
+// for Go callers; frontends must reject explicitly entered zero values.
+func NormalizeRequest(request Request) (Request, error) {
 	if request.Count == 0 {
 		request.Count = defaultCount
 	}
 	if request.Count < 1 || request.Count > maxCount {
-		return Request{}, nil, generationError(ErrorInvalidRequest, "count must be between 1 and 1000", "", nil)
+		return Request{}, generationError(ErrorInvalidRequest, "count must be between 1 and 1000", "", nil)
 	}
 	if request.Order == 0 {
 		request.Order = defaultOrder
 	}
 	if request.Order < markov.MinOrder || request.Order > markov.MaxOrder {
-		return Request{}, nil, generationError(ErrorInvalidRequest, "order must be between 1 and 4", "", nil)
+		return Request{}, generationError(ErrorInvalidRequest, "order must be between 1 and 4", "", nil)
 	}
 	if request.Mode == "" {
 		request.Mode = ModeCategory
 	}
 	if request.Mode != ModeCategory && request.Mode != ModeBlend {
-		return Request{}, nil, generationError(ErrorInvalidRequest, fmt.Sprintf("unknown generation mode %q", request.Mode), "", nil)
+		return Request{}, generationError(ErrorInvalidRequest, fmt.Sprintf("unknown generation mode %q", request.Mode), "", nil)
 	}
 	if request.Gender == "" {
 		request.Gender = GenderAny
@@ -226,13 +229,32 @@ func normalizeRequest(bundle *corpus.Bundle, request Request) (Request, []string
 	switch request.Gender {
 	case GenderAny, GenderMasculine, GenderFeminine, GenderUnisex:
 	default:
-		return Request{}, nil, generationError(ErrorInvalidRequest, fmt.Sprintf("unknown gender filter %q", request.Gender), "", nil)
+		return Request{}, generationError(ErrorInvalidRequest, fmt.Sprintf("unknown gender filter %q", request.Gender), "", nil)
 	}
 	if request.MinLength < 0 || request.MinLength > markov.MaxNameRunes || request.MaxLength < 0 || request.MaxLength > markov.MaxNameRunes {
-		return Request{}, nil, generationError(ErrorInvalidRequest, "length bounds must be between 1 and 64 runes", "", nil)
+		return Request{}, generationError(ErrorInvalidRequest, "length bounds must be between 1 and 64 runes", "", nil)
+	}
+	if request.MinLength != 0 && request.MaxLength != 0 && request.MinLength > request.MaxLength {
+		return Request{}, generationError(ErrorInvalidRequest, "min-length must not exceed max-length", "", nil)
 	}
 	if request.AllCategories && len(request.CategoryIDs) != 0 {
-		return Request{}, nil, generationError(ErrorInvalidRequest, "select categories by IDs or --all-categories, not both", "", nil)
+		return Request{}, generationError(ErrorInvalidRequest, "select categories by IDs or --all-categories, not both", "", nil)
+	}
+	if !request.AllCategories && len(request.CategoryIDs) == 0 {
+		return Request{}, generationError(ErrorInvalidRequest, "select one or more --category IDs or --all-categories", "", nil)
+	}
+	for _, id := range request.CategoryIDs {
+		if strings.TrimSpace(id) == "" {
+			return Request{}, generationError(ErrorInvalidRequest, "category ID must not be empty", "", nil)
+		}
+	}
+	return cloneRequest(request), nil
+}
+
+func normalizeRequest(bundle *corpus.Bundle, request Request) (Request, []string, error) {
+	request, err := NormalizeRequest(request)
+	if err != nil {
+		return Request{}, nil, err
 	}
 	var categoryIDs []string
 	if request.AllCategories {

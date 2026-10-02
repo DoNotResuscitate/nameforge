@@ -68,11 +68,31 @@ and replay, not linguistic validity or aesthetic quality. Default Unicode
 lowercasing is not Turkish-specific; output capitalizes the first letter after
 start/space/hyphen and does not reconstruct culturally specific casing.
 
-Greek and Arabic are inspectable native-script data; generation support is
-deliberately deferred by the Latin-only contract. No transliteration or fallback
-is supplied. A request selecting all categories therefore encounters an explicit
-unsupported-script error. Unisex filtering returns an actionable empty-selection
-error for every current category.
+Greek and Arabic are currently inspectable native-script data and cannot generate
+under the Latin-only contract. A request selecting all categories therefore
+encounters an explicit unsupported-script error. M5a, required before UI work,
+will source romanized replacement packs for these IDs and verify all-category
+generation in both modes; the table above records the current M3/M5 bundle.
+Unisex filtering returns an actionable empty-selection error for every current
+category.
+
+## M5 CLI acceptance (2026-10-01)
+
+The engine smoke command above was rerun with the same bundle and algorithm;
+every counter in the table is unchanged. `mise exec -- go test -v
+./internal/cli -run TestGenerateBuiltinCategorySmoke` also passed through the CLI
+for all ten categories: eight default 20-name novel batches and two explicit
+unsupported-script failures. Seeded JSON/text replay and selection-order
+invariance pass in both French + Italian modes, including repeated category IDs.
+
+`mise exec -- go test -v ./cmd/nameforge` passed on `darwin/arm64`. It builds the
+actual executable using pinned mise Go, then runs outside the checkout with an
+empty read-only home and no developer tools on PATH. Each runtime subprocess has
+macOS sandbox denial of network access and filesystem writes. Both multi-category
+modes complete and replay in JSON/text; help, licenses, malformed options and
+SIGINT exit 130 pass. The home remains empty. CLI exhaustion tests suppress a
+nonempty partial batch and report actionable diversity guidance on stderr.
+See [CLI usage](CLI.md) for commands, export schema and stream/exit contracts.
 
 ## Rebuild and performance checks
 
