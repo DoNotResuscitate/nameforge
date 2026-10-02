@@ -122,19 +122,7 @@ Sources (revision-pinned; full notices: nameforge licenses)`
 	return strings.Split(ansi.Hardwrap(text, max(1, m.width), true), "\n")
 }
 
-func (m *Model) helpPageSize() int {
-	header, maxStatus := 4, 2
-	if m.height < 12 {
-		header, maxStatus = 2, 1
-	}
-	status := min(maxStatus, len(strings.Split(ansi.Hardwrap(m.status, max(1, m.width), true), "\n")))
-	return max(1, m.height-header-status-2) // help heading and footer
-}
-
-func (m *Model) View() string {
-	if m.width < 20 || m.height < 8 {
-		return ansi.Truncate("Resize terminal (20x8 minimum); Ctrl-C quits.", m.width, "")
-	}
+func (m *Model) headerLines() []string {
 	var selected []string
 	for _, c := range m.categories {
 		if m.selected[c.ID] {
@@ -160,9 +148,35 @@ func (m *Model) View() string {
 	} else {
 		lines = append(lines, "Batch: none | seed: not generated")
 	}
-	if m.height < 12 {
-		lines = []string{fmt.Sprintf("Selected %d | favorites %d", len(selected), len(m.favorites)), lines[3]}
+	// Both essentials fit at the minimum supported width. Narrow layouts wrap
+	// the legal heading into two fixed lines instead of truncating its terms.
+	if m.width < 60 {
+		lines = append([]string{"©2026 Nameforge team", "GPLv3 NO WARRANTY; l"}, lines[1:]...)
 	}
+	if m.height < 12 {
+		seed := "none"
+		if m.result != nil {
+			seed = fmt.Sprint(m.result.Seed)
+		}
+		lines = []string{"©2026 Nameforge team", "GPLv3 NO WARRANTY; l", fmt.Sprintf("Selected %d | seed %s", len(selected), seed)}
+	}
+	return lines
+}
+
+func (m *Model) helpPageSize() int {
+	maxStatus := 2
+	if m.height < 12 {
+		maxStatus = 1
+	}
+	status := min(maxStatus, len(strings.Split(ansi.Hardwrap(m.status, max(1, m.width), true), "\n")))
+	return max(1, m.height-len(m.headerLines())-status-2) // help heading and footer
+}
+
+func (m *Model) View() string {
+	if m.width < 20 || m.height < 8 {
+		return ansi.Truncate("Resize terminal (20x8 minimum); Ctrl-C quits.", m.width, "")
+	}
+	lines := m.headerLines()
 	// Reserve two status lines and a key-hint line, always visible.
 	statusLines := strings.Split(ansi.Hardwrap(m.status, m.width, true), "\n")
 	statusLines = statusLines[:min(2, len(statusLines))]

@@ -388,6 +388,9 @@ func TestResizeNoColorAndSourceLabels(t *testing.T) {
 		for _, f := range []focus{pickerFocus, searchFocus, settingsFocus, resultsFocus} {
 			m.setFocus(f)
 			view := m.View()
+			if size.Width >= 20 && size.Height >= 8 && (!strings.Contains(view, "GPLv3") || !strings.Contains(view, "NO WARRANTY") || !strings.Contains(view, "©2026") && !strings.Contains(view, "© 2026")) {
+				t.Fatalf("supported %dx%d layout hid startup legal terms: %s", size.Width, size.Height, view)
+			}
 			if strings.Contains(view, "\x1b") {
 				t.Fatal("no-color view emitted ANSI styling")
 			}

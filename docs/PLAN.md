@@ -649,6 +649,12 @@ pending until their acceptance checks pass.
   forever. Checks: `mise run workflow:check` (also in `mise run check`) and
   `git diff --check` passed. The aggregate uses `always()` and explicitly requires
   success from both dependencies, so failure/skipping cannot satisfy branch rules.
+- Codex review follow-up: narrow/short headers retain copyright, GPLv3 and NO
+  WARRANTY down to the supported 20x8 minimum, rather than truncating the legal
+  terms or removing them in compact mode. Header-aware help paging and resize
+  regression checks preserve legal visibility and the compact picker row. Checks:
+  `mise run check`, `mise exec -- go test -race ./internal/tui` and `git diff
+  --check` passed, including the real-binary CLI/PTY walkthrough.
 
 ## 6. Execution and handoff
 
