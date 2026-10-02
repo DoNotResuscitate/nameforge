@@ -2,7 +2,9 @@ package generator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 	"reflect"
 	"testing"
 
@@ -20,14 +22,6 @@ func TestBuiltinCategoryGenerationSmoke(t *testing.T) {
 			seed := uint64(42)
 			request := Request{CategoryIDs: []string{category.ID}, Seed: &seed}
 			first, err := Generate(context.Background(), bundle, request)
-			if category.ID == "greek" || category.ID == "arabic" {
-				var typed *GenerationError
-				if !errors.As(err, &typed) || typed.Kind != ErrorUnsupportedScript {
-					t.Fatalf("non-Latin category: %v", err)
-				}
-				t.Logf("%s: explicit %s", category.ID, typed.Kind)
-				return
-			}
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -66,6 +60,28 @@ func TestBuiltinCategoryGenerationSmoke(t *testing.T) {
 				t.Fatal("picker order changed real-corpus output")
 			}
 		})
+	}
+}
+
+func TestSourcedNativeScriptFixturesRemainUnsupported(t *testing.T) {
+	data, err := os.ReadFile("testdata/nonlatin.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var bundle corpus.Bundle
+	if err := json.Unmarshal(data, &bundle); err != nil {
+		t.Fatal(err)
+	}
+	if err := bundle.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"arabic", "greek"} {
+		seed := uint64(42)
+		_, err := Generate(context.Background(), &bundle, Request{CategoryIDs: []string{id}, Seed: &seed})
+		var typed *GenerationError
+		if !errors.As(err, &typed) || typed.Kind != ErrorUnsupportedScript {
+			t.Fatalf("%s: %v", id, err)
+		}
 	}
 }
 

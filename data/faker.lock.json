@@ -1,0 +1,84 @@
+{
+  "repository": "https://github.com/faker-js/faker",
+  "revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+  "release": "v10.6.0",
+  "schema_version": 1,
+  "extractor_version": "faker-static-v1",
+  "normalization_version": "nfc-v1",
+  "targets": [
+    {
+      "id": "arabic",
+      "label": "Arabic (broad source list)",
+      "locale": "ar",
+      "path": "src/locales/ar/person/first_name.ts",
+      "sha256": "25032a6b37531a018166d8dc489fe970f6dbf9bfc83b1ddfdf97a3109f5e6fd4"
+    },
+    {
+      "id": "dutch",
+      "label": "Dutch",
+      "locale": "nl",
+      "path": "src/locales/nl/person/first_name.ts",
+      "sha256": "8ca73ee8d35288bff45a407907ae630e9ae245b41768eb6eb8c849ea9981bf9c"
+    },
+    {
+      "id": "english",
+      "label": "English",
+      "locale": "en",
+      "path": "src/locales/en/person/first_name.ts",
+      "sha256": "9322102b15eced267ae503d4223ad377e0518613ae89308ec66ce85eaf452c81"
+    },
+    {
+      "id": "french",
+      "label": "French",
+      "locale": "fr",
+      "path": "src/locales/fr/person/first_name.ts",
+      "sha256": "b034459642d48525aed95f78868cf3e8646db670ff871a96905690389ee311fe"
+    },
+    {
+      "id": "german",
+      "label": "German",
+      "locale": "de",
+      "path": "src/locales/de/person/first_name.ts",
+      "sha256": "6644cd98ac4f05c2b4cffc45f924546a9b0d16ad0a6582037aecbe96a1be7aba"
+    },
+    {
+      "id": "greek",
+      "label": "Greek",
+      "locale": "el",
+      "path": "src/locales/el/person/first_name.ts",
+      "sha256": "799b08355c9769b5088a9c9967f4ccf66de66a7d953da8676487b3ce7943d791"
+    },
+    {
+      "id": "italian",
+      "label": "Italian",
+      "locale": "it",
+      "path": "src/locales/it/person/first_name.ts",
+      "sha256": "a9ffab3d4cd9fa5366854d5a29b1afa00605f2576bd98f7e91685b6254df4fa3"
+    },
+    {
+      "id": "portuguese-pt",
+      "label": "Portuguese (Portugal)",
+      "locale": "pt_PT",
+      "path": "src/locales/pt_PT/person/first_name.ts",
+      "sha256": "85568c9a5c845f20f2c20d51ace9d624deb07f737ba9aeebdfdd28d06a27447f"
+    },
+    {
+      "id": "spanish",
+      "label": "Spanish",
+      "locale": "es",
+      "path": "src/locales/es/person/first_name.ts",
+      "sha256": "2d458c133cbaea08c6dfee1b1b7e1597de0eb10ed5426ef794656a680e9abb55"
+    },
+    {
+      "id": "turkish",
+      "label": "Turkish",
+      "locale": "tr",
+      "path": "src/locales/tr/person/first_name.ts",
+      "sha256": "325e8eb81abf834919b7a551d5dd4bcafdb0a1d414b5589c7cda074a02ed61f8"
+    }
+  ],
+  "license": {
+    "path": "LICENSE",
+    "sha256": "8c0814c525426e67c04ca562f28364be477003697903d257160c081d14b271bf"
+  }
+}

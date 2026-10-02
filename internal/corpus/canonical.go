@@ -102,6 +102,9 @@ func cloneRecord(record Record) Record {
 	}
 	if record.SourceRefs != nil {
 		record.SourceRefs = append(make([]SourceRef, 0, len(record.SourceRefs)), record.SourceRefs...)
+		for i := range record.SourceRefs {
+			record.SourceRefs[i].Evidence = append([]string(nil), record.SourceRefs[i].Evidence...)
+		}
 	}
 	return record
 }
@@ -126,5 +129,8 @@ func sourceRefLess(a, b SourceRef) bool {
 	if a.Bucket != b.Bucket {
 		return a.Bucket < b.Bucket
 	}
-	return a.Index < b.Index
+	if a.Index != b.Index {
+		return a.Index < b.Index
+	}
+	return a.StatementID < b.StatementID
 }

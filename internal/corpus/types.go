@@ -19,12 +19,15 @@ type Record struct {
 	SourceRefs []SourceRef `json:"source_refs"`
 }
 
-// SourceRef traces a spelling to its original static-array occurrence.
+// SourceRef traces a spelling to its original static array, list or statement.
 type SourceRef struct {
-	Revision string `json:"revision"`
-	Path     string `json:"path"`
-	Bucket   string `json:"bucket"`
-	Index    int    `json:"index"`
+	Revision    string   `json:"revision"`
+	Path        string   `json:"path"`
+	Bucket      string   `json:"bucket"`
+	Index       int      `json:"index"`
+	StatementID string   `json:"statement_id,omitempty"`
+	NativeName  string   `json:"native_name,omitempty"`
+	Evidence    []string `json:"evidence,omitempty"`
 }
 
 // Category describes a reviewed source-list category and observed coverage.
@@ -40,8 +43,10 @@ type Category struct {
 
 // SourceFile records a pinned upstream file used to build the corpus.
 type SourceFile struct {
-	Path   string `json:"path"`
-	SHA256 string `json:"sha256"`
+	Path     string `json:"path"`
+	SHA256   string `json:"sha256"`
+	Revision string `json:"revision,omitempty"`
+	URL      string `json:"url,omitempty"`
 }
 
 // LicenseRef points to a complete notice included with the corpus assets.

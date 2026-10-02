@@ -1,84 +1,741 @@
 {
-  "repository": "https://github.com/faker-js/faker",
-  "revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
-  "release": "v10.6.0",
-  "schema_version": 1,
-  "extractor_version": "faker-static-v1",
-  "normalization_version": "nfc-v1",
-  "targets": [
+  "extractor_version": "multisource-static-v1",
+  "faker_lock": {
+    "path": "data/faker.lock.json",
+    "sha256": "a3392a3fd0cb9b84ff6428c577fff9baf7d52227da1d5c2b5dc3acc8f23a33da"
+  },
+  "greek": {
+    "path": "wikipedia/Greek_name.wiki",
+    "sha256": "a5e6a986d33b1e63e2a80004a005a641779b9f865cb5033ff9af9bc1d56d44d2",
+    "revision": "1377658475",
+    "url": "https://en.wikipedia.org/w/index.php?title=Greek_name\u0026oldid=1377658475\u0026action=raw"
+  },
+  "arabic": [
     {
-      "id": "arabic",
-      "label": "Arabic (broad source list)",
-      "locale": "ar",
-      "path": "src/locales/ar/person/first_name.ts",
-      "sha256": "25032a6b37531a018166d8dc489fe970f6dbf9bfc83b1ddfdf97a3109f5e6fd4"
+      "path": "wikidata/Q10595939/2357541797.json",
+      "sha256": "e509a80cce0bf7db46d577ee92b65358e27f3a02d4a71aee91816ee67f94d93d",
+      "revision": "2357541797",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q10595939.json?revision=2357541797"
     },
     {
-      "id": "dutch",
-      "label": "Dutch",
-      "locale": "nl",
-      "path": "src/locales/nl/person/first_name.ts",
-      "sha256": "8ca73ee8d35288bff45a407907ae630e9ae245b41768eb6eb8c849ea9981bf9c"
+      "path": "wikidata/Q10648507/2357541834.json",
+      "sha256": "b03d84a0dc691827333972f1dab4f3bf0c021c528615abe73f42d43f33c84c12",
+      "revision": "2357541834",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q10648507.json?revision=2357541834"
     },
     {
-      "id": "english",
-      "label": "English",
-      "locale": "en",
-      "path": "src/locales/en/person/first_name.ts",
-      "sha256": "9322102b15eced267ae503d4223ad377e0518613ae89308ec66ce85eaf452c81"
+      "path": "wikidata/Q107260989/2406396380.json",
+      "sha256": "967a65ce4099f1b5db9f16f98cd56e95a871c34be1c5e3a294ceb2f19046105e",
+      "revision": "2406396380",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q107260989.json?revision=2406396380"
     },
     {
-      "id": "french",
-      "label": "French",
-      "locale": "fr",
-      "path": "src/locales/fr/person/first_name.ts",
-      "sha256": "b034459642d48525aed95f78868cf3e8646db670ff871a96905690389ee311fe"
+      "path": "wikidata/Q10861276/2524294309.json",
+      "sha256": "496d365a4e402015a23d6011ed4ef8e308f78d85cd39a7b7bec397396391e421",
+      "revision": "2524294309",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q10861276.json?revision=2524294309"
     },
     {
-      "id": "german",
-      "label": "German",
-      "locale": "de",
-      "path": "src/locales/de/person/first_name.ts",
-      "sha256": "6644cd98ac4f05c2b4cffc45f924546a9b0d16ad0a6582037aecbe96a1be7aba"
+      "path": "wikidata/Q113098/2407239916.json",
+      "sha256": "60498f93ce7722745ea3c30f933e4bdff29bdaa370a89280662901c5cb0c030d",
+      "revision": "2407239916",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q113098.json?revision=2407239916"
     },
     {
-      "id": "greek",
-      "label": "Greek",
-      "locale": "el",
-      "path": "src/locales/el/person/first_name.ts",
-      "sha256": "799b08355c9769b5088a9c9967f4ccf66de66a7d953da8676487b3ce7943d791"
+      "path": "wikidata/Q113517732/2357718539.json",
+      "sha256": "a754ed7e310b60e03b2c9f21cefca91ddb087f7c99d539abe03dc561b00150f9",
+      "revision": "2357718539",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q113517732.json?revision=2357718539"
     },
     {
-      "id": "italian",
-      "label": "Italian",
-      "locale": "it",
-      "path": "src/locales/it/person/first_name.ts",
-      "sha256": "a9ffab3d4cd9fa5366854d5a29b1afa00605f2576bd98f7e91685b6254df4fa3"
+      "path": "wikidata/Q11722500/2551210877.json",
+      "sha256": "9b3c8bcc92d3e56267abd2db415fc6871c734e29d37b0bbd1922b0ac4a12b46e",
+      "revision": "2551210877",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q11722500.json?revision=2551210877"
     },
     {
-      "id": "portuguese-pt",
-      "label": "Portuguese (Portugal)",
-      "locale": "pt_PT",
-      "path": "src/locales/pt_PT/person/first_name.ts",
-      "sha256": "85568c9a5c845f20f2c20d51ace9d624deb07f737ba9aeebdfdd28d06a27447f"
+      "path": "wikidata/Q118151012/2264389746.json",
+      "sha256": "5412a848c9d5a216580406ae2f709a85c541655eeaa8c24760e7eaee92065971",
+      "revision": "2264389746",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q118151012.json?revision=2264389746"
     },
     {
-      "id": "spanish",
-      "label": "Spanish",
-      "locale": "es",
-      "path": "src/locales/es/person/first_name.ts",
-      "sha256": "2d458c133cbaea08c6dfee1b1b7e1597de0eb10ed5426ef794656a680e9abb55"
+      "path": "wikidata/Q11905050/2469516891.json",
+      "sha256": "daff77024390a6bc8e0a7106d0cca2b1c4cce7f1eb8c23a7cce2081d21ac3dbc",
+      "revision": "2469516891",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q11905050.json?revision=2469516891"
     },
     {
-      "id": "turkish",
-      "label": "Turkish",
-      "locale": "tr",
-      "path": "src/locales/tr/person/first_name.ts",
-      "sha256": "325e8eb81abf834919b7a551d5dd4bcafdb0a1d414b5589c7cda074a02ed61f8"
+      "path": "wikidata/Q11925183/2357548440.json",
+      "sha256": "c8eb22716e9a290087653a5469ca11160ba9afdb425fd68d599d6bbb0a4ec0fb",
+      "revision": "2357548440",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q11925183.json?revision=2357548440"
+    },
+    {
+      "path": "wikidata/Q12205910/2357906742.json",
+      "sha256": "15e27afe888bf2a6ee925538d26bf59eb5e1eadf5dd537aea84ff4219fe55052",
+      "revision": "2357906742",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q12205910.json?revision=2357906742"
+    },
+    {
+      "path": "wikidata/Q122232131/2549026033.json",
+      "sha256": "b99a6b4aa9749a1746fa4e290b7f5291bbf86dd888c03d044c90bf0cc2a6ae97",
+      "revision": "2549026033",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q122232131.json?revision=2549026033"
+    },
+    {
+      "path": "wikidata/Q1331846/2542163004.json",
+      "sha256": "7213797c43a3c61c8cfa9b8bbd40190fe879e4848f866e7a8ac27254303220a9",
+      "revision": "2542163004",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1331846.json?revision=2542163004"
+    },
+    {
+      "path": "wikidata/Q1340593/2357895304.json",
+      "sha256": "1f6b32bc350ba9b883c143159e0a8edd58bb128d20d85870454af2d57046365e",
+      "revision": "2357895304",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1340593.json?revision=2357895304"
+    },
+    {
+      "path": "wikidata/Q13422873/2493033897.json",
+      "sha256": "3b276a84d5539c66a5e3503be46a5392deb19e7d5e2e6166e7a7c231f280a8da",
+      "revision": "2493033897",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q13422873.json?revision=2493033897"
+    },
+    {
+      "path": "wikidata/Q139882721/2495472628.json",
+      "sha256": "23315c67578786c3fe297b9effdf700f4119a1a56341296340dfd29255d39fe1",
+      "revision": "2495472628",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q139882721.json?revision=2495472628"
+    },
+    {
+      "path": "wikidata/Q1571140/2523927472.json",
+      "sha256": "0443b9e17177f2885c10b7e9f509dcda3e17f2fffa1c2df7304ae732be61cf43",
+      "revision": "2523927472",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1571140.json?revision=2523927472"
+    },
+    {
+      "path": "wikidata/Q15843679/2460778645.json",
+      "sha256": "539254dd83b064aed4174fd71dee211c2593405161c9802890b2d1d94e2b8b6d",
+      "revision": "2460778645",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q15843679.json?revision=2460778645"
+    },
+    {
+      "path": "wikidata/Q16001377/2465810736.json",
+      "sha256": "288943a49006b184144ea88eb533346f4775bddfa70bd9aa5d6e3ecff4e3da58",
+      "revision": "2465810736",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q16001377.json?revision=2465810736"
+    },
+    {
+      "path": "wikidata/Q16164220/2478025868.json",
+      "sha256": "27634bb1c696e8a27b68ec3d8a341a5b0f207d02540a2ee1515d17ca1af5f397",
+      "revision": "2478025868",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q16164220.json?revision=2478025868"
+    },
+    {
+      "path": "wikidata/Q16274955/2357554608.json",
+      "sha256": "7fda39adbc7f953881a07723cedeabe3b4a04a5f7c7e2d3cd1fcb88281249712",
+      "revision": "2357554608",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q16274955.json?revision=2357554608"
+    },
+    {
+      "path": "wikidata/Q16278208/2467426769.json",
+      "sha256": "db6dff46a3df3dec18db6b4c323a8ac3cf96479d196326939104c7c61b7ac17f",
+      "revision": "2467426769",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q16278208.json?revision=2467426769"
+    },
+    {
+      "path": "wikidata/Q16280889/2425142600.json",
+      "sha256": "139f06ac3600696c4fdd035e782522860c2e7a5f0526f613028cf6e90e3eff2b",
+      "revision": "2425142600",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q16280889.json?revision=2425142600"
+    },
+    {
+      "path": "wikidata/Q16291754/2486078684.json",
+      "sha256": "69505f90cd0d3e1dfac28d19d89311592e3d7c5fa1967a78d4df545fa4ee98a9",
+      "revision": "2486078684",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q16291754.json?revision=2486078684"
+    },
+    {
+      "path": "wikidata/Q1721497/2497796072.json",
+      "sha256": "618a89945f8c5e230aa1d45b34df998c5b25de2b2561b398a95d70531aa42c44",
+      "revision": "2497796072",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1721497.json?revision=2497796072"
+    },
+    {
+      "path": "wikidata/Q1729369/2479411637.json",
+      "sha256": "42a4060c0dd3c5f4d3541e0bbb320393fdc1b9e9ad5326e1eb8f4dea29452721",
+      "revision": "2479411637",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1729369.json?revision=2479411637"
+    },
+    {
+      "path": "wikidata/Q1806961/2484147344.json",
+      "sha256": "b63abb9e2669a4b11cbc9aeb0206dcca920fcf2e8b60d7b42affa24f177ec092",
+      "revision": "2484147344",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1806961.json?revision=2484147344"
+    },
+    {
+      "path": "wikidata/Q18608332/2459295812.json",
+      "sha256": "7f548234781c6192c8a53ba5fefce6c230cee42f6a0706af85a296cf04c0780a",
+      "revision": "2459295812",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q18608332.json?revision=2459295812"
+    },
+    {
+      "path": "wikidata/Q1933102/2406909816.json",
+      "sha256": "c225c0b94c2df070594371ec4b18383551b6ca3da580fd1a8fd688bf5b200264",
+      "revision": "2406909816",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1933102.json?revision=2406909816"
+    },
+    {
+      "path": "wikidata/Q19375992/2400825026.json",
+      "sha256": "1298e1ccb00867ff55fb16ad46fccf811c0f3d0a8cb70c3995fa094740853cfd",
+      "revision": "2400825026",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19375992.json?revision=2400825026"
+    },
+    {
+      "path": "wikidata/Q19687636/2451269831.json",
+      "sha256": "cfbf0665fcee6bf443ed3a2a068df191b6274e6f407fbf9ec6899ca66ebf448a",
+      "revision": "2451269831",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19687636.json?revision=2451269831"
+    },
+    {
+      "path": "wikidata/Q19800780/2357464413.json",
+      "sha256": "f12fc8baa795437b18bfc254ccc237ae557702d38265cb7e85d204955642a3b1",
+      "revision": "2357464413",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19800780.json?revision=2357464413"
+    },
+    {
+      "path": "wikidata/Q19825032/2533249499.json",
+      "sha256": "ffb23ee54e9fea06695a999e361ae9dd29200b58557984a09c003f1e890205bb",
+      "revision": "2533249499",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19825032.json?revision=2533249499"
+    },
+    {
+      "path": "wikidata/Q19965937/2357471326.json",
+      "sha256": "2f504e26d2b189814169a4c0433773c7ba38dc355abddd9f8aa9599467e8e42d",
+      "revision": "2357471326",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19965937.json?revision=2357471326"
+    },
+    {
+      "path": "wikidata/Q19967981/2480560325.json",
+      "sha256": "9f356fe151b3afeb661b37d2359e7a4c9f8d4e28b405663841bf581a7c7ec3fb",
+      "revision": "2480560325",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19967981.json?revision=2480560325"
+    },
+    {
+      "path": "wikidata/Q19999081/2414532067.json",
+      "sha256": "14acf207d6d61d000886c72d39d956feee988e36c5fa9d4cbe12a49b066d82d9",
+      "revision": "2414532067",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19999081.json?revision=2414532067"
+    },
+    {
+      "path": "wikidata/Q19999956/2470032620.json",
+      "sha256": "ac56326ef5778eee3a929e6f090ffbc22241e3943872ca400191949bf3af2db4",
+      "revision": "2470032620",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q19999956.json?revision=2470032620"
+    },
+    {
+      "path": "wikidata/Q20001657/2540389060.json",
+      "sha256": "331b5ad12cfe924ee7de7875ff9671e165c302a3f027665f512c2afc5c62e92c",
+      "revision": "2540389060",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q20001657.json?revision=2540389060"
+    },
+    {
+      "path": "wikidata/Q20001966/2406926563.json",
+      "sha256": "324171c70e92c5faac722de8b397c8d0c6622f399ad33ccc3b3f057ea8de336c",
+      "revision": "2406926563",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q20001966.json?revision=2406926563"
+    },
+    {
+      "path": "wikidata/Q20002116/2509629883.json",
+      "sha256": "6c9266b1be6738b1724fa9bee55b9588ce835d23fd6ab2fa04dc51f058961056",
+      "revision": "2509629883",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q20002116.json?revision=2509629883"
+    },
+    {
+      "path": "wikidata/Q20084038/2357591905.json",
+      "sha256": "04da65f33b52e4d548c6b3ff5a6ae671135c641b50529cb125db58ca1291975b",
+      "revision": "2357591905",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q20084038.json?revision=2357591905"
+    },
+    {
+      "path": "wikidata/Q21061297/2458867301.json",
+      "sha256": "1904c42027d0bb909277c2925f111464ce555e4b59430baa6fd392b83005f9b0",
+      "revision": "2458867301",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q21061297.json?revision=2458867301"
+    },
+    {
+      "path": "wikidata/Q21069195/2515484271.json",
+      "sha256": "fbd5017948c1efb1e7a4f7cbf462480fb8a54ede48999992c8447545257dbad6",
+      "revision": "2515484271",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q21069195.json?revision=2515484271"
+    },
+    {
+      "path": "wikidata/Q21081645/2414281872.json",
+      "sha256": "2783122bfa872756ec45bcb452deae9a640297549f8fc45830524fb0f9557bad",
+      "revision": "2414281872",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q21081645.json?revision=2414281872"
+    },
+    {
+      "path": "wikidata/Q21946841/2406917608.json",
+      "sha256": "b9a51fabf446601bef06b3b81987072e0bfbc9c740517b297b59283148ffc7ec",
+      "revision": "2406917608",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q21946841.json?revision=2406917608"
+    },
+    {
+      "path": "wikidata/Q22037468/2357603843.json",
+      "sha256": "994e36ee67127206b4b351544c7b535035be4a41a23f501c242ac87c8f7df85c",
+      "revision": "2357603843",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q22037468.json?revision=2357603843"
+    },
+    {
+      "path": "wikidata/Q23049755/2536830284.json",
+      "sha256": "3310c3353a612271c93d6f554b9d15830e3b16e04fd0aecb4223c7c936513b21",
+      "revision": "2536830284",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23049755.json?revision=2536830284"
+    },
+    {
+      "path": "wikidata/Q23049788/2535812767.json",
+      "sha256": "2568f25b0b50713be893e5275691e49465f9442ade80ea6e3c0e58d1f15e9274",
+      "revision": "2535812767",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23049788.json?revision=2535812767"
+    },
+    {
+      "path": "wikidata/Q23049789/2491856845.json",
+      "sha256": "d84b94e58535c5bb2a197a63323df66f517b5f2f1923cf51e8c1437ecb8dbb58",
+      "revision": "2491856845",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23049789.json?revision=2491856845"
+    },
+    {
+      "path": "wikidata/Q23305531/2407316450.json",
+      "sha256": "1c4a39db7b402e30e7d5d4d6bb09db715cbc9361def9de009f68722d03c5a03d",
+      "revision": "2407316450",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q23305531.json?revision=2407316450"
+    },
+    {
+      "path": "wikidata/Q2390237/2512668060.json",
+      "sha256": "ce5a85ed1125f34e09382a0d4bd45b393e45fb0508f7f81fa4339ba92efb6ae8",
+      "revision": "2512668060",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2390237.json?revision=2512668060"
+    },
+    {
+      "path": "wikidata/Q2456724/2486081129.json",
+      "sha256": "4f835be1cef3f7d394f74a7b5b3aa8c6228a2c90ffbc71bcc0cb0194255082e5",
+      "revision": "2486081129",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2456724.json?revision=2486081129"
+    },
+    {
+      "path": "wikidata/Q25803906/2470177730.json",
+      "sha256": "daab867d445e407a3b3a32e6e3715bb5bb3961e390054e3350d98356d561a490",
+      "revision": "2470177730",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q25803906.json?revision=2470177730"
+    },
+    {
+      "path": "wikidata/Q26903158/2462190858.json",
+      "sha256": "50753b44e8383ea87dcc01cf271f8abf10aaa54c3a92b2a75613d992e5ff6696",
+      "revision": "2462190858",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q26903158.json?revision=2462190858"
+    },
+    {
+      "path": "wikidata/Q27548800/2406886852.json",
+      "sha256": "12082bb0a2d5eb9359be1e47200ea34565eae123f826ad677f07785c3b54b238",
+      "revision": "2406886852",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q27548800.json?revision=2406886852"
+    },
+    {
+      "path": "wikidata/Q2775739/2491991219.json",
+      "sha256": "cbcf42e818fba5d0b3de7eb90afac15ea2c5fefc75447f435b1eb3698ea4bf44",
+      "revision": "2491991219",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2775739.json?revision=2491991219"
+    },
+    {
+      "path": "wikidata/Q2781527/2450545930.json",
+      "sha256": "9366c19413a1eb0ef4fb580403c37762791c1761031d040428b3628081dc0308",
+      "revision": "2450545930",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2781527.json?revision=2450545930"
+    },
+    {
+      "path": "wikidata/Q28053499/2496715679.json",
+      "sha256": "6bf7f69987e645787a5aa17cccb60f62aed163be0108e97dff4bb104da61dada",
+      "revision": "2496715679",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28053499.json?revision=2496715679"
+    },
+    {
+      "path": "wikidata/Q28053511/2407034771.json",
+      "sha256": "fe9eee16f41eb70c345e7fecd333b9fb932fca2c8c5c47a8e834e4f4284b1ad9",
+      "revision": "2407034771",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28053511.json?revision=2407034771"
+    },
+    {
+      "path": "wikidata/Q28053523/2545454474.json",
+      "sha256": "cb82543b6053991df552b1305db8bbe02cff747c39f4dd9b5c8687b259ae0daa",
+      "revision": "2545454474",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28053523.json?revision=2545454474"
+    },
+    {
+      "path": "wikidata/Q28053535/2474573612.json",
+      "sha256": "ff69221ed4eb4aa9bd4b7c647a73cb95ec5104c84341976f5042a25e3554870c",
+      "revision": "2474573612",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28053535.json?revision=2474573612"
+    },
+    {
+      "path": "wikidata/Q28053543/2357611269.json",
+      "sha256": "6f91315a9d7d796a2874050999cce69074d85159d624e66bd95874903550ebbb",
+      "revision": "2357611269",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28053543.json?revision=2357611269"
+    },
+    {
+      "path": "wikidata/Q28053555/2407035855.json",
+      "sha256": "1070210432645e99895d377b731ce4a741c8ce5af0189fdaf9e51ba44edc8d29",
+      "revision": "2407035855",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28053555.json?revision=2407035855"
+    },
+    {
+      "path": "wikidata/Q28053562/2407035527.json",
+      "sha256": "a8d82616917c3268c946513d1a57531ebaa4bb6cd94fd2d4ab2f6bb097790561",
+      "revision": "2407035527",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28053562.json?revision=2407035527"
+    },
+    {
+      "path": "wikidata/Q28790469/2525818334.json",
+      "sha256": "9086ff914589148ae033efe7511ad2c1426dfd1c9802ddf6a6ced749328be3f3",
+      "revision": "2525818334",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q28790469.json?revision=2525818334"
+    },
+    {
+      "path": "wikidata/Q2929674/2549026029.json",
+      "sha256": "a0f154340f4ce3b020f2d7b194186a35f62b89015f7e017b6c914f00521725a7",
+      "revision": "2549026029",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2929674.json?revision=2549026029"
+    },
+    {
+      "path": "wikidata/Q2947632/2499330045.json",
+      "sha256": "f2d1504cdbdd252813bfeae503d0709096341b72f45d20ce4bc36313d2dcc6b4",
+      "revision": "2499330045",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2947632.json?revision=2499330045"
+    },
+    {
+      "path": "wikidata/Q30315209/2540416843.json",
+      "sha256": "37efce6b4599cf443ae4cfdd76ebe77d45a13d6187fd1cca5a62626784aee801",
+      "revision": "2540416843",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q30315209.json?revision=2540416843"
+    },
+    {
+      "path": "wikidata/Q307378/2391057309.json",
+      "sha256": "fefdd324834acacdad3d9c03c692dd304912cb41f1ab246b89cf50aba3ca3ddf",
+      "revision": "2391057309",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q307378.json?revision=2391057309"
+    },
+    {
+      "path": "wikidata/Q307578/2512882617.json",
+      "sha256": "246ad723c32306771964daf951aaf23821b98d5ee295a96e490b2a932c8f9fd5",
+      "revision": "2512882617",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q307578.json?revision=2512882617"
+    },
+    {
+      "path": "wikidata/Q3104749/2547138003.json",
+      "sha256": "295770fead59da741a79915a5e23b33b826bc708565238db724495ef9bb7c7c4",
+      "revision": "2547138003",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3104749.json?revision=2547138003"
+    },
+    {
+      "path": "wikidata/Q3155692/2357525868.json",
+      "sha256": "c2e9a4c7f10f49014ab991e59f012a21d52b4beee07bba59fef25e5304555fbb",
+      "revision": "2357525868",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3155692.json?revision=2357525868"
+    },
+    {
+      "path": "wikidata/Q3194364/2455650068.json",
+      "sha256": "163e2bcc7da62b24b4e0b1374e5f59660c0f517a2d856ba38ff86ae8df99ac69",
+      "revision": "2455650068",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3194364.json?revision=2455650068"
+    },
+    {
+      "path": "wikidata/Q3318212/2357526162.json",
+      "sha256": "710493c79867bbaaff0fba6cfd0713651e4fa8d6b875c31f5e150e0da43fbcee",
+      "revision": "2357526162",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3318212.json?revision=2357526162"
+    },
+    {
+      "path": "wikidata/Q34450085/2426833930.json",
+      "sha256": "df29b0149bd61441fb0b63506c47ead2ee84c5cdf1aad786c7c5dcb6b2a6b88b",
+      "revision": "2426833930",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q34450085.json?revision=2426833930"
+    },
+    {
+      "path": "wikidata/Q3481326/2470816851.json",
+      "sha256": "49a446994d0ec8c69b7d414da92062b5d112d4aed400d583938ad5753af09b62",
+      "revision": "2470816851",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3481326.json?revision=2470816851"
+    },
+    {
+      "path": "wikidata/Q3575691/2357899591.json",
+      "sha256": "27e6bc75dc11862bb4555d40b2333f61d87a3c32d7c1e28a0688bea8d924becd",
+      "revision": "2357899591",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3575691.json?revision=2357899591"
+    },
+    {
+      "path": "wikidata/Q3607213/2528399100.json",
+      "sha256": "6d32d4801cb223acfe447d86a8552bb76c52423fb522384fe2afb516672f2fed",
+      "revision": "2528399100",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3607213.json?revision=2528399100"
+    },
+    {
+      "path": "wikidata/Q37124238/2357626712.json",
+      "sha256": "725a4f22d6d4490b967587859a8c0477f696d42ac4a1b839a4c4492b56b5c1ef",
+      "revision": "2357626712",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q37124238.json?revision=2357626712"
+    },
+    {
+      "path": "wikidata/Q37203906/2461647036.json",
+      "sha256": "971bcb7f1574ecbe33e90a18c7e8fb39d2c9272a74b01f5bb9c005f20f6fe01c",
+      "revision": "2461647036",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q37203906.json?revision=2461647036"
+    },
+    {
+      "path": "wikidata/Q37330317/2495732079.json",
+      "sha256": "d6f6587da7fe60f360eecff1a09e68b4b8bb8c99e2f8e79bc7850aa5756f8ba6",
+      "revision": "2495732079",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q37330317.json?revision=2495732079"
+    },
+    {
+      "path": "wikidata/Q3951211/2470628203.json",
+      "sha256": "27374e8ad199ad74e390826d77e6a088c2f6f4d2542426183894f362bb9e8c36",
+      "revision": "2470628203",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q3951211.json?revision=2470628203"
+    },
+    {
+      "path": "wikidata/Q4024972/2544889495.json",
+      "sha256": "59c20dc143d1b0bfd2fbb7d3d25cc5921ea49ff93c76b9b69ea3679c5ff5e2cc",
+      "revision": "2544889495",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4024972.json?revision=2544889495"
+    },
+    {
+      "path": "wikidata/Q4115492/2440480145.json",
+      "sha256": "c300274f1299beff9b181fed674d78aa9e8b5732d22050f0100612e9fbf42281",
+      "revision": "2440480145",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4115492.json?revision=2440480145"
+    },
+    {
+      "path": "wikidata/Q4164677/2440478591.json",
+      "sha256": "59e8e9b83243d80673b9615c6cfe66b756d1c54d1030fec67de7f234cb3d432b",
+      "revision": "2440478591",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4164677.json?revision=2440478591"
+    },
+    {
+      "path": "wikidata/Q4404545/2550384981.json",
+      "sha256": "b67f2ccedd8f8199441f796486321dbb85d3d5157f7867b99ddf02a116c719ca",
+      "revision": "2550384981",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4404545.json?revision=2550384981"
+    },
+    {
+      "path": "wikidata/Q4665325/2474573103.json",
+      "sha256": "66ffaf9aa3f9e828b4ab41510b1fa49b0b7d7bbbfe1704b879f111318052f8fa",
+      "revision": "2474573103",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4665325.json?revision=2474573103"
+    },
+    {
+      "path": "wikidata/Q4665347/2464050792.json",
+      "sha256": "b20a9e536f3f76062496899bc01bbd848942150b35ef4b49f43b5c25b67052a6",
+      "revision": "2464050792",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4665347.json?revision=2464050792"
+    },
+    {
+      "path": "wikidata/Q4665579/2357531971.json",
+      "sha256": "8eca0b25700bbdee47ab06deccd3ce44e3944edd79712808a844a5581bd8bbbf",
+      "revision": "2357531971",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4665579.json?revision=2357531971"
+    },
+    {
+      "path": "wikidata/Q4666228/2357531996.json",
+      "sha256": "5e3a9b93d7c4250a2d47f1862596f2e747178bd0b9d7b54c67df376b63d0a6e2",
+      "revision": "2357531996",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4666228.json?revision=2357531996"
+    },
+    {
+      "path": "wikidata/Q4666328/2470237792.json",
+      "sha256": "fa1bd206368c94ccc72aac1195c7ffee1ab65cd595e1c5f7a8aaa59ec12c969e",
+      "revision": "2470237792",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4666328.json?revision=2470237792"
+    },
+    {
+      "path": "wikidata/Q4746488/2517355008.json",
+      "sha256": "e011a9aca587c594b80eb61543bd70d3f32ad1002d787732ebce00f62c22355f",
+      "revision": "2517355008",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q4746488.json?revision=2517355008"
+    },
+    {
+      "path": "wikidata/Q479503/2512491628.json",
+      "sha256": "e9937f0774dd540e07b69429aee766f1aa3815e47f2504ebfefdf338a14948a9",
+      "revision": "2512491628",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q479503.json?revision=2512491628"
+    },
+    {
+      "path": "wikidata/Q56404739/2357644421.json",
+      "sha256": "e61bcde7e165cbaf685aed52c02fe97900a566744dd16846dbb2002f3a567c4c",
+      "revision": "2357644421",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q56404739.json?revision=2357644421"
+    },
+    {
+      "path": "wikidata/Q56669276/2505923601.json",
+      "sha256": "d1db08ea0bff048029fa20c26fef9114d1de77cac45a7d7daf6d0e2d31aacf88",
+      "revision": "2505923601",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q56669276.json?revision=2505923601"
+    },
+    {
+      "path": "wikidata/Q59051920/2196950570.json",
+      "sha256": "dfd164e1af83e264d4b85ddbb1ff24c0ff8261e9c53c9efd3e3d0561359315f8",
+      "revision": "2196950570",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q59051920.json?revision=2196950570"
+    },
+    {
+      "path": "wikidata/Q5936334/2398060974.json",
+      "sha256": "d4e570ce10b73c56784b1d4580a47d2c5e17a63170aeec9b65a1a3e7074bb111",
+      "revision": "2398060974",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q5936334.json?revision=2398060974"
+    },
+    {
+      "path": "wikidata/Q6006377/2439784898.json",
+      "sha256": "1a3eaf814cb4fbd0ff3e45878262d42224583ec2f117c8fc0f9d27145e863a53",
+      "revision": "2439784898",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q6006377.json?revision=2439784898"
+    },
+    {
+      "path": "wikidata/Q61750247/2425143968.json",
+      "sha256": "41661062736fb3f3dbe4a36ec320b4821f9173ec63109c5b5ce0400fd38f0404",
+      "revision": "2425143968",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q61750247.json?revision=2425143968"
+    },
+    {
+      "path": "wikidata/Q63919133/2357656658.json",
+      "sha256": "e64afe9468e682e5575efcfa06d3563adc83fa2fa356ac59bdb0718b81b71615",
+      "revision": "2357656658",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q63919133.json?revision=2357656658"
+    },
+    {
+      "path": "wikidata/Q63919383/2357657045.json",
+      "sha256": "6fa854ab8a2cdfcc66233f94db291bfc3a208a81e1dfdd2277867a8f9b690e6b",
+      "revision": "2357657045",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q63919383.json?revision=2357657045"
+    },
+    {
+      "path": "wikidata/Q63930315/2357657936.json",
+      "sha256": "d8f625ca4a9c02c014dcd04e04f7b32fb393bb5e3b686fbc653740db9c8433b8",
+      "revision": "2357657936",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q63930315.json?revision=2357657936"
+    },
+    {
+      "path": "wikidata/Q63930931/2408660458.json",
+      "sha256": "f8495b150cf0010630caa4a6f9113976c912bcea810d470a8c4678158e42ddb8",
+      "revision": "2408660458",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q63930931.json?revision=2408660458"
+    },
+    {
+      "path": "wikidata/Q63934516/2539119444.json",
+      "sha256": "0f74ec1b42da8fbac6801208b28d4f4df47d0e540d84332afd5748bbf71363d3",
+      "revision": "2539119444",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q63934516.json?revision=2539119444"
+    },
+    {
+      "path": "wikidata/Q63938988/2357659762.json",
+      "sha256": "86c47facc62fcdc1c5f7dbf5649c6d0e7c6bf38fbd3e615be1b1e78961c83cff",
+      "revision": "2357659762",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q63938988.json?revision=2357659762"
+    },
+    {
+      "path": "wikidata/Q639748/2509254980.json",
+      "sha256": "9854e45ff0fdfe25227529350e730d24bd3d696eb4dd676bb7a25be12a1f3a6d",
+      "revision": "2509254980",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q639748.json?revision=2509254980"
+    },
+    {
+      "path": "wikidata/Q649085/2359542577.json",
+      "sha256": "ccd5a189b0ed2307cfebcf77165c6876f1e322c1f0654f0686fb6ca4dac6e2e0",
+      "revision": "2359542577",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q649085.json?revision=2359542577"
+    },
+    {
+      "path": "wikidata/Q65593846/2538342879.json",
+      "sha256": "6a89c7d0219663b10e2bf35058432f34f57886e09af0a9a27844e4274a0c23f1",
+      "revision": "2538342879",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q65593846.json?revision=2538342879"
+    },
+    {
+      "path": "wikidata/Q6956869/2357535948.json",
+      "sha256": "6ade15d9ff962f7ec12ab588d682aca85e8e8c2f8078e8d1c48ad93c1cec2723",
+      "revision": "2357535948",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q6956869.json?revision=2357535948"
+    },
+    {
+      "path": "wikidata/Q7282676/2445167687.json",
+      "sha256": "5d34c3bd100fc77c25be75de1c30efe83d856c228fe84cbab6def9bf4387850a",
+      "revision": "2445167687",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q7282676.json?revision=2445167687"
+    },
+    {
+      "path": "wikidata/Q7380459/2492314095.json",
+      "sha256": "2395088259099aa827dd412167903e1b4bfacbf256f22ac75b0689958f261a8e",
+      "revision": "2492314095",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q7380459.json?revision=2492314095"
+    },
+    {
+      "path": "wikidata/Q7398756/2530496023.json",
+      "sha256": "bc99ded06f8826ecf6840f9bf41e852f8631fb22697ed3c167af459a46ab7463",
+      "revision": "2530496023",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q7398756.json?revision=2530496023"
+    },
+    {
+      "path": "wikidata/Q7403650/2357536790.json",
+      "sha256": "4c639a86bfe2f3623f7876c84a38fb6a5b25eb68610b5669f63ce62637057ff3",
+      "revision": "2357536790",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q7403650.json?revision=2357536790"
+    },
+    {
+      "path": "wikidata/Q752665/2456070300.json",
+      "sha256": "159fef0a9fcfab2262f2b4a642d8ef1ef01d5f89505eb9fdd433f34a22ec2c3d",
+      "revision": "2456070300",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q752665.json?revision=2456070300"
+    },
+    {
+      "path": "wikidata/Q81597824/2357954193.json",
+      "sha256": "ae92c873d89525a244e052ff75f192d894ddbfab02a1d7cd5c88fbf628811cff",
+      "revision": "2357954193",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q81597824.json?revision=2357954193"
+    },
+    {
+      "path": "wikidata/Q892211/2535264695.json",
+      "sha256": "3ee969f47e6179463747a16fbfa1fa79a9524f208f417e7be35774e550c413f6",
+      "revision": "2535264695",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q892211.json?revision=2535264695"
+    },
+    {
+      "path": "wikidata/Q9140864/2484197323.json",
+      "sha256": "ac1c9128c4c78d2e42aad3965d13af37e6e4c663a86847e51f9da82a675fa1fc",
+      "revision": "2484197323",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q9140864.json?revision=2484197323"
+    },
+    {
+      "path": "wikidata/Q9258131/2385472558.json",
+      "sha256": "e94ac8c5d9a375f978832eafd56a13f3203d6543fb94616fd58b7d5131503190",
+      "revision": "2385472558",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q9258131.json?revision=2385472558"
+    },
+    {
+      "path": "wikidata/Q946969/2461713188.json",
+      "sha256": "d5ae0df681b5e6787a15ea109d5166964f753b88755cbfb1938e6266857dbe16",
+      "revision": "2461713188",
+      "url": "https://www.wikidata.org/wiki/Special:EntityData/Q946969.json?revision=2461713188"
     }
   ],
-  "license": {
-    "path": "LICENSE",
-    "sha256": "8c0814c525426e67c04ca562f28364be477003697903d257160c081d14b271bf"
-  }
+  "notices": [
+    {
+      "path": "CC0-1.0",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt"
+    },
+    {
+      "path": "CC-BY-SA-4.0",
+      "sha256": "28a9529c7d0bb4dc51f4bf5c116a3d16ef247a052f7591466768ddf563fd1cf5",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt"
+    }
+  ]
 }

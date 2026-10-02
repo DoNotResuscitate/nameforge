@@ -33,8 +33,9 @@ Options:
 Text writes one name per line to stdout and JSON reproduction metadata to stderr.
 JSON writes one schema_version=1 result to stdout. Failures write no partial batch.
 Category mode chooses each name's category uniformly; blend trains on the union.
-Only Latin-script generation is supported; --all-categories currently fails because
-Greek and Arabic have no Latin profile. Select supported categories explicitly.
+All ten built-in categories support Latin-only generation, including sourced
+romanized Greek and Arabic. Greek mixes ancient and modern names; its source
+does not supply gender labels. Arabic is broad, without a regional claim.
 `
 
 func parseGenerate(args []string) (generator.Request, string, error) {

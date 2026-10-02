@@ -7,10 +7,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
 	"time"
+	"unicode"
 
 	"github.com/DoNotResuscitate/nameforge/internal/export"
 )
@@ -64,29 +66,55 @@ func TestBinaryHeadless(t *testing.T) {
 		return code, stdout.String(), stderr.String()
 	}
 	for _, mode := range []string{"category", "blend"} {
-		t.Run(mode, func(t *testing.T) {
-			args := []string{"generate", "--category", "french", "--category", "italian", "--mode", mode, "--seed", "42"}
-			code, stdout, stderr := run(append(args, "--format", "json")...)
-			if code != 0 || stderr != "" {
-				t.Fatalf("first-run JSON: %d %s", code, stderr)
-			}
-			var result export.Result
-			if err := json.Unmarshal([]byte(stdout), &result); err != nil || !result.Complete || len(result.Names) != 20 {
-				t.Fatalf("bad JSON result: %v", err)
-			}
-			code, replay, stderr := run(append(args, "--format", "json")...)
-			if code != 0 || stderr != "" || replay != stdout {
-				t.Fatal("binary seeded output changed across runs")
-			}
-			code, text, metadata := run(args...)
-			var expected strings.Builder
-			for _, name := range result.Names {
-				expected.WriteString(name.Name + "\n")
-			}
-			if code != 0 || text != expected.String() || !json.Valid([]byte(metadata)) {
-				t.Fatalf("first-run text: %d %q", code, metadata)
-			}
-		})
+		for _, selection := range []struct {
+			Label      string
+			Args       []string
+			Categories int
+		}{
+			{"french-italian", []string{"--category", "french", "--category", "italian"}, 2},
+			{"greek", []string{"--category", "greek"}, 1},
+			{"arabic", []string{"--category", "arabic"}, 1},
+			{"all-categories", []string{"--all-categories"}, 10},
+		} {
+			t.Run(mode+"/"+selection.Label, func(t *testing.T) {
+				args := append([]string{"generate", "--mode", mode, "--seed", "42"}, selection.Args...)
+				code, stdout, stderr := run(append(args, "--format", "json")...)
+				if code != 0 || stderr != "" {
+					t.Fatalf("first-run JSON: %d %s", code, stderr)
+				}
+				var result export.Result
+				if err := json.Unmarshal([]byte(stdout), &result); err != nil || !result.Complete || len(result.Names) != 20 {
+					t.Fatalf("bad JSON result: %v", err)
+				}
+				if len(result.CategoryIDs) != selection.Categories || len(result.Bounds) != selection.Categories || len(result.BundleHash) != 64 || result.AlgorithmVersion == "" || result.Seed != 42 {
+					t.Fatal("incomplete reproduction metadata")
+				}
+				code, replay, stderr := run(append(args, "--format", "json")...)
+				if code != 0 || stderr != "" || replay != stdout {
+					t.Fatal("binary seeded output changed across runs")
+				}
+				code, text, metadata := run(args...)
+				var expected strings.Builder
+				for _, name := range result.Names {
+					expected.WriteString(name.Name + "\n")
+					for _, r := range name.Name {
+						if unicode.IsLetter(r) && !unicode.Is(unicode.Latin, r) {
+							t.Fatal("non-Latin output")
+						}
+					}
+					if mode == "category" && len(name.CategoryIDs) != 1 || mode == "blend" && !reflect.DeepEqual(name.CategoryIDs, result.CategoryIDs) {
+						t.Fatal("incorrect attribution")
+					}
+				}
+				if code != 0 || text != expected.String() || !json.Valid([]byte(metadata)) {
+					t.Fatalf("first-run text: %d %q", code, metadata)
+				}
+				code, textReplay, metadataReplay := run(args...)
+				if code != 0 || textReplay != text || metadataReplay != metadata {
+					t.Fatal("text replay changed")
+				}
+			})
+		}
 	}
 	for _, args := range [][]string{{"--help"}, {"version"}, {"licenses"}} {
 		code, stdout, stderr := run(args...)

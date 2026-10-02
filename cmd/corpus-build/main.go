@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/DoNotResuscitate/nameforge/internal/source/builtin"
 	"github.com/DoNotResuscitate/nameforge/internal/source/faker"
 )
 
@@ -53,6 +54,7 @@ func run(ctx context.Context, args []string) error {
 	f := flag.NewFlagSet("corpus-build", flag.ContinueOnError)
 	cachePath := f.String("cache", ".local/faker", "locked raw source cache")
 	lockPath := f.String("lock", "data/sources.lock.json", "reviewed source lock")
+	rosterPath := f.String("roster", "", "research QID/revision roster (pin only)")
 	rebuild := f.Bool("rebuild", false, "verify identical rebuild from locked cache")
 	if err := f.Parse(args[1:]); err != nil {
 		return err
@@ -61,12 +63,20 @@ func run(ctx context.Context, args []string) error {
 		return fmt.Errorf("unexpected arguments")
 	}
 	cache := diskCache(*cachePath)
-	remote := faker.HTTPRemote(&http.Client{})
+	remote := builtin.Remote(&http.Client{})
 	if command == "pin" {
 		if _, err := os.Stat(*lockPath); !os.IsNotExist(err) {
 			return fmt.Errorf("pin requires an absent lock; existing source locks must be refreshed explicitly")
 		}
-		lock, err := faker.Pin(ctx, remote, cache)
+		fakerData, err := os.ReadFile(builtin.FakerLockPath)
+		if err != nil {
+			return err
+		}
+		roster, err := os.ReadFile(*rosterPath)
+		if err != nil {
+			return err
+		}
+		lock, err := builtin.Pin(ctx, fakerData, roster, remote, cache)
 		if err != nil {
 			return err
 		}
@@ -80,15 +90,22 @@ func run(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	lock, err := faker.DecodeLock(data)
+	lock, err := builtin.DecodeLock(data)
+	if err != nil {
+		return err
+	}
+	original, err := builtin.FakerLock(lock, os.DirFS("."))
 	if err != nil {
 		return err
 	}
 	switch command {
 	case "fetch":
-		return faker.Fetch(ctx, lock, remote, cache)
+		if err := faker.Fetch(ctx, original, faker.HTTPRemote(&http.Client{}), cache); err != nil {
+			return err
+		}
+		return builtin.Fetch(ctx, lock, remote, cache)
 	case "build":
-		artifacts, err := faker.Build(ctx, lock, cache)
+		artifacts, err := builtin.Build(ctx, lock, original, cache)
 		if err != nil {
 			return err
 		}
@@ -104,11 +121,11 @@ func run(ctx context.Context, args []string) error {
 		}
 		return nil
 	case "verify":
-		if err := faker.Verify(lock, os.DirFS(".")); err != nil {
+		if err := builtin.Verify(lock, original, os.DirFS(".")); err != nil {
 			return err
 		}
 		if *rebuild {
-			artifacts, err := faker.Build(ctx, lock, cache)
+			artifacts, err := builtin.Build(ctx, lock, original, cache)
 			if err != nil {
 				return err
 			}

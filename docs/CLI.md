@@ -1,7 +1,8 @@
 # Headless Nameforge usage
 
 Build with `mise run build`, then run `./bin/nameforge` (or your installed binary).
-Generation uses the embedded, licensed Faker static arrays. It works on first run
+Generation uses embedded, licensed Faker arrays and sourced romanized Greek/Arabic
+lists. It works on first run
 without network access, a writable home, a cache, Go, or separately installed data.
 Runtime does not download or extract corpora. Local packs and the TUI are later
 milestones; `--data-dir` is reserved and is not accepted by generation.
@@ -16,12 +17,16 @@ nameforge data inspect --category french
 nameforge generate --category french --category italian --mode category --seed 42
 nameforge generate --category spanish --category turkish --mode blend --seed 42 --format json
 nameforge generate --category portuguese-pt --gender feminine --count 10 --order 1 --min-length 3 --max-length 10
+nameforge generate --category greek --category arabic --seed 42
+nameforge generate --all-categories --mode blend --seed 42 --format json
 nameforge licenses
 nameforge version
 ```
 
-`licenses` displays the complete embedded Faker MIT notice, including inherited
-faker.js notices. The application's license is GPLv3; see the repository `LICENSE`.
+`licenses` displays the complete Faker MIT notice (including inherited faker.js
+notices), Wikimedia attribution, CC BY-SA 4.0 and CC0 1.0 legal texts. Wikipedia-derived
+Greek records and adaptations retain CC BY-SA 4.0; Wikidata Arabic records are CC0.
+The application's license is GPLv3; see the repository `LICENSE`.
 No-argument headless invocation returns usage mentioning `generate` and exit 2.
 The interactive no-argument entry point will arrive with M6. Help requires no TTY.
 
@@ -64,14 +69,16 @@ are checked before training their model.
   explicit labels. Generic does not mean unisex. The current bundle has no dual
   labels, so unisex filtering fails explicitly. Empty filtered categories are
   never dropped from a multi-category selection.
-- Only Latin-script generation is supported. Greek and Arabic retain their
-  native-script source data and return `unsupported_script`, without
-  transliteration. Consequently `--all-categories` currently fails explicitly;
-  choose Latin-profile categories from `data list`. Arabic is broadly labeled,
-  not a North African regional corpus.
-  Before UI work, M5a will replace these two training packs with externally sourced
-  romanized datasets so Greek, Arabic and `--all-categories` work in both modes
-  while output remains Latin-only.
+- Only Latin-script generation is supported. All ten built-in categories have
+  Latin profiles, including source-provided romanized Greek and Arabic.
+  `--all-categories --seed 42` works in both modes. Future unsupported data still
+  returns an explicit `unsupported_script` error; no transliteration occurs.
+- Greek mixes ancient/mythological and modern examples; its source provides no
+  gender labels, so masculine/feminine/unisex filters return `empty_selection`.
+  Accordingly, all-category requests require `--gender any` with this bundle.
+  Arabic is broad, not a North African regional corpus. Neither replacement
+  claims a single romanization standard or historical frequency; see
+  [source review](ROMANIZED.md).
 - Names are compared using NFC plus Go's default Unicode lowercase, not
   locale-specific case folding. Turkish `I`, `İ`, `ı`, `i` equivalence can differ
   from orthographic expectations. Output uppercases the first letter at the start

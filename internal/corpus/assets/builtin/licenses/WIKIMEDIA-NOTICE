@@ -1,0 +1,22 @@
+Greek training records are adapted from "Greek name", Wikipedia contributors:
+https://en.wikipedia.org/w/index.php?title=Greek_name&oldid=1377658475
+Contributor history: https://en.wikipedia.org/w/index.php?title=Greek_name&action=history
+Licensed under Creative Commons Attribution-ShareAlike 4.0 International:
+https://creativecommons.org/licenses/by-sa/4.0/
+Changes: select Ancient names and Biblical and Christian names lists, extract
+supplied Latin display spellings, remove link disambiguators, separate supplied
+alternatives, exclude reviewed unsuitable rows, NFC-normalize and deduplicate.
+The Wikipedia-derived Greek records and adaptations remain CC BY-SA 4.0.
+Other source records retain their separate notices; source licenses do not claim
+linguistic accuracy or historical frequency. Generated names are not source text.
+
+Arabic training records are adapted from revision-pinned Wikidata structured data.
+Wikidata contributors release structured data under CC0 1.0:
+https://www.wikidata.org/wiki/Wikidata:Licensing
+https://creativecommons.org/publicdomain/zero/1.0/
+Each record retains its entity/revision path, Latin statement ID, Arabic native
+name associations and classification evidence. Entity URLs and raw checksums
+are locked in data/sources.lock.json. No uniform romanization standard is claimed.
+Changes: select explicit Arabic-language given-name entities with source-supplied
+mul Latin native-label statements, hold out reviewed ambiguities, NFC-normalize
+and deduplicate. No project transliteration or generated training data is used.

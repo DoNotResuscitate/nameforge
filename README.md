@@ -6,11 +6,11 @@ Select one or more naming categories, generate a batch, and save favorites.
 The initial focus is Mediterranean and Western Europe, plus Turkish, with
 accurately sourced North African categories as a possible expansion.
 
-**Status: M1–M5 implemented.** The embedded multilingual corpus contains 10,652
-locale-specific records from pinned Faker static arrays. Corpus inspection and
-scriptable, reproducible Latin-script generation work offline. Next is M5a:
-source romanized Greek/Arabic datasets and enable all-category generation before
-the interactive TUI (M6). The Go module path is
+**Status: M1–M5a implemented.** The embedded multilingual corpus contains 10,851
+category-specific records from pinned Faker arrays, Wikipedia and Wikidata.
+Corpus inspection and reproducible Latin-only generation work offline for all
+ten categories, including romanized Greek and Arabic. Next is the interactive
+TUI (M6). The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
 ## Development handoff
@@ -44,6 +44,8 @@ mise run build
 ./bin/nameforge data list
 ./bin/nameforge generate --category french --category italian --seed 42
 ./bin/nameforge generate --category spanish --category turkish --mode blend --seed 42 --format json
+./bin/nameforge generate --category greek --category arabic --seed 42
+./bin/nameforge generate --all-categories --mode blend --seed 42 --format json
 ./bin/nameforge licenses
 ```
 
@@ -60,9 +62,11 @@ The binary requires no separate data, writable home, Go installation or network.
 
 ## Data and operation
 
-The bundled source is the MIT-licensed static name data from
-[Faker](https://github.com/faker-js/faker), extracted at a pinned revision and
-embedded with Go's `embed`. Built-in data loads offline without writable storage,
+Eight packs use MIT-licensed static name data from
+[Faker](https://github.com/faker-js/faker). Greek uses Wikipedia's supplied
+Latin/Greek pairs (CC BY-SA 4.0); Arabic uses Wikidata's supplied Latin name
+statements (CC0). Every source is revision-pinned, checksum-locked and embedded
+with Go's `embed`. Built-in data loads offline without writable storage,
 a data download, or a JavaScript runtime.
 Agents must never invent training names or sample Faker's generator as a corpus.
 
@@ -70,41 +74,44 @@ The bundle includes French, Spanish, Italian, Portuguese (Portugal), Greek,
 Turkish, German, Dutch, English, and broadly labelled Arabic. Use
 `mise run run -- data list` and
 `mise run run -- data inspect --category french` to inspect coverage.
-Greek (55 records) and Arabic (341) retain native scripts and return explicit
-unsupported-script errors in the current Latin-only generation engine. Arabic is
-not a North African regional pack. Generic buckets have unspecified gender;
-none of these lists has a spelling explicitly in both gendered arrays, so
-`--gender unisex` returns an actionable empty-selection error. `--all-categories`
-explicitly includes Greek and Arabic and therefore returns an unsupported-script
-error; select Latin-profile categories for generation.
-M5a will replace the Greek/Arabic training packs with externally sourced romanized
-lists and make `--all-categories` work in both modes while keeping output Latin-only.
+Greek (486 records) mixes ancient, mythological, Christian and modern examples,
+suited to the intended early-modern fantasy setting rather than a claim of
+historically exact 1600s usage. Its source does not label gender: use `--gender any`.
+Arabic (109 records) remains broadly labeled, with no North African regional
+claim. Generic buckets mean unspecified; all current unisex pools are empty.
+`--all-categories` works in both modes with the default gender filter.
+See [romanized source review](docs/ROMANIZED.md) for scope, spelling conventions,
+exclusions, licensing and provenance.
 
 ### Reproducible corpus maintenance
 
 Ordinary builds and tests use committed assets and never contact name sources.
-`data/sources.lock.json` pins Faker v10.6.0, every selected source path and raw
-checksum, and the complete MIT notice checksum. `data/quality.json` records
+`data/sources.lock.json` pins the supplemental source revisions, exact URLs and
+raw checksums, full license texts and the original `data/faker.lock.json` checksum.
+The latter retains Faker v10.6.0 and its complete MIT notice. `data/quality.json` records
 counts, gender/script inventory, rune-length ranges and rejection references;
 [the coverage report](docs/COVERAGE.md) records engine smoke results and limits.
 
 ```sh
 mise run data:verify # offline, no raw cache required
 mise run data:fetch  # explicit network operation; checksums, timeouts, retries
-mise run data:build  # offline extraction from .local/faker/<revision>/
+mise run data:build  # offline extraction from the ignored .local/faker/ cache
 mise exec -- go run ./cmd/corpus-build verify --rebuild # byte-identical rebuild
 ```
 
 The strict TypeScript parser accepts literal arrays/objects, quoted strings,
 supported escapes, comments and the export wrapper; unknown expressions fail.
+The Greek extractor reads only reviewed static wikitext lists and literal links;
+the Arabic extractor validates entity revisions, language and given-name claims.
 Data stays locale-specific to preserve its gender evidence. Normalized duplicate
 spellings merge within a locale with all original bucket/index references;
-blend-mode training deduplicates across locales. The full upstream notice is
-retained in `internal/corpus/assets/builtin/licenses/FAKER-LICENSE`.
+blend-mode training deduplicates across locales. Full source notices and attribution
+are retained in `internal/corpus/assets/builtin/licenses/` and shown by `licenses`.
 Raw caches remain ignored under `.local/`. Source refreshes require explicitly
 reviewing the revision, target metadata, checksums, extraction and coverage.
-The maintenance-only `pin` command initializes an absent lock at the reviewed
-revision; it refuses to overwrite an existing lock.
+The maintenance-only `pin --roster <research.json>` command initializes an absent
+supplemental lock from reviewed QID/revision metadata; it takes spellings only from
+upstream source files and refuses to overwrite an existing lock.
 
 The TUI will offer searchable category checkboxes, a default mode that chooses
 one selected category per generated name, and an explicit blended-model mode for

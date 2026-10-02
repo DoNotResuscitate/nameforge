@@ -1,14 +1,17 @@
-# Bundled coverage and M3 acceptance
+# Bundled coverage and M5a acceptance
 
-Source: Faker **v10.6.0**, immutable revision
+Eight packs use Faker **v10.6.0**, immutable revision
 `2cb04231a6ace91a59ebe577c653f4ec66478ca3`, literal
 `src/locales/<locale>/person/first_name.ts` arrays. Full upstream MIT notice is
 retained, including inherited notices. Raw SHA-256 values and reviewed category
-metadata are in `data/sources.lock.json`; machine-readable extraction accounting
+metadata are in `data/faker.lock.json`. Greek uses Wikipedia revision 1377658475
+(CC BY-SA 4.0); Arabic uses 119 revision-pinned Wikidata entities (CC0).
+Supplemental URLs/checksums and the Faker lock checksum are in
+`data/sources.lock.json`; machine-readable extraction accounting
 is in `data/quality.json`. No generator outputs are used for training.
 
 Bundle identity:
-`81f119c0cbc35c9c28a52f8d2709021cde3c474df4d880730878c39f8bd94498`.
+`36cd9b6d35049fcd815b233ba12f1565e852157438b5333af7621526a41a4da9`.
 
 ## Observed source coverage
 
@@ -22,22 +25,26 @@ names shared across locales remain separate, and blend training deduplicates the
 | English | en | 3,186 | 1,563 | 1,391 | 232 | Latin | 2–11 |
 | French | fr | 931 | 435 | 480 | 16 | Latin | 3–12 |
 | German | de | 1,145 | 573 | 562 | 10 | Latin | 2–11 |
-| Greek | el | 55 | 19 | 36 | 0 | Greek | 4–11 |
+| Greek (romanized; ancient and modern) | el | 486 | 0 | 0 | 486 | Latin | 2–13 |
 | Italian | it | 1,700 | 617 | 1,083 | 0 | Latin | 3–12 |
 | Portuguese (Portugal) | pt_PT | 188 | 93 | 95 | 0 | Latin | 3–9 |
 | Spanish | es | 227 | 120 | 107 | 0 | Latin | 3–20 |
 | Turkish | tr | 1,794 | 392 | 723 | 679 | Latin | 2–17 |
-| Arabic (broad source list; optional) | ar | 341 | 10 | 331 | 0 | Arabic | 3–9 |
+| Arabic (romanized; broad Wikidata list) | ar | 109 | 22 | 87 | 0 | Latin | 3–13 |
 
-Total: **10,653 source occurrences, 10,652 accepted, one rejected, zero merged
-duplicates**. Dutch `male[571]` contains a control character and is rejected
+Total: **10,920 source occurrences, 10,863 accepted, 57 rejected, 12 merged
+occurrences, 10,851 distinct category records**. Dutch `male[571]` contains a control character and is rejected
 before trimming; its exact reference and reason appear in the quality report.
-No core extraction target is missing. Greek has limited coverage (55 spellings);
-Portuguese/Spanish are also smaller than other Latin lists. Broad Arabic has only
-ten feminine spellings and does not establish North African regional provenance.
+Greek contributes 526 occurrences (495 accepted, 31 rejected, nine merged);
+Arabic contributes 137 class/spelling occurrences (112 accepted, 25 rejected,
+three merged). Reviewed exclusions and source scope are documented in
+[ROMANIZED.md](ROMANIZED.md). Greek's mixed ancient/modern examples fit the
+intended early-modern fantasy setting, without claiming exact historical usage.
+Greek lacks gender evidence; Arabic is small and does not establish regional provenance.
+Portuguese/Spanish are also smaller than other Latin lists.
 These are source-list labels, not verified cultural identities for individuals.
 
-## Generation smoke (M4 engine, 2026-10-01)
+## Generation smoke (M5a corpus, unchanged M4 engine, 2026-10-01)
 
 Command:
 `mise exec -- go test -v ./internal/generator -run TestBuiltinCategoryGenerationSmoke`.
@@ -58,8 +65,8 @@ length/existing; all other rejection counters were zero.
 | Portuguese (Portugal) | 28 | 4 | 4 | 20/20 |
 | Spanish | 25 | 0 | 5 | 20/20 |
 | Turkish | 23 | 0 | 3 | 20/20 |
-| Greek | — | — | — | Explicit `unsupported_script` |
-| Arabic | — | — | — | Explicit `unsupported_script` |
+| Greek | 23 | 2 | 1 | 20/20 |
+| Arabic | 28 | 1 | 7 | 20/20 |
 
 French + Italian also pass seeded category-order invariance in both category and
 blend modes. The original three-record French M4 golden remains unchanged using
@@ -68,18 +75,54 @@ and replay, not linguistic validity or aesthetic quality. Default Unicode
 lowercasing is not Turkish-specific; output capitalizes the first letter after
 start/space/hyphen and does not reconstruct culturally specific casing.
 
-Greek and Arabic are currently inspectable native-script data and cannot generate
-under the Latin-only contract. A request selecting all categories therefore
-encounters an explicit unsupported-script error. M5a, required before UI work,
-will source romanized replacement packs for these IDs and verify all-category
-generation in both modes; the table above records the current M3/M5 bundle.
+Greek, Arabic and all-category requests now succeed with source-supplied Latin
+training spellings. Native Faker examples remain only as non-embedded regression
+fixtures and still return `unsupported_script`. All-category replay, novelty,
+uniqueness, compatible scripts and attribution pass in category and blend modes,
+through both CLI formats. Greek's missing gender evidence remains an explicit
+filtered-selection error; it is never inferred or filled from another source.
 Unisex filtering returns an actionable empty-selection error for every current
 category.
 
-## M5 CLI acceptance (2026-10-01)
+## M5a acceptance (2026-10-01)
 
-The engine smoke command above was rerun with the same bundle and algorithm;
-every counter in the table is unchanged. `mise exec -- go test -v
+- `mise run check`, `mise run data:verify`, `mise exec -- go test -race ./...`
+  and `mise exec -- go mod verify` passed on `darwin/arm64`.
+- `mise run data:fetch`, `mise run data:build` and
+  `mise exec -- go run ./cmd/corpus-build verify --rebuild` passed. Re-extraction
+  from the pinned raw cache reproduced every artifact byte, including all notices,
+  the quality report and the non-embedded native-script fixture.
+- `mise exec -- go run ./cmd/corpus-build verify --cache .local/absent-cache`
+  passed without a raw cache or network access.
+- All ten individual categories produce/replay 20 distinct novel Latin-only names
+  at seed 42/defaults. The original sourced French algorithm golden is preserved.
+- `TestAllCategoriesLatinNovelReplayAndAttribution` passed. Category mode used
+  24 attempts (two length, two existing rejections); blend mode used 21 attempts
+  (one existing rejection). Both produced 20 novel, unique names with clean
+  text/JSON streams, complete metadata and correct attribution. Ordered seeded
+  replay and reversed explicit-category selection also passed.
+- `TestBinaryHeadless` runs the actual executable outside the checkout with an
+  empty read-only home, no developer tools on PATH, and macOS sandbox denial of
+  network access and filesystem writes. Greek, Arabic, all-category and French +
+  Italian requests succeed/replay in both modes and formats. Help, notices,
+  invalid options and SIGINT still pass. The race run also executes this test.
+  Final uncached command: `mise exec -- go test -count=1 -v ./cmd/nameforge` passed.
+- Source tests cover revision/claim validation, Latin-only selection, missing
+  gender evidence, supplied variants, Unicode NFC/deduplication, rejected unknown
+  wikitext, pinned checksums, missing caches, retries/cancellation and corrupt
+  notices/reports. Native-script errors remain covered by sourced Faker fixtures.
+
+Limitations: Greek's source has no gender labels; all current unisex pools are
+empty. Both replacements use heterogeneous source spellings rather than a single
+romanization standard. Wikipedia/Wikidata are community-maintained and generally
+not frequency data; Arabic's Latin-statement citations are sparse. Native checks
+here are macOS arm64, with OS-enforced network denial claimed only on macOS.
+No generated batches or raw research pages are committed. Next ready milestone: M6.
+
+## Historical M5 CLI acceptance (2026-10-01, original Faker bundle)
+
+At M5 acceptance, the original Faker bundle had eight Latin and two native-script
+packs. The eight Latin counters above remain unchanged after M5a. `mise exec -- go test -v
 ./internal/cli -run TestGenerateBuiltinCategorySmoke` also passed through the CLI
 for all ten categories: eight default 20-name novel batches and two explicit
 unsupported-script failures. Seeded JSON/text replay and selection-order
@@ -94,7 +137,7 @@ SIGINT exit 130 pass. The home remains empty. CLI exhaustion tests suppress a
 nonempty partial batch and report actionable diversity guidance on stderr.
 See [CLI usage](CLI.md) for commands, export schema and stream/exit contracts.
 
-## Rebuild and performance checks
+## Historical M3 rebuild and performance checks
 
 - `mise run data:fetch`, `mise run data:build`, `mise run data:verify` passed.
 - Fresh independent cache: `mise exec -- go run ./cmd/corpus-build fetch --cache
@@ -107,7 +150,9 @@ See [CLI usage](CLI.md) for commands, export schema and stream/exit contracts.
   merged bucket evidence, invalid records and generic semantics; fetch/build tests
   cover checksum mismatch, missing files, bounded retries and cancellation.
 
-Benchmarks on Apple M2 Max (`darwin/arm64`), run with
+M3 baseline benchmarks on Apple M2 Max (`darwin/arm64`), using the original
+10,652-record Faker bundle (hash
+`81f119c0cbc35c9c28a52f8d2709021cde3c474df4d880730878c39f8bd94498`), run with
 `mise exec -- go test ./internal/markov ./internal/generator -run '^$' -bench Builtin -benchmem`:
 
 | Operation | Input size | Measured ns/op | Bytes/op | Allocs/op |

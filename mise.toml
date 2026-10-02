@@ -33,7 +33,7 @@ description = "Run formatting, tests, vet, and build checks"
 run = ["mise run fmt-check", "mise run test", "mise run vet", "mise run build"]
 
 [tasks."data:fetch"]
-description = "Explicitly fetch checksum-locked Faker static files into .local/"
+description = "Explicitly fetch checksum-locked Faker and Wikimedia sources into .local/"
 run = "go run ./cmd/corpus-build fetch"
 
 [tasks."data:build"]
