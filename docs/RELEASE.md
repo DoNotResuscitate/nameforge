@@ -170,7 +170,10 @@ available. The Linux wrapper drops to the original runner UID/GID after creating
 the namespace, so runtime files and unwritable-home checks keep ordinary user
 permissions. macOS tests always enforce network denial. The PTY walkthrough is automated;
 maintainers should also follow the [interactive walkthrough](TUI.md#walkthrough)
-in their own terminal before a first public release.
+in their own terminal. On 2026-10-02, the owner confirmed all-feature human
+testing of published v0.1.0 on macOS 15 arm64 and CachyOS amd64;
+this owner-reported acceptance is separate from hosted verification.
+Publication succeeded in [release run 36976504868](https://github.com/DoNotResuscitate/nameforge/actions/runs/36976504868).
 
 For a local native artifact, use an absolute extracted binary path:
 
