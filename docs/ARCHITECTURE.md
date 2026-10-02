@@ -71,7 +71,7 @@ for metadata and [DATA.md](DATA.md) for normalization/provenance contracts.
 Go 1.27.1 and actionlint 1.7.12 are pinned in mise. Runtime Go libraries are pinned
 in `go.mod`/`go.sum`; actionlint is development-only workflow validation. Normal
 checks and corpus verification do not contact name sources. CI runs checks and
-race tests natively on macOS/Linux amd64/arm64, with public-token parser and
+race tests natively on macOS arm64 and Linux amd64/arm64, with public-token parser and
 normalizer fuzz smoke checks on Linux amd64. Actual executable tests exercise CLI
 and keyboard-driven PTY workflows outside the checkout with an empty home and no
 developer tools on the subprocess PATH. CI enforces network denial using macOS
@@ -81,7 +81,9 @@ Release builds disable CGO and use trimpath. Deterministic archive ordering,
 owner/mode fields and revision-derived timestamps avoid local path/user leakage.
 Merging to main calculates a stable Conventional Commit version and creates its
 tag at the exact merged revision. Release CI compares independent build checksums, rebuilds vendored corresponding
-source without module downloads, then tests each extracted binary on its native
-runner before automatic GitHub publication. The same run handles tag creation and
+source without module downloads, then tests extracted macOS arm64 and both Linux
+binaries on native runners before automatic GitHub publication. Intel macOS is
+cross-built only and is explicitly labeled that way in release verification notes.
+The same run handles tag creation and
 publication using `GITHUB_TOKEN`; no recursive tag workflow is needed.
 `cmd/release-version` previews versions without mutation. See [RELEASE.md](RELEASE.md).

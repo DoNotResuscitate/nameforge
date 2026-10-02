@@ -16,8 +16,9 @@ M6 interactive UI with session favorites and exports.
 The corpus contains 10,851 category-specific records: eight unchanged Faker packs,
 486 Wikipedia Greek spellings and 109 Wikidata Arabic spellings. All-category
 Latin-only generation works in both modes through the CLI and TUI. M7's verification
-and binary-distribution implementation has passed hosted native verification on
-all four targets; a human walkthrough and the first public release remain pending. The Go module
+and binary-distribution implementation has passed hosted verification. Current
+native checks cover macOS arm64 and Linux amd64/arm64; Intel macOS is cross-built
+only. A human walkthrough and the first public release remain pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
@@ -582,7 +583,7 @@ pending until their acceptance checks pass.
 - Commits: `ci(release): build checksummed cross-platform binaries`,
   `docs: document bundled categories and terminal usage`.
 - Implemented: pinned actionlint 1.7.12 and workflow validation in `check`;
-  native macOS/Linux amd64/arm64 CI and race tasks; public non-name token parser
+  native macOS arm64 and Linux amd64/arm64 CI and race tasks; public non-name token parser
   and NFC normalizer fuzz targets; extracted-binary CLI/PTY acceptance support;
   opt-in Linux empty-network-namespace enforcement alongside macOS sandboxing.
 - Added `release:build` for all four CGO-disabled, trimpath targets with version,
@@ -592,10 +593,10 @@ pending until their acceptance checks pass.
   notices and documentation. The corresponding-source archive includes committed
   corpus/provenance and pinned vendored dependencies for download-free module builds.
 - Pull-request/main CI and tag-triggered releases share distribution jobs that
-  compare two independent archive builds and test every extracted target natively.
+  compare two independent archive builds and test the three native targets.
   Tag-triggered release CI reuses clean-checkout/native verification, compares two
   independent archive builds, rebuilds vendored source with module downloads off,
-  smoke-tests every extracted target natively, and publishes only after all pass.
+  smoke-tests macOS arm64 and both Linux targets natively, and publishes after all pass.
   Release verification notes identify each actual runner and network sandbox;
   unavailable runners block publication rather than receiving a native-check claim.
 - Full GNU GPLv3 and pinned Go/runtime/test dependency legal texts are derived into
@@ -672,6 +673,13 @@ pending until their acceptance checks pass.
   repository), and `git diff --check`. First merge-driven publication is still
   pending the merge. actionlint 1.7.12 predates GitHub's documented concurrency
   `queue` property; workflow validation suppresses only that stale-schema diagnostic.
+- Owner-requested platform follow-up: removed Intel macOS native check/race and
+  packaged-binary smoke jobs. Four binary targets still cross-build; macOS arm64
+  and Linux amd64/arm64 receive native acceptance, with darwin/amd64 explicitly
+  labeled cross-built-only in docs and release verification notes. Earlier
+  four-native-target CI measurements above remain historical run records.
+  Checks: `mise run workflow:check`, `git diff --check`, and a focused native-runner
+  and verification-claim search passed.
 
 ## 6. Execution and handoff
 

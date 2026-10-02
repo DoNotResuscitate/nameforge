@@ -111,7 +111,8 @@ Corpus refresh is a separate, explicit maintenance operation described in
 
 Pull requests run the shared distribution workflow with version
 `dev`: reproducible four-target archives, vendored-source rebuild, and native tests
-of each extracted binary. Those CI artifacts are verification builds, not published
+of macOS arm64 and both Linux binaries. Intel macOS binaries are cross-built only.
+Those CI artifacts are verification builds, not published
 releases. **Merging a PR to `main` automatically creates a version tag and publishes
 a GitHub Release once its verification succeeds.** Main-branch releases reuse the
 same CI/distribution jobs with the real release version, rather than running a
@@ -149,14 +150,16 @@ and builds all four targets with CGO disabled and trimpath. It compares two full
 archive builds and verifies SHA-256. It also rebuilds the bundled source with
 `GOPROXY=off GOSUMDB=off` before testing it.
 
-Each **extracted release binary** then runs the real CLI and PTY tests on:
+The **natively verified extracted release binaries** run the real CLI and PTY tests on:
 
 | Target | Native GitHub runner | Enforced network denial |
 | --- | --- | --- |
 | `linux/amd64` | `ubuntu-24.04` | `sudo unshare --net` |
 | `linux/arm64` | `ubuntu-24.04-arm` | `sudo unshare --net` |
-| `darwin/amd64` | `macos-15-intel` | macOS `sandbox-exec` |
 | `darwin/arm64` | `macos-15` | macOS `sandbox-exec` |
+
+`darwin/amd64` archives are still cross-built and checksummed, but Intel macOS has
+no CI/race/native artifact runner. Release notes label it **cross-built only**.
 
 Both headless and interactive tests use an empty home, no developer tools on the
 runtime PATH, and no separate data. They verify both modes, Latin-only output,
@@ -176,8 +179,8 @@ NAMEFORGE_TEST_BINARY="$PWD/dist/nameforge_dev_darwin_arm64/nameforge" mise run 
 ```
 
 Publication depends on every native job passing. `VERIFICATION.md` in the release
-lists the actual runner coverage; the workflow claims no cross-build-only targets
-because all four must pass. If a runner is unavailable, publication is blocked.
+lists the three native runners and identifies Intel macOS as cross-built only.
+All three native jobs must pass; if one is unavailable, publication is blocked.
 Local cross-building does **not** imply native verification. Merging to main handles
 versioning, tagging and GitHub publication automatically; package-manager publishing
 and data refreshes remain separate work. Manual prerelease tags such as

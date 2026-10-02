@@ -76,17 +76,18 @@ jobs:
           ## Artifact verification
 
           All four binaries were cross-built with Go 1.27.1, CGO disabled and trimpath.
-          Each extracted archive then passed native offline CLI and keyboard-driven
-          TUI tests (including exports, seed replay and terminal restoration):
+          The three natively verified targets passed offline CLI and keyboard-driven
+          TUI tests (including exports, seed replay and terminal restoration).
+          Intel macOS artifacts are cross-built only:
 
           | Target | Native runner | Network denial |
           | --- | --- | --- |
           | linux/amd64 | ubuntu-24.04 | empty network namespace |
           | linux/arm64 | ubuntu-24.04-arm | empty network namespace |
-          | darwin/amd64 | macos-15-intel | macOS sandbox |
+          | darwin/amd64 | cross-built only; no native checks | not natively exercised |
           | darwin/arm64 | macos-15 | macOS sandbox |
 
-          No target is cross-build-only in this release. Archive byte reproducibility,
+          Archive byte reproducibility,
           full notices, corpus verification, race tests and public-seed fuzz smoke
           checks passed. The corresponding source archive contains pinned vendored
           dependencies and was rebuilt with module downloads disabled. See RELEASE.md

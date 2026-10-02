@@ -11,7 +11,7 @@ category-specific records from pinned Faker arrays, Wikipedia and Wikidata.
 Corpus inspection and reproducible Latin-only generation work offline for all
 ten categories, including romanized Greek and Arabic. The interactive picker,
 settings, session favorites, and text/JSON exports are available. M7 adds
-checksummed release archives, full legal notices, four-target native verification
+checksummed four-target release archives, full legal notices, three-target native verification
 and a merge-driven automatic tag/release pipeline; first public release verification is pending.
 The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
@@ -19,6 +19,8 @@ The Go module path is
 Supported platforms are macOS and Linux, arm64 and amd64. See
 [installation and releases](docs/RELEASE.md) for standalone binaries, checksums,
 corresponding source, offline builds and troubleshooting.
+Native checks cover macOS arm64 and Linux arm64/amd64; Intel macOS binaries are
+cross-built only.
 
 ## Development handoff
 
