@@ -15,8 +15,9 @@ engine, M5 headless CLI generation, M5a sourced romanized Greek/Arabic packs, an
 M6 interactive UI with session favorites and exports.
 The corpus contains 10,851 category-specific records: eight unchanged Faker packs,
 486 Wikipedia Greek spellings and 109 Wikidata Arabic spellings. All-category
-Latin-only generation works in both modes through the CLI and TUI. M7 verification
-and binary distribution is next; the release pipeline remains pending. The Go module
+Latin-only generation works in both modes through the CLI and TUI. M7's verification
+and binary-distribution implementation is available; hosted native-runner checks,
+a human walkthrough and the first public release remain pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
@@ -561,7 +562,7 @@ pending until their acceptance checks pass.
 - Next ready milestone: M7 — Verification and binary distribution.
 - Commit: `feat(tui): add offline interactive generation and session exports`.
 
-### M7 — Verification and binary distribution (pending; depends M6)
+### M7 — Verification and binary distribution (implemented; acceptance pending; depends M6)
 
 - Run `mise run check`, race tests on supported runners, parser/normalizer fuzz
   smoke tests with non-private seeds, CLI integration and manual TUI walkthrough.
@@ -580,6 +581,55 @@ pending until their acceptance checks pass.
   build, offline first-launch generation works, no runtime dependency beyond binary.
 - Commits: `ci(release): build checksummed cross-platform binaries`,
   `docs: document bundled categories and terminal usage`.
+- Implemented: pinned actionlint 1.7.12 and workflow validation in `check`;
+  native macOS/Linux amd64/arm64 CI and race tasks; public non-name token parser
+  and NFC normalizer fuzz targets; extracted-binary CLI/PTY acceptance support;
+  opt-in Linux empty-network-namespace enforcement alongside macOS sandboxing.
+- Added `release:build` for all four CGO-disabled, trimpath targets with version,
+  exact revision and corpus metadata; deterministic sorted tar/gzip archives,
+  revision-derived timestamps, explicit public-file boundaries, private-path/build
+  audits and SHA-256 checksums. Builds retain complete application/dependency/data
+  notices and documentation. The corresponding-source archive includes committed
+  corpus/provenance and pinned vendored dependencies for download-free module builds.
+- Pull-request/main CI and tag-triggered releases share distribution jobs that
+  compare two independent archive builds and test every extracted target natively.
+  Tag-triggered release CI reuses clean-checkout/native verification, compares two
+  independent archive builds, rebuilds vendored source with module downloads off,
+  smoke-tests every extracted target natively, and publishes only after all pass.
+  Release verification notes identify each actual runner and network sandbox;
+  unavailable runners block publication rather than receiving a native-check claim.
+- Full GNU GPLv3 and pinned Go/runtime/test dependency legal texts are derived into
+  an explicit embedded notice directory. `licenses` exposes these plus unchanged
+  corpus notices offline; the TUI shows copyright/license/no-warranty information
+  and an `l`-activated scrollable full-notice screen. Tests check exact embedded
+  GPL bytes, offline notice availability, text-entry semantics, legal/help switching
+  and export-help recovery. Added installation, source/release, architecture and
+  troubleshooting guides. Corpus assets, source locks, bundle hash, generation
+  algorithm and seeded outputs are unchanged.
+- Local checks passed on `darwin/arm64`: `mise install`, `mise run check`,
+  `mise run race`, `mise run fuzz` (10-second parser and normalizer smoke runs),
+  `mise run data:verify`, `mise run notices:verify`, `mise exec -- go mod verify`,
+  and `git diff --check`. `mise run release:build -- --version dev` and a second
+  build with `--out dist/rebuild` produced byte-identical SHA256SUMS for all four
+  binary archives and the vendored source archive; `shasum -a 256 -c SHA256SUMS`
+  passed. Native extracted macOS arm64 `release:smoke` passed with empty read-only
+  home, no tools/data and OS-enforced network denial, including legal screens,
+  both modes, exports, replay and terminal restoration. A vendored source rebuild
+  with `GOPROXY=off GOSUMDB=off` passed the same binary acceptance suite.
+- Native Linux arm64 acceptance also passed in Ubuntu 24.04 under the local
+  ARM64 Linux container engine: the cross-compiled Go test executable runs the
+  extracted release binary with no Go or data installation. Both Docker network
+  denial/read-only filesystem and the CI `sudo unshare --net` wrapper passed full
+  CLI/PTY tests, including active Ctrl-C/SIGINT forwarding and terminal restoration.
+  The Ubuntu image digest was
+  `sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60`.
+  This is native Linux arm64 container acceptance, not a hosted-runner/race claim.
+- Remaining acceptance: execute the new clean-checkout hosted workflow on all four
+  runners, including native amd64 binaries and Linux/native-runner race checks;
+  perform the human terminal walkthrough; exercise the tag-triggered publication
+  path for the first release. Local artifacts are dirty-tree `dev` verification
+  builds, not a public release. M7 remains acceptance-pending until those checks
+  actually pass; no later mandatory milestone is ready before M7 closeout.
 
 ## 6. Execution and handoff
 

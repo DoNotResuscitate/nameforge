@@ -21,14 +21,7 @@ import (
 // an empty home. On macOS sandbox-exec also denies network and filesystem writes.
 func TestBinaryHeadless(t *testing.T) {
 	root := t.TempDir()
-	binary := filepath.Join(root, "nameforge")
-	if runtime.GOOS == "windows" {
-		binary += ".exe"
-	}
-	build := exec.Command("mise", "exec", "--", "go", "build", "-trimpath", "-o", binary, ".")
-	if output, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("build executable: %v\n%s", err, output)
-	}
+	binary := testBinary(t, root)
 	home := filepath.Join(root, "home")
 	if err := os.Mkdir(home, 0o555); err != nil {
 		t.Fatal(err)
@@ -45,6 +38,10 @@ func TestBinaryHeadless(t *testing.T) {
 		}
 		cmd.Dir = root
 		cmd.Env = []string{"HOME=" + home, "PATH=" + filepath.Join(root, "absent-tools")}
+		if runtime.GOOS == "linux" && os.Getenv("NAMEFORGE_TEST_LINUX_SANDBOX") == "1" {
+			cmd = linuxSandbox(binary, cmd.Env, args...)
+			cmd.Dir = root
+		}
 		if runtime.GOOS == "windows" {
 			cmd.Env = append(cmd.Env, "USERPROFILE="+home, "SYSTEMROOT="+os.Getenv("SYSTEMROOT"))
 		}
@@ -120,6 +117,12 @@ func TestBinaryHeadless(t *testing.T) {
 		code, stdout, stderr := run(args...)
 		if code != 0 || stdout == "" || stderr != "" {
 			t.Fatalf("offline %v: %d %q", args, code, stderr)
+		}
+		if args[0] == "licenses" && (!strings.Contains(stdout, "GNU GENERAL PUBLIC LICENSE") || !strings.Contains(stdout, "Nameforge dependency notices") || !strings.Contains(stdout, "ABSOLUTELY NO WARRANTY")) {
+			t.Fatal("packaged binary omitted application/dependency legal notices")
+		}
+		if args[0] == "version" && os.Getenv("NAMEFORGE_TEST_VERSION") != "" && !strings.Contains(stdout, "version "+os.Getenv("NAMEFORGE_TEST_VERSION")+" (commit "+os.Getenv("NAMEFORGE_TEST_COMMIT")+")") {
+			t.Fatalf("incorrect release metadata: %s", stdout)
 		}
 	}
 	code, stdout, stderr := run("generate", "--category", "french", "--count", "0")

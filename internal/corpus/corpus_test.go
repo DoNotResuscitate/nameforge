@@ -7,6 +7,9 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
+	"unicode/utf8"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 func TestNormalizeName(t *testing.T) {
@@ -23,6 +26,24 @@ func TestNormalizeName(t *testing.T) {
 	if validName("token-\u0085") {
 		t.Fatal("validName accepted a Unicode control character")
 	}
+}
+
+func FuzzNormalizeName(f *testing.F) {
+	for _, seed := range []string{"qzx", " e\u0301-qzx ", "q'vx", "\u0130q\u0131x", "q\x00zx", string([]byte{0xff}), ""} {
+		f.Add(seed)
+	}
+	f.Fuzz(func(t *testing.T, input string) {
+		got := NormalizeName(input)
+		if NormalizeName(got) != got {
+			t.Fatal("normalization is not idempotent")
+		}
+		if utf8.ValidString(input) && (!utf8.ValidString(got) || !norm.NFC.IsNormalString(got)) {
+			t.Fatal("valid UTF-8 input did not normalize to NFC")
+		}
+		if validName(got) && (!utf8.ValidString(got) || !norm.NFC.IsNormalString(got) || strings.TrimSpace(got) != got) {
+			t.Fatal("validator accepted an invalid normalized spelling")
+		}
+	})
 }
 
 func TestCanonicalHashesIgnoreInputOrder(t *testing.T) {

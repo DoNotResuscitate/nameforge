@@ -23,10 +23,11 @@ nameforge licenses
 nameforge version
 ```
 
-`licenses` displays the complete Faker MIT notice (including inherited faker.js
+`licenses` displays the full application GPLv3 license and warranty/redistribution
+summary, pinned dependency notices, and complete Faker MIT notice (including inherited faker.js
 notices), Wikimedia attribution, CC BY-SA 4.0 and CC0 1.0 legal texts. Wikipedia-derived
 Greek records and adaptations retain CC BY-SA 4.0; Wikidata Arabic records are CC0.
-The application's license is GPLv3; see the repository `LICENSE`.
+The application's license is GPLv3; see `LICENSE` and [release/source instructions](RELEASE.md).
 No-argument headless invocation returns usage mentioning `generate` and exit 2.
 With terminal stdin/stdout, no arguments open the interactive category picker.
 `nameforge tui` is its explicit entry point; see [TUI usage](TUI.md). Help requires
@@ -158,5 +159,8 @@ The real-binary test builds through pinned mise Go, runs outside the checkout wi
 an empty read-only home and no developer tools on PATH, compares seeded JSON/text
 in both modes, checks help/notices/options, and verifies Unix SIGINT exits 130 with
 empty stdout. On macOS every runtime subprocess also runs under `sandbox-exec`
-with network access and filesystem writes denied. Other platforms still exercise
-the isolated home/PATH but do not claim an OS-enforced network sandbox.
+with network access and filesystem writes denied. Linux CI opts into an empty
+network namespace using `NAMEFORGE_TEST_LINUX_SANDBOX=1` and passwordless sudo;
+ordinary local Linux tests exercise isolated home/PATH without claiming a network
+sandbox. `NAMEFORGE_TEST_BINARY` selects an extracted release binary instead of
+building a new one; see [RELEASE.md](RELEASE.md).

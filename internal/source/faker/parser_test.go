@@ -3,6 +3,7 @@ package faker
 import (
 	"reflect"
 	"testing"
+	"unicode/utf8"
 )
 
 func TestParseLiteralSubset(t *testing.T) {
@@ -22,6 +23,29 @@ zx'] }; // end`)
 	if err != nil || !reflect.DeepEqual(got, map[string][]string{"generic": {"qzx", "vrk"}}) {
 		t.Fatalf("bare array = %#v, %v", got, err)
 	}
+}
+
+func FuzzParse(f *testing.F) {
+	// Public non-name tokens only; no personal or invented training names.
+	for _, seed := range []string{`export default ['qzx'];`, `export default {male: ['q\u0078z'], generic: ['v-rk']};`, `/*x*/ export default ['q\'zx'];`, `export default ['\uD800'];`, string([]byte{0xff})} {
+		f.Add([]byte(seed))
+	}
+	f.Fuzz(func(t *testing.T, data []byte) {
+		got, err := Parse(data)
+		if err != nil {
+			return
+		}
+		for bucket, tokens := range got {
+			if bucket != "male" && bucket != "female" && bucket != "generic" {
+				t.Fatalf("accepted unsupported bucket %q", bucket)
+			}
+			for _, token := range tokens {
+				if !utf8.ValidString(token) {
+					t.Fatal("parser produced invalid UTF-8")
+				}
+			}
+		}
+	})
 }
 
 func TestParseFailsClosed(t *testing.T) {

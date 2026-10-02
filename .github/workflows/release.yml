@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    with:
+      version: ${{ github.ref_name }}
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-archives
+          path: dist
+      - name: Publish only after every native target passes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          (cd dist && sha256sum -c SHA256SUMS)
+          cat > dist/VERIFICATION.md <<'EOF'
+          ## Artifact verification
+
+          All four binaries were cross-built with Go 1.27.1, CGO disabled and trimpath.
+          Each extracted archive then passed native offline CLI and keyboard-driven
+          TUI tests (including exports, seed replay and terminal restoration):
+
+          | Target | Native runner | Network denial |
+          | --- | --- | --- |
+          | linux/amd64 | ubuntu-24.04 | empty network namespace |
+          | linux/arm64 | ubuntu-24.04-arm | empty network namespace |
+          | darwin/amd64 | macos-15-intel | macOS sandbox |
+          | darwin/arm64 | macos-15 | macOS sandbox |
+
+          No target is cross-build-only in this release. Archive byte reproducibility,
+          full notices, corpus verification, race tests and public-seed fuzz smoke
+          checks passed. The corresponding source archive contains pinned vendored
+          dependencies and was rebuilt with module downloads disabled. See RELEASE.md
+          inside the archive's docs/ directory for installation and build instructions.
+          EOF
+          sha256sum dist/VERIFICATION.md | sed 's|dist/||' >> dist/SHA256SUMS
+          extra=()
+          if [[ "$TAG" == *-* ]]; then extra+=(--prerelease); fi
+          gh release create "$TAG" dist/*.tar.gz dist/SHA256SUMS dist/VERIFICATION.md --verify-tag --title "Nameforge $TAG" --notes-file dist/VERIFICATION.md "${extra[@]}"

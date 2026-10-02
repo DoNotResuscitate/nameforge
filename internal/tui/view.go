@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/DoNotResuscitate/nameforge/internal/corpus"
+	"github.com/DoNotResuscitate/nameforge/internal/legal"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
@@ -81,7 +82,10 @@ func (m *Model) settingsLines() []string {
 }
 
 func (m *Model) helpLines() []string {
-	text := "Status: " + m.status + "\n"
+	if m.legal {
+		return strings.Split(ansi.Hardwrap(m.legalText, max(1, m.width), true), "\n")
+	}
+	text := legal.Summary + "\nl: read complete legal notices here (up/down scroll; Esc dismisses)\nStatus: " + m.status + "\n"
 	if m.result != nil {
 		text += fmt.Sprintf("Batch seed: %d\nBatch mode: %s; complete: %t\nCorpus: %s\nAlgorithm: %s\n", m.result.Seed, m.result.Mode, m.result.Complete, m.result.BundleHash, m.result.AlgorithmVersion)
 		for _, id := range m.result.CategoryIDs {
@@ -97,7 +101,7 @@ a: select ALL categories; c: clear selection; /: search
 Enter: generate using settings and entered seed (blank = random)
 r: regenerate using settings and a fresh seed; entered seed is retained
 e: export dialog; Tab moves target / format / path; Space toggles
-?: help; Esc: dismiss / cancel; q: quit outside text entry
+?: help; l: full legal notices; Esc: dismiss / cancel; q: quit outside text entry
 Ctrl-C: quit globally, including text entry and active operations
 Settings: up/down chooses a field; blank lengths use observed bounds
 Text editing: Ctrl-A/E start/end; Ctrl-U clears before cursor
@@ -141,7 +145,7 @@ func (m *Model) View() string {
 	if selection == "" {
 		selection = "none"
 	}
-	title := "Nameforge — offline TTRPG names"
+	title := "Nameforge © 2026 contributors — GPLv3; NO WARRANTY; l: licenses"
 	if !m.noColor {
 		title = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("99")).Render(title)
 	}
@@ -168,7 +172,11 @@ func (m *Model) View() string {
 	space := m.height - len(lines) - len(statusLines) - 1
 	var body []string
 	if m.help {
-		body = append(body, "HELP — up/down scroll; Esc dismisses")
+		heading := "HELP — up/down scroll; l legal notices; Esc dismisses"
+		if m.legal {
+			heading = "LICENSES — up/down scroll; l help; Esc dismisses"
+		}
+		body = append(body, heading)
 		help := m.helpLines()
 		page := m.helpPageSize()
 		mOffset := min(m.helpOffset, max(0, len(help)-page))

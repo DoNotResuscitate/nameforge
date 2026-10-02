@@ -1,6 +1,11 @@
 name: CI
 
 on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: dev
   push:
     branches:
       - main
@@ -13,7 +18,13 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-15]
+    runs-on: ${{ matrix.runner }}
+    env:
+      NAMEFORGE_TEST_LINUX_SANDBOX: ${{ startsWith(matrix.runner, 'ubuntu-') && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
@@ -21,3 +32,14 @@ jobs:
           install: true
       - run: mise run check
       - run: mise run data:verify
+      - run: mise run notices:verify
+      - run: mise exec -- go mod verify
+      - run: mise run race
+      - if: matrix.runner == 'ubuntu-24.04'
+        run: mise run fuzz
+
+  distribution:
+    needs: check
+    uses: ./.github/workflows/distribution.yml
+    with:
+      version: ${{ inputs.version || 'dev' }}
