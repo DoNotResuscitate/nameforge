@@ -16,8 +16,8 @@ M6 interactive UI with session favorites and exports.
 The corpus contains 10,851 category-specific records: eight unchanged Faker packs,
 486 Wikipedia Greek spellings and 109 Wikidata Arabic spellings. All-category
 Latin-only generation works in both modes through the CLI and TUI. M7's verification
-and binary-distribution implementation is available; hosted native-runner checks,
-a human walkthrough and the first public release remain pending. The Go module
+and binary-distribution implementation has passed hosted native verification on
+all four targets; a human walkthrough and the first public release remain pending. The Go module
 path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
@@ -628,14 +628,21 @@ pending until their acceptance checks pass.
   exports from the test network wrapper. The wrapper now drops back to the test
   runner's UID/GID after creating the network namespace, preserving normal home
   and export permissions. The full compiled CLI/PTY suite passed as a non-root
-  Ubuntu container user using this corrected wrapper. Hosted verification
-  continues on the same M7 PR.
-- Remaining acceptance: execute the new clean-checkout hosted workflow on all four
-  runners, including native amd64 binaries and Linux/native-runner race checks;
-  perform the human terminal walkthrough; exercise the tag-triggered publication
-  path for the first release. Local artifacts are dirty-tree `dev` verification
-  builds, not a public release. M7 remains acceptance-pending until those checks
-  actually pass; no later mandatory milestone is ready before M7 closeout.
+  Ubuntu container user using this corrected wrapper.
+- Hosted acceptance passed in [CI run 36970584654](https://github.com/DoNotResuscitate/nameforge/actions/runs/36970584654)
+  for [PR #12](https://github.com/DoNotResuscitate/nameforge/pull/12), revision
+  `d99a531`: all four clean-checkout native `check`/`data:verify`/notice/module/race
+  jobs, Linux amd64 fuzz smoke, reproducible four-target/source distribution build,
+  vendored-source download-free rebuild plus acceptance, and all four extracted
+  native artifact CLI/PTY smoke jobs passed. There are no cross-build-only targets
+  in this verified CI artifact set. Linux runtimes use the corrected non-root
+  empty-network-namespace wrapper; macOS runtimes use sandbox-exec.
+- Remaining acceptance: perform the human terminal walkthrough and exercise the
+  tag-triggered publication path for the first release. Local artifacts are
+  dirty-tree `dev` builds; CI artifacts are clean-checkout `dev` verification
+  builds, not public releases. M7 remains acceptance-pending until its manual and
+  first-publication checks actually pass; no later mandatory milestone is ready
+  before M7 closeout. No corpus, source lock or seeded algorithm changes occurred.
 
 ## 6. Execution and handoff
 

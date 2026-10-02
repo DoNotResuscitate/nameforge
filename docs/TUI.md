@@ -37,10 +37,10 @@ path, but no local packs, preferences, or favorites are loaded or saved there.
    already exist. Write failures keep the batch and favorites available for retry.
 6. Press `?` for scrollable controls, full current status, effective length bounds,
    corpus/algorithm identity, source labels and coverage limitations. Esc dismisses
-    help. Press `l` outside text entry or within help for complete GPL, dependency
-    and corpus notices (up/down scrolls; `l` switches back to help). The startup
-    heading displays copyright, license and no-warranty information.
-    `q` quits outside text entry. Ctrl-C quits globally and restores the
+   help. Press `l` outside text entry or within help for complete GPL, dependency
+   and corpus notices (up/down scrolls; `l` switches back to help). The startup
+   heading displays copyright, license and no-warranty information.
+   `q` quits outside text entry. Ctrl-C quits globally and restores the
    terminal, including during generation or export.
 
 Search, numeric/seed fields and export paths consume ordinary characters such as
