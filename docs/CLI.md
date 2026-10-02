@@ -69,6 +69,9 @@ are checked before training their model.
   transliteration. Consequently `--all-categories` currently fails explicitly;
   choose Latin-profile categories from `data list`. Arabic is broadly labeled,
   not a North African regional corpus.
+  Before UI work, M5a will replace these two training packs with externally sourced
+  romanized datasets so Greek, Arabic and `--all-categories` work in both modes
+  while output remains Latin-only.
 - Names are compared using NFC plus Go's default Unicode lowercase, not
   locale-specific case folding. Turkish `I`, `İ`, `ı`, `i` equivalence can differ
   from orthographic expectations. Output uppercases the first letter at the start

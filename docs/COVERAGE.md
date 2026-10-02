@@ -68,11 +68,13 @@ and replay, not linguistic validity or aesthetic quality. Default Unicode
 lowercasing is not Turkish-specific; output capitalizes the first letter after
 start/space/hyphen and does not reconstruct culturally specific casing.
 
-Greek and Arabic are inspectable native-script data; generation support is
-deliberately deferred by the Latin-only contract. No transliteration or fallback
-is supplied. A request selecting all categories therefore encounters an explicit
-unsupported-script error. Unisex filtering returns an actionable empty-selection
-error for every current category.
+Greek and Arabic are currently inspectable native-script data and cannot generate
+under the Latin-only contract. A request selecting all categories therefore
+encounters an explicit unsupported-script error. M5a, required before UI work,
+will source romanized replacement packs for these IDs and verify all-category
+generation in both modes; the table above records the current M3/M5 bundle.
+Unisex filtering returns an actionable empty-selection error for every current
+category.
 
 ## M5 CLI acceptance (2026-10-01)
 

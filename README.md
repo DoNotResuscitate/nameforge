@@ -8,8 +8,9 @@ accurately sourced North African categories as a possible expansion.
 
 **Status: M1–M5 implemented.** The embedded multilingual corpus contains 10,652
 locale-specific records from pinned Faker static arrays. Corpus inspection and
-scriptable, reproducible Latin-script generation work offline. The interactive
-TUI is next (M6). The Go module path is
+scriptable, reproducible Latin-script generation work offline. Next is M5a:
+source romanized Greek/Arabic datasets and enable all-category generation before
+the interactive TUI (M6). The Go module path is
 `github.com/DoNotResuscitate/nameforge`.
 
 ## Development handoff
@@ -76,6 +77,8 @@ none of these lists has a spelling explicitly in both gendered arrays, so
 `--gender unisex` returns an actionable empty-selection error. `--all-categories`
 explicitly includes Greek and Arabic and therefore returns an unsupported-script
 error; select Latin-profile categories for generation.
+M5a will replace the Greek/Arabic training packs with externally sourced romanized
+lists and make `--all-categories` work in both modes while keeping output Latin-only.
 
 ### Reproducible corpus maintenance
 
