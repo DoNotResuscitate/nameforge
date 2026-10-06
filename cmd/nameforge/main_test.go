@@ -72,6 +72,8 @@ func TestBinaryHeadless(t *testing.T) {
 			{"greek", []string{"--category", "greek"}, 1},
 			{"arabic", []string{"--category", "arabic"}, 1},
 			{"all-categories", []string{"--all-categories"}, 10},
+			{"surnames", []string{"--name-type", "surname", "--all-categories"}, 8},
+			{"full-names", []string{"--name-type", "full", "--category", "french", "--category", "italian", "--gender", "feminine", "--surname-order", "1"}, 2},
 		} {
 			t.Run(mode+"/"+selection.Label, func(t *testing.T) {
 				args := append([]string{"generate", "--mode", mode, "--seed", "42"}, selection.Args...)
@@ -85,6 +87,12 @@ func TestBinaryHeadless(t *testing.T) {
 				}
 				if len(result.CategoryIDs) != selection.Categories || len(result.Bounds) != selection.Categories || len(result.BundleHash) != 64 || result.AlgorithmVersion == "" || result.Seed != 42 {
 					t.Fatal("incomplete reproduction metadata")
+				}
+				if selection.Label == "surnames" && result.NameType != "surname" {
+					t.Fatal("surname replay type omitted")
+				}
+				if selection.Label == "full-names" && (result.NameType != "full" || len(result.SurnameBundleHash) != 64 || len(result.SurnameBounds) != 2 || result.Names[0].Given == nil || result.Names[0].Surname == nil) {
+					t.Fatal("full-name component metadata omitted")
 				}
 				code, replay, stderr := run(append(args, "--format", "json")...)
 				if code != 0 || stderr != "" || replay != stdout {
@@ -134,23 +142,25 @@ func TestBinaryHeadless(t *testing.T) {
 		t.Fatalf("headless no-argument invocation: %d %q %q", code, stdout, stderr)
 	}
 	if runtime.GOOS != "windows" {
-		t.Run("interrupt", func(t *testing.T) {
-			cmd := command("generate", "--category", "french", "--count", "1000", "--min-length", "64", "--max-length", "64", "--order", "4", "--seed", "42")
-			var stdout, stderr bytes.Buffer
-			cmd.Stdout, cmd.Stderr = &stdout, &stderr
-			if err := cmd.Start(); err != nil {
-				t.Fatal(err)
-			}
-			t.Cleanup(func() { _ = cmd.Process.Kill() })
-			time.Sleep(100 * time.Millisecond)
-			if err := cmd.Process.Signal(os.Interrupt); err != nil {
-				t.Fatal(err)
-			}
-			var exit *exec.ExitError
-			if err := cmd.Wait(); !errors.As(err, &exit) || exit.ExitCode() != 130 || stdout.Len() != 0 || !strings.Contains(stderr.String(), "canceled") {
-				t.Fatalf("interrupt: %v stdout=%q stderr=%q", err, stdout.String(), stderr.String())
-			}
-		})
+		for _, nameType := range []string{"given", "surname", "full"} {
+			t.Run("interrupt/"+nameType, func(t *testing.T) {
+				cmd := command("generate", "--name-type", nameType, "--category", "french", "--count", "1000", "--min-length", "64", "--max-length", "64", "--order", "4", "--seed", "42")
+				var stdout, stderr bytes.Buffer
+				cmd.Stdout, cmd.Stderr = &stdout, &stderr
+				if err := cmd.Start(); err != nil {
+					t.Fatal(err)
+				}
+				t.Cleanup(func() { _ = cmd.Process.Kill() })
+				time.Sleep(100 * time.Millisecond)
+				if err := cmd.Process.Signal(os.Interrupt); err != nil {
+					t.Fatal(err)
+				}
+				var exit *exec.ExitError
+				if err := cmd.Wait(); !errors.As(err, &exit) || exit.ExitCode() != 130 || stdout.Len() != 0 || !strings.Contains(stderr.String(), "canceled") {
+					t.Fatalf("interrupt: %v stdout=%q stderr=%q", err, stdout.String(), stderr.String())
+				}
+			})
+		}
 	}
 	entries, err := os.ReadDir(home)
 	if err != nil || len(entries) != 0 {

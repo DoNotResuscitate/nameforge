@@ -15,6 +15,10 @@ nameforge --help
 nameforge generate --help
 nameforge data list
 nameforge data inspect --category french
+nameforge data list --name-type surname
+nameforge data inspect --name-type surname --category turkish
+nameforge generate --name-type surname --category turkish --seed 42
+nameforge generate --name-type full --category french --category italian --gender feminine --surname-order 1 --seed 42 --format json
 nameforge generate --category french --category italian --mode category --seed 42
 nameforge generate --category spanish --category turkish --mode blend --seed 42 --format json
 nameforge generate --category portuguese-pt --gender feminine --count 10 --order 1 --min-length 3 --max-length 10
@@ -38,6 +42,7 @@ no TTY.
 
 | Flag | Meaning / default |
 | --- | --- |
+| `--name-type given\|surname\|full` | Default `given`; separate training data for surnames. |
 | `--category <id>` | Repeatable explicit category IDs from `data list`; required unless using `--all-categories`. |
 | `--all-categories` | Explicitly select every bundled category; mutually exclusive with `--category`. |
 | `--mode category\|blend` | Default `category`; see below. |
@@ -49,6 +54,9 @@ no TTY.
 | `--seed <n>` | Unsigned 64-bit decimal integer, including 0; omitted seeds use `crypto/rand` and are reported. |
 | `--allow-existing` | Permit exact training spellings; still reject duplicates within the batch. |
 | `--format text\|json` | Default `text`. |
+| `--surname-order <n>` | Full-name surname order; default shared `--order`. |
+| `--surname-min-length <n>`, `--surname-max-length <n>` | Full-name surname rune bounds; default shared length settings. |
+| `--surname-allow-existing[=false]` | Full-name surname novelty override; default shared `--allow-existing`. |
 
 Both `--flag value` and `--flag=value` are accepted. Boolean flags can be disabled
 with `--allow-existing=false` / `--all-categories=false`. All inputs are flags;
@@ -91,6 +99,36 @@ are checked before training their model.
 
 ## Streams and reproducibility
 
+### Surnames and full names
+
+Surname coverage is Dutch, English, French, German, Italian, Portuguese
+(Portugal), Spanish and Turkish. Greek/Arabic surname data is **unavailable**:
+the pinned Faker arrays are native-script, and no Latin source replacement is
+bundled. Selecting either returns `empty_selection`, without dropping categories
+or substituting English. `--all-categories --name-type surname` selects the eight
+surname categories; `--all-categories --name-type full` selects all ten given
+categories and fails explicitly on missing surname data.
+
+Full names use one given name, one ASCII space, then one surname. This is an
+explicit TTRPG convention, not a culturally complete naming system. Category mode
+selects a category uniformly once per output slot and generates **both components
+in that category**, retrying there until accepted or bounded exhaustion. Blend
+mode trains two separate models on the same selected categories' respective
+given/surname unions; each component retains every contributing ID. Independent
+cross-category pairing is not implemented.
+
+Gender filtering applies only to given-name training, including the given
+component of full names. Surnames use all entries regardless of this setting;
+unspecified surname gender remains unspecified, never relabeled unisex.
+`--order`, lengths and `--allow-existing` control given names in full mode;
+surname settings inherit each shared value unless overridden with `--surname-*`
+flags. Overrides require `--name-type full`. Each component has its own effective
+1–64-rune bounds, NFC, Latin-only and novelty checks; the combined name can be up
+to 129 runes. Components may repeat across a batch; only complete composed
+spellings must be unique. The shared `max(1000, count*200)` budget counts
+**component sampling attempts**, not pairs; cancellation is checked before each
+sample. Partial output/error behavior is unchanged.
+
 Text stdout contains exactly one name per line, with no headings, metadata or ANSI.
 Stderr contains one JSON metadata object on success, with all the JSON fields
 below except `names`. Capture them separately when saving a batch:
@@ -104,6 +142,9 @@ JSON success writes one UTF-8 object followed by a newline to stdout; stderr is
 empty. Its v1 fields are:
 
 - `schema_version`: output format version, currently 1.
+- `name_type` (also in `options`): `given`, `surname`, or `full`. Older v1
+  exports without it describe given names; existing given-name ordered output
+  and algorithm are unchanged.
 - `seed`, `algorithm_version`, `bundle_hash`: actual unsigned seed, sampling /
   normalization version, and canonical SHA-256 bundle identity.
 - `category_ids`, `mode`: sorted effective selection and generation mode.
@@ -112,11 +153,17 @@ empty. Its v1 fields are:
 - `options`: normalized request with defaults and the actual seed. Omitted
   `min_length`/`max_length` mean automatic; `allow_existing` defaults to false.
 - `names`: ordered objects with `name` and `category_ids` attribution.
+- Full-name results also contain `surname_bundle_hash`, `surname_bounds`,
+  `component_order: "given-surname"`, `separator: " "`, and normalized
+  `options.surname` order/bounds/novelty settings. `bundle_hash` identifies given
+  data for full results, surname data for surname-only results. Each full-name
+  object has `given` and `surname` objects with exact component `name` spellings
+  and `category_ids`. Composition uses the versioned `/full-v1` algorithm.
 - `attempts`, `rejections`: attempted samples and counts for `length`, `script`,
   `separators`, `duplicates`, `existing`, `exhausted` rejection classes.
 - `complete`: true for a successful CLI batch.
 
-Identical corpus hash, algorithm version, options and seed produce identical
+Identical corpus hash(es), algorithm version, options and seed produce identical
 ordered output. Replay using the recorded options and `--seed`; automatic bounds
 are reproduced from the same bundle. Changing mode, gender, count, bounds, order,
 novelty policy or bundle can change output. Category picker order cannot. JSON

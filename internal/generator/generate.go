@@ -43,6 +43,15 @@ func Generate(ctx context.Context, bundle *corpus.Bundle, request Request) (Resu
 	if bundle == nil {
 		return Result{}, generationError(ErrorInvalidRequest, "corpus bundle must not be nil", "", nil)
 	}
+	if request.NameType == NameFull {
+		return generateFull(ctx, bundle, request)
+	}
+	if request.NameType == NameSurname {
+		if bundle.Surnames == nil {
+			return Result{}, generationError(ErrorEmptySelection, "surname corpus unavailable; select a bundled surname category", "", nil)
+		}
+		bundle = bundle.Surnames
+	}
 
 	request, categoryIDs, err := normalizeRequest(bundle, request)
 	if err != nil {
@@ -55,6 +64,7 @@ func Generate(ctx context.Context, bundle *corpus.Bundle, request Request) (Resu
 	request.Seed = new(uint64)
 	*request.Seed = seed
 	result := Result{
+		NameType:         request.NameType,
 		Seed:             seed,
 		AlgorithmVersion: AlgorithmVersion,
 		CategoryIDs:      append([]string(nil), categoryIDs...),
@@ -71,68 +81,9 @@ func Generate(ctx context.Context, bundle *corpus.Bundle, request Request) (Resu
 		return result, generationError(ErrorCanceled, "generation canceled", "", &result)
 	}
 
-	categoryCatalog := make(map[string]corpus.Category, len(bundle.Categories))
-	for _, category := range bundle.Categories {
-		categoryCatalog[category.ID] = category
-	}
-	pools := make([]corpus.Pool, 0, len(categoryIDs))
-	for _, id := range categoryIDs {
-		category, exists := categoryCatalog[id]
-		if !exists {
-			return result, generationError(ErrorInvalidRequest, fmt.Sprintf("unknown category %q", id), id, nil)
-		}
-		if !supportsLatin(category) {
-			return result, generationError(ErrorUnsupportedScript,
-				fmt.Sprintf("category %q has no Latin-script source data; this generator emits Latin-script output only", id), id, nil)
-		}
-		selected, selectErr := corpus.Select(bundle.Records, []string{id}, corpus.GenderFilter(request.Gender))
-		if selectErr != nil {
-			return result, generationError(ErrorEmptySelection, selectErr.Error(), id, nil)
-		}
-		pools = append(pools, selected[0])
-	}
-	if request.Mode == ModeBlend {
-		if err := compatibleScripts(categoryIDs, categoryCatalog); err != nil {
-			return result, generationError(ErrorIncompatibleBlend, err.Error(), "", nil)
-		}
-	}
-
-	models := make([]categoryModel, 0, len(pools))
-	existing := make(map[string]struct{})
-	for _, pool := range pools {
-		spellings := make([]string, 0, len(pool.Records))
-		for _, record := range pool.Records {
-			spellings = append(spellings, record.Name)
-			existing[spellingKey(record.Name)] = struct{}{}
-		}
-		if request.Mode == ModeCategory {
-			bounds := applyBounds(observedBounds(spellings), request)
-			if err := validateBounds(bounds); err != nil {
-				return result, generationError(ErrorInvalidRequest, fmt.Sprintf("category %q: %v", pool.CategoryID, err), pool.CategoryID, nil)
-			}
-			model, trainErr := markov.Train(spellings, request.Order)
-			if trainErr != nil {
-				return result, generationError(ErrorInvalidRequest, fmt.Sprintf("train category %q: %v", pool.CategoryID, trainErr), pool.CategoryID, nil)
-			}
-			models = append(models, categoryModel{id: pool.CategoryID, model: model, bounds: bounds})
-			result.Bounds[pool.CategoryID] = bounds
-		}
-	}
-
-	if request.Mode == ModeBlend {
-		spellings := unionSpellings(pools)
-		bounds := applyBounds(observedBounds(spellings), request)
-		if err := validateBounds(bounds); err != nil {
-			return result, generationError(ErrorInvalidRequest, "blend: "+err.Error(), "", nil)
-		}
-		model, trainErr := markov.Train(spellings, request.Order)
-		if trainErr != nil {
-			return result, generationError(ErrorInvalidRequest, "train blend: "+trainErr.Error(), "", nil)
-		}
-		for _, id := range categoryIDs {
-			models = append(models, categoryModel{id: id, model: model, bounds: bounds})
-			result.Bounds[id] = bounds
-		}
+	models, existing, err := prepareModels(bundle, request, categoryIDs, result.Bounds)
+	if err != nil {
+		return result, err
 	}
 
 	rng := rand.New(rand.NewPCG(seed, seed^seedXOR))
@@ -144,48 +95,18 @@ func Generate(ctx context.Context, bundle *corpus.Bundle, request Request) (Resu
 		}
 		selected := models[modelIndex]
 		for {
-			if err := ctx.Err(); err != nil {
-				result.Complete = false
+			if ctx.Err() != nil {
 				return result, generationError(ErrorCanceled, "generation canceled", selected.id, &result)
 			}
 			if result.Attempts >= attemptLimit {
-				result.Complete = false
-				return result, generationError(ErrorAttemptsExhausted,
-					fmt.Sprintf("generation reached the %d-attempt limit after producing %d of %d names", attemptLimit, len(result.Names), request.Count),
-					selected.id, &result)
+				return result, generationError(ErrorAttemptsExhausted, fmt.Sprintf("generation reached the %d-attempt limit after producing %d of %d names", attemptLimit, len(result.Names), request.Count), selected.id, &result)
 			}
 			result.Attempts++
-			candidate, sampleErr := selected.model.Sample(rng, selected.bounds.Max)
-			if sampleErr != nil {
-				if errors.Is(sampleErr, markov.ErrTooLong) {
-					result.Rejections.Length++
-				} else {
-					result.Rejections.Exhausted++
-				}
+			candidate, ok := sampleCandidate(selected, rng, request.AllowExisting, existing, &result.Rejections)
+			if !ok {
 				continue
 			}
-			candidate = norm.NFC.String(displayCase(candidate))
-			if !isLatinSpelling(candidate) {
-				result.Rejections.Script++
-				continue
-			}
-			if !validSeparators(candidate) {
-				result.Rejections.Separators++
-				continue
-			}
-			length := utf8.RuneCountInString(candidate)
-			if length < selected.bounds.Min || length > selected.bounds.Max {
-				result.Rejections.Length++
-				continue
-			}
-			key := spellingKey(candidate)
-			if !request.AllowExisting {
-				if _, exists := existing[key]; exists {
-					result.Rejections.Existing++
-					continue
-				}
-			}
-			if containsKey(result.Names, key) {
+			if containsKey(result.Names, spellingKey(candidate)) {
 				result.Rejections.Duplicates++
 				continue
 			}
@@ -201,10 +122,135 @@ func Generate(ctx context.Context, bundle *corpus.Bundle, request Request) (Resu
 	return result, nil
 }
 
+func prepareModels(bundle *corpus.Bundle, request Request, categoryIDs []string, effective map[string]LengthBounds) ([]categoryModel, map[string]struct{}, error) {
+	categoryCatalog := make(map[string]corpus.Category, len(bundle.Categories))
+	for _, category := range bundle.Categories {
+		categoryCatalog[category.ID] = category
+	}
+	pools := make([]corpus.Pool, 0, len(categoryIDs))
+	for _, id := range categoryIDs {
+		category, exists := categoryCatalog[id]
+		if !exists {
+			if request.NameType != NameSurname {
+				return nil, nil, generationError(ErrorInvalidRequest, fmt.Sprintf("unknown category %q", id), id, nil)
+			}
+			return nil, nil, generationError(ErrorEmptySelection, fmt.Sprintf("%s data unavailable for category %q; inspect bundled coverage and select an available category", request.NameType, id), id, nil)
+		}
+		if !supportsLatin(category) {
+			return nil, nil, generationError(ErrorUnsupportedScript,
+				fmt.Sprintf("category %q has no Latin-script source data; this generator emits Latin-script output only", id), id, nil)
+		}
+		gender := request.Gender
+		if request.NameType == NameSurname {
+			gender = GenderAny
+		}
+		selected, selectErr := corpus.Select(bundle.Records, []string{id}, corpus.GenderFilter(gender))
+		if selectErr != nil {
+			return nil, nil, generationError(ErrorEmptySelection, selectErr.Error(), id, nil)
+		}
+		pools = append(pools, selected[0])
+	}
+	if request.Mode == ModeBlend {
+		if err := compatibleScripts(categoryIDs, categoryCatalog); err != nil {
+			return nil, nil, generationError(ErrorIncompatibleBlend, err.Error(), "", nil)
+		}
+	}
+
+	models := make([]categoryModel, 0, len(pools))
+	existing := make(map[string]struct{})
+	for _, pool := range pools {
+		spellings := make([]string, 0, len(pool.Records))
+		for _, record := range pool.Records {
+			spellings = append(spellings, record.Name)
+			existing[spellingKey(record.Name)] = struct{}{}
+		}
+		if request.Mode == ModeCategory {
+			bounds := applyBounds(observedBounds(spellings), request)
+			if err := validateBounds(bounds); err != nil {
+				return nil, nil, generationError(ErrorInvalidRequest, fmt.Sprintf("category %q: %v", pool.CategoryID, err), pool.CategoryID, nil)
+			}
+			model, trainErr := markov.Train(spellings, request.Order)
+			if trainErr != nil {
+				return nil, nil, generationError(ErrorInvalidRequest, fmt.Sprintf("train category %q: %v", pool.CategoryID, trainErr), pool.CategoryID, nil)
+			}
+			models = append(models, categoryModel{id: pool.CategoryID, model: model, bounds: bounds})
+			effective[pool.CategoryID] = bounds
+		}
+	}
+
+	if request.Mode == ModeBlend {
+		spellings := unionSpellings(pools)
+		bounds := applyBounds(observedBounds(spellings), request)
+		if err := validateBounds(bounds); err != nil {
+			return nil, nil, generationError(ErrorInvalidRequest, "blend: "+err.Error(), "", nil)
+		}
+		model, trainErr := markov.Train(spellings, request.Order)
+		if trainErr != nil {
+			return nil, nil, generationError(ErrorInvalidRequest, "train blend: "+trainErr.Error(), "", nil)
+		}
+		for _, id := range categoryIDs {
+			models = append(models, categoryModel{id: id, model: model, bounds: bounds})
+			effective[id] = bounds
+		}
+	}
+
+	return models, existing, nil
+}
+
+func sampleCandidate(selected categoryModel, rng *rand.Rand, allow bool, existing map[string]struct{}, rejected *Rejections) (string, bool) {
+	candidate, err := selected.model.Sample(rng, selected.bounds.Max)
+	if err != nil {
+		if errors.Is(err, markov.ErrTooLong) {
+			rejected.Length++
+		} else {
+			rejected.Exhausted++
+		}
+		return "", false
+	}
+	candidate = norm.NFC.String(displayCase(candidate))
+	if !isLatinSpelling(candidate) {
+		rejected.Script++
+		return "", false
+	}
+	if !validSeparators(candidate) {
+		rejected.Separators++
+		return "", false
+	}
+	length := utf8.RuneCountInString(candidate)
+	if length < selected.bounds.Min || length > selected.bounds.Max {
+		rejected.Length++
+		return "", false
+	}
+	if _, found := existing[spellingKey(candidate)]; found && !allow {
+		rejected.Existing++
+		return "", false
+	}
+	return candidate, true
+}
+
 // NormalizeRequest applies defaults and checks options without loading data or
 // training models. Zero count/order and zero length bounds mean automatic defaults
 // for Go callers; frontends must reject explicitly entered zero values.
 func NormalizeRequest(request Request) (Request, error) {
+	if request.NameType == "" {
+		request.NameType = NameGiven
+	}
+	if request.NameType != NameGiven && request.NameType != NameSurname && request.NameType != NameFull {
+		return Request{}, generationError(ErrorInvalidRequest, "name-type must be given, surname, or full", "", nil)
+	}
+	if request.NameType != NameFull && request.Surname != nil {
+		return Request{}, generationError(ErrorInvalidRequest, "surname component settings require name-type full", "", nil)
+	}
+	if request.Surname != nil {
+		component := *request.Surname
+		if component.Order == 0 {
+			component.Order = defaultOrder
+		}
+		if component.Order < 1 || component.Order > 4 || component.MinLength < 0 || component.MinLength > 64 || component.MaxLength < 0 || component.MaxLength > 64 || (component.MinLength != 0 && component.MaxLength != 0 && component.MinLength > component.MaxLength) {
+			return Request{}, generationError(ErrorInvalidRequest, "surname order must be 1..4 and lengths 1 <= min <= max <= 64 (zero means auto)", "", nil)
+		}
+		request.Surname = &component
+	}
 	if request.Count == 0 {
 		request.Count = defaultCount
 	}
@@ -509,6 +555,10 @@ func resolveSeed(seed *uint64) (uint64, error) {
 }
 
 func cloneRequest(request Request) Request {
+	if request.Surname != nil {
+		component := *request.Surname
+		request.Surname = &component
+	}
 	request.CategoryIDs = append([]string(nil), request.CategoryIDs...)
 	if request.Seed != nil {
 		seed := *request.Seed

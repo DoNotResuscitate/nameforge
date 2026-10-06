@@ -40,6 +40,17 @@ Maintenance commands are separate executables, excluded from runtime releases:
 
 ## Deterministic generation
 
+The loaded catalog attaches an independent surname bundle as `Bundle.Surnames`.
+Each bundle validates and hashes its own records/categories; given-name data
+and seeded behavior are unchanged. `Request.NameType` selects given, surname,
+or full. Generation remains free of filesystem/network/terminal I/O.
+Full composition prepares separate given/surname models, pairs the same category
+or blend selection, and samples both with one request-local RNG. A shared bounded
+component-attempt budget permits repeated components but unique complete names.
+Gender filters affect only given models. JSON stores exact component spellings,
+attribution, settings/bounds and both bundle hashes; `/full-v1` versions this new
+sampling contract. See [CLI composition semantics](CLI.md#surnames-and-full-names).
+
 Normalize training spellings to NFC, compare with Go's default Unicode lowercase,
 and deduplicate. Characters and length limits are Unicode runes. Sort categories,
 training spellings and successor tokens before sampling. Every request owns a

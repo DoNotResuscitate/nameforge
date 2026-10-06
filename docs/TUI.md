@@ -6,7 +6,7 @@ stdin and stdout must be terminals. `nameforge tui` is the explicit entry point;
 `nameforge tui --help` works without a terminal. Headless no-argument invocation
 returns usage and exit 2; use `generate` for scripts.
 
-The picker opens with **no categories selected**. All ten embedded categories
+The picker opens with **no categories selected**. All ten embedded given-name categories
 work offline on first launch, without a writable home, network, Go installation,
 or separate data. `--data-dir <path>` is accepted by `tui` as a reserved local-state
 path, but no local packs, preferences, or favorites are loaded or saved there.
@@ -21,6 +21,13 @@ path, but no local packs, preferences, or favorites are loaded or saved there.
    and existing-name allowance. Type numbers into the other fields; Ctrl-U clears
    before the cursor, Ctrl-A/E moves to start/end. Length fields left blank are
    automatic; an empty seed requests a random seed.
+   **Name type** cycles given / surname / full. Full names pair the same category
+   (or matching blends), given + space + surname. Appended surname order/length/
+   existing fields independently control the surname in full mode (defaults:
+   order 2, automatic lengths, novel). Gender applies only to given names.
+   Surname-only mode uses shared order/length/existing controls. Picker counts
+   switch to surname counts in surname mode; full mode shows both counts.
+   Greek/Arabic surname gaps are marked unavailable, not silently excluded.
 3. Enter generates using current settings. Results appear asynchronously, with
    the actual seed, completion state, category attribution, and batch size.
    Mode selection uses the same [category/blend semantics as the CLI](CLI.md#category-gender-and-script-semantics).
@@ -54,11 +61,13 @@ seeded output. Batch metadata describes the settings used for that batch, even
 if you subsequently edit settings or category selection.
 
 Replay a displayed seed using the same category IDs, mode, gender, count, order,
-length overrides and existing-name policy in [the CLI](CLI.md). For defaults:
+length overrides, name type, surname settings and existing-name policy in
+[the CLI](CLI.md). For defaults:
 
 ```sh
 nameforge generate --category french --category italian --mode category --seed 42 --format json
 nameforge generate --category french --category italian --mode blend --seed 42 --format json
+nameforge generate --name-type full --category french --category italian --seed 42 --format json
 ```
 
 Use the seed actually displayed for your batch in place of `42`. The current-batch
@@ -87,6 +96,8 @@ remains Latin-only. See [source scope and notices](ROMANIZED.md) for Greek/Arabi
   `selected_names` (only its favorited name/attribution objects). This preserves
   original seeds, options, completeness and counters across different generations.
   Batches are grouped in first-favorite order; selections retain favorite order.
+  Surname/full-name favorites keep name type, component spellings/attribution,
+  both corpus hashes and component settings with the original batch.
 - **Text:** one selected name per line, with no ANSI or metadata. Current-batch
   names retain generation order; favorites use the batch/selection ordering above.
 

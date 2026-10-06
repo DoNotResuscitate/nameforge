@@ -191,6 +191,61 @@ func TestBinaryTUI(t *testing.T) {
 		}
 		return cmd
 	}
+	for _, nameType := range []string{"surname", "full"} {
+		for _, mode := range []string{"category", "blend"} {
+			t.Run(nameType+"/"+mode, func(t *testing.T) {
+				s := startTerminal(t, command("tui", "--no-color"))
+				s.selectCategory("french")
+				s.selectCategory("italian")
+				s.send("\t\t")
+				s.wait("SETTINGS")
+				if mode == "blend" {
+					s.send(" ")
+					s.wait("Mode: blend")
+				}
+				s.send(strings.Repeat("\x1b[B", 6) + "42" + strings.Repeat("\x1b[B", 2) + " ")
+				s.wait("Name type: surname")
+				if nameType == "full" {
+					s.send(" ")
+					s.wait("Name type: full")
+				}
+				s.send("\r")
+				s.wait("Complete: 20 names")
+				s.send(" ")
+				s.wait("favorites 1")
+				path := filepath.Join(root, nameType+"-"+mode+".json")
+				s.exportBatch(path, false)
+				data, err := os.ReadFile(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var result export.Result
+				if err := json.Unmarshal(data, &result); err != nil {
+					t.Fatal(err)
+				}
+				if string(result.NameType) != nameType {
+					t.Fatal("TUI type selection lost")
+				}
+				if nameType == "full" && (result.Names[0].Given == nil || result.Names[0].Surname == nil || result.SurnameBundleHash == "") {
+					t.Fatal("component export metadata lost")
+				}
+				replay, err := command("generate", "--name-type", nameType, "--mode", mode, "--category", "french", "--category", "italian", "--seed", "42", "--format", "json").Output()
+				if err != nil || string(replay) != string(data) {
+					t.Fatalf("TUI/CLI replay differs: %v", err)
+				}
+				favoritesPath := filepath.Join(root, nameType+"-"+mode+"-favorites.json")
+				s.exportBatch(favoritesPath, true)
+				favoritesData, err := os.ReadFile(favoritesPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !strings.Contains(string(favoritesData), `"selected_names"`) || (nameType == "full" && !strings.Contains(string(favoritesData), `"surname_bundle_hash"`)) {
+					t.Fatal("favorite reproduction metadata lost")
+				}
+				s.finish("q", 0)
+			})
+		}
+	}
 	for _, mode := range []string{"category", "blend"} {
 		for _, categories := range [][]string{{"french", "italian"}, {"greek", "arabic"}, {"all"}} {
 			t.Run(mode+"/"+strings.Join(categories, "+"), func(t *testing.T) {

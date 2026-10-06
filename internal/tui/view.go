@@ -11,7 +11,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-var fieldLabels = []string{"Mode", "Gender", "Order", "Count", "Minimum length", "Maximum length", "Replay seed", "Allow existing"}
+var fieldLabels = []string{"Mode", "Gender", "Order", "Count", "Minimum length", "Maximum length", "Replay seed", "Allow existing", "Name type", "Surname order (full)", "Surname min (full)", "Surname max (full)", "Surname existing (full)"}
 
 func marker(active bool) string {
 	if active {
@@ -42,7 +42,14 @@ func renderInput(t textinput.Model, width int) string {
 
 func (m *Model) source(c corpus.Category) string {
 	sources := make(map[string]bool)
-	for _, r := range m.bundle.Records {
+	bundle := m.bundle
+	if m.nameType == "surname" {
+		if _, ok := bundle.Surnames.Category(c.ID); !ok {
+			return "Surname unavailable: no sourced Latin pack; no fallback"
+		}
+		bundle = bundle.Surnames
+	}
+	for _, r := range bundle.Records {
 		for _, id := range r.Categories {
 			if id == c.ID {
 				sources[strings.SplitN(r.ID, ":", 2)[0]] = true
@@ -59,6 +66,13 @@ func (m *Model) source(c corpus.Category) string {
 	if sources["wikidata"] {
 		labels = append(labels, "Wikidata / CC0; broad Arabic")
 	}
+	if m.nameType == "full" {
+		if _, ok := m.bundle.Surnames.Category(c.ID); ok {
+			labels = append(labels, "Surname: Faker v10.6.0 / MIT; gender unspecified")
+		} else {
+			labels = append(labels, "Surname UNAVAILABLE")
+		}
+	}
 	return strings.Join(labels, "; ")
 }
 
@@ -73,6 +87,10 @@ func (m *Model) settingsLines() []string {
 			value = string(m.gender)
 		case noveltyField:
 			value = fmt.Sprint(m.allow)
+		case nameTypeField:
+			value = string(m.nameType)
+		case surnameNoveltyField:
+			value = fmt.Sprint(m.surnameAllow)
 		default:
 			value = m.inputView(i)
 		}
@@ -87,10 +105,17 @@ func (m *Model) helpLines() []string {
 	}
 	text := legal.Summary + "\nl: read complete legal notices here (up/down scroll; Esc dismisses)\nStatus: " + m.status + "\n"
 	if m.result != nil {
+		text += fmt.Sprintf("Name type: %s\n", m.result.NameType)
+		if m.result.SurnameBundleHash != "" {
+			text += fmt.Sprintf("Surname corpus: %s\nPairing: same-category / matching blends; given + space + surname\nSurname options: %+v\n", m.result.SurnameBundleHash, *m.result.Options.Surname)
+		}
 		text += fmt.Sprintf("Batch seed: %d\nBatch mode: %s; complete: %t\nCorpus: %s\nAlgorithm: %s\n", m.result.Seed, m.result.Mode, m.result.Complete, m.result.BundleHash, m.result.AlgorithmVersion)
 		for _, id := range m.result.CategoryIDs {
 			bounds := m.result.Bounds[id]
 			text += fmt.Sprintf("%s: effective rune lengths %d..%d\n", id, bounds.Min, bounds.Max)
+			if bounds, ok := m.result.SurnameBounds[id]; ok {
+				text += fmt.Sprintf("%s surname: effective rune lengths %d..%d\n", id, bounds.Min, bounds.Max)
+			}
 		}
 	}
 	text += `Controls
@@ -104,6 +129,10 @@ e: export dialog; Tab moves target / format / path; Space toggles
 ?: help; l: full legal notices; Esc: dismiss / cancel; q: quit outside text entry
 Ctrl-C: quit globally, including text entry and active operations
 Settings: up/down chooses a field; blank lengths use observed bounds
+Name type: given / surname / full; surname settings apply to full only.
+Full pairs the same category, or matching blends: given + space + surname.
+Gender applies to given names only; surnames retain unspecified gender.
+Greek/Arabic surnames are unavailable; selections never silently drop them.
 Text editing: Ctrl-A/E start/end; Ctrl-U clears before cursor
 Favorites last only for this session. JSON preserves each original batch
 and selected_names; text exports names only, without replay metadata.
@@ -138,7 +167,7 @@ func (m *Model) headerLines() []string {
 		title = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("99")).Render(title)
 	}
 	lines := []string{title, fmt.Sprintf("Selected %d: %s", len(selected), selection),
-		fmt.Sprintf("Settings: %s | %s | order %s | count %s | favorites %d", m.mode, m.gender, m.inputs[orderField].Value(), m.inputs[countField].Value(), len(m.favorites))}
+		fmt.Sprintf("Settings: %s | %s | %s | order %s | count %s | favorites %d", m.nameType, m.mode, m.gender, m.inputs[orderField].Value(), m.inputs[countField].Value(), len(m.favorites))}
 	if m.result != nil {
 		state := "complete"
 		if !m.result.Complete {
@@ -224,6 +253,18 @@ func (m *Model) View() string {
 			var rows []string
 			visible := m.filtered()
 			for i, c := range visible {
+				availability := ""
+				if m.nameType != "given" {
+					if surname, ok := m.bundle.Surnames.Category(c.ID); ok {
+						if m.nameType == "surname" {
+							c = surname
+						} else {
+							availability = fmt.Sprintf(" | surnames %d", surname.RecordCount)
+						}
+					} else {
+						c.Label = "Surname UNAVAILABLE: " + c.Label
+					}
+				}
 				check := "[ ]"
 				if m.selected[c.ID] {
 					check = "[x]"
@@ -232,7 +273,7 @@ func (m *Model) View() string {
 				if len(c.SupportedGenders) > 0 {
 					genders = fmt.Sprint(c.SupportedGenders)
 				}
-				rows = append(rows, fmt.Sprintf("%s%s %s | %d | %s | %s", marker(i == m.picker), check, c.Label, c.RecordCount, strings.Join(c.Scripts, ","), genders))
+				rows = append(rows, fmt.Sprintf("%s%s %s | %d | %s | %s%s", marker(i == m.picker), check, c.Label, c.RecordCount, strings.Join(c.Scripts, ","), genders, availability))
 			}
 			if len(rows) == 0 {
 				rows = append(rows, "No matching categories. Edit search; existing selections remain.")

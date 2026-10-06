@@ -25,16 +25,35 @@ const (
 // Request contains deterministic generation inputs. A nil Seed requests a
 // cryptographically sourced seed at generation time.
 type Request struct {
-	CategoryIDs   []string     `json:"category_ids"`
-	AllCategories bool         `json:"all_categories,omitempty"`
-	Mode          Mode         `json:"mode"`
-	Gender        GenderFilter `json:"gender"`
-	Count         int          `json:"count"`
-	Order         int          `json:"order"`
-	MinLength     int          `json:"min_length,omitempty"`
-	MaxLength     int          `json:"max_length,omitempty"`
-	Seed          *uint64      `json:"seed,omitempty"`
-	AllowExisting bool         `json:"allow_existing,omitempty"`
+	NameType      NameType          `json:"name_type"`
+	Surname       *ComponentOptions `json:"surname,omitempty"`
+	CategoryIDs   []string          `json:"category_ids"`
+	AllCategories bool              `json:"all_categories,omitempty"`
+	Mode          Mode              `json:"mode"`
+	Gender        GenderFilter      `json:"gender"`
+	Count         int               `json:"count"`
+	Order         int               `json:"order"`
+	MinLength     int               `json:"min_length,omitempty"`
+	MaxLength     int               `json:"max_length,omitempty"`
+	Seed          *uint64           `json:"seed,omitempty"`
+	AllowExisting bool              `json:"allow_existing,omitempty"`
+}
+
+type NameType string
+
+const (
+	NameGiven   NameType = "given"
+	NameSurname NameType = "surname"
+	NameFull    NameType = "full"
+)
+
+// ComponentOptions overrides the shared order/length/novelty settings for the
+// surname of a full name. Gender filtering applies only to the given component.
+type ComponentOptions struct {
+	Order         int  `json:"order"`
+	MinLength     int  `json:"min_length,omitempty"`
+	MaxLength     int  `json:"max_length,omitempty"`
+	AllowExisting bool `json:"allow_existing"`
 }
 
 // LengthBounds are the effective rune-count limits for a category/model.
@@ -46,6 +65,13 @@ type LengthBounds struct {
 // GeneratedName is a sampled candidate and its category attribution. Category
 // mode attributes one category; blend mode attributes all contributing IDs.
 type GeneratedName struct {
+	Given       *NameComponent `json:"given,omitempty"`
+	Surname     *NameComponent `json:"surname,omitempty"`
+	Name        string         `json:"name"`
+	CategoryIDs []string       `json:"category_ids"`
+}
+
+type NameComponent struct {
 	Name        string   `json:"name"`
 	CategoryIDs []string `json:"category_ids"`
 }
@@ -63,17 +89,22 @@ type Rejections struct {
 // Result records enough metadata to replay a generation request and to report
 // bounded partial completion.
 type Result struct {
-	Seed             uint64                  `json:"seed"`
-	AlgorithmVersion string                  `json:"algorithm_version"`
-	BundleHash       string                  `json:"bundle_hash"`
-	CategoryIDs      []string                `json:"category_ids"`
-	Mode             Mode                    `json:"mode"`
-	Bounds           map[string]LengthBounds `json:"bounds"`
-	Options          Request                 `json:"options"`
-	Names            []GeneratedName         `json:"names"`
-	Attempts         int                     `json:"attempts"`
-	Rejections       Rejections              `json:"rejections"`
-	Complete         bool                    `json:"complete"`
+	NameType          NameType                `json:"name_type"`
+	SurnameBundleHash string                  `json:"surname_bundle_hash,omitempty"`
+	SurnameBounds     map[string]LengthBounds `json:"surname_bounds,omitempty"`
+	ComponentOrder    string                  `json:"component_order,omitempty"`
+	Separator         string                  `json:"separator,omitempty"`
+	Seed              uint64                  `json:"seed"`
+	AlgorithmVersion  string                  `json:"algorithm_version"`
+	BundleHash        string                  `json:"bundle_hash"`
+	CategoryIDs       []string                `json:"category_ids"`
+	Mode              Mode                    `json:"mode"`
+	Bounds            map[string]LengthBounds `json:"bounds"`
+	Options           Request                 `json:"options"`
+	Names             []GeneratedName         `json:"names"`
+	Attempts          int                     `json:"attempts"`
+	Rejections        Rejections              `json:"rejections"`
+	Complete          bool                    `json:"complete"`
 }
 
 // GenerationError reports invalid or unsatisfied generation requests. Partial

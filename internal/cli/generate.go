@@ -17,6 +17,11 @@ const generateUsage = `Usage: nameforge generate --category <id> [--category <id
        nameforge generate --all-categories [options]
 
 Options:
+  --name-type <type>    given (default), surname, or full
+  --surname-order <n>  Full-name surname order (default shared --order)
+  --surname-min-length <n> / --surname-max-length <n>
+                       Full-name surname bounds (default shared length settings)
+  --surname-allow-existing  Permit source surnames in full names
   --category <id>        Repeatable category selection; see "nameforge data list"
   --all-categories      Explicitly select every category; exclusive with --category
   --mode <mode>         category (default) or blend
@@ -33,7 +38,11 @@ Options:
 Text writes one name per line to stdout and JSON reproduction metadata to stderr.
 JSON writes one schema_version=1 result to stdout. Failures write no partial batch.
 Category mode chooses each name's category uniformly; blend trains on the union.
-All ten built-in categories support Latin-only generation, including sourced
+Full names pair the same category (or blend selection), given + space + surname.
+Gender filters apply to given names only; surnames include unspecified entries.
+Surnames: Dutch, English, French, German, Italian, Portuguese (Portugal), Spanish,
+Turkish. Greek/Arabic surname data is unavailable, without fallback.
+All ten built-in given-name categories support Latin-only generation, including sourced
 romanized Greek and Arabic. Greek mixes ancient and modern names; its source
 does not supply gender labels. Arabic is broad, without a regional claim.
 `
@@ -41,6 +50,8 @@ does not supply gender labels. Arabic is broad, without a regional claim.
 func parseGenerate(args []string) (generator.Request, string, error) {
 	var request generator.Request
 	var mode, gender, seed string
+	var nameType string
+	var surname generator.ComponentOptions
 	format := "text"
 	flags := flag.NewFlagSet("generate", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
@@ -49,6 +60,11 @@ func parseGenerate(args []string) (generator.Request, string, error) {
 		return nil
 	})
 	flags.BoolVar(&request.AllCategories, "all-categories", false, "select all")
+	flags.StringVar(&nameType, "name-type", "given", "given, surname, or full")
+	flags.IntVar(&surname.Order, "surname-order", 0, "surname Markov order")
+	flags.IntVar(&surname.MinLength, "surname-min-length", 0, "surname minimum length")
+	flags.IntVar(&surname.MaxLength, "surname-max-length", 0, "surname maximum length")
+	flags.BoolVar(&surname.AllowExisting, "surname-allow-existing", false, "allow source surnames")
 	flags.StringVar(&mode, "mode", "category", "generation mode")
 	flags.StringVar(&gender, "gender", "any", "source gender filter")
 	flags.IntVar(&request.Count, "count", 20, "number of names")
@@ -65,9 +81,13 @@ func parseGenerate(args []string) (generator.Request, string, error) {
 		return request, format, fmt.Errorf("unexpected argument %q; use flags for all generation options", flags.Arg(0))
 	}
 	var optionErr error
+	surnameFields := map[string]bool{}
 	flags.Visit(func(f *flag.Flag) {
+		if f.Name == "surname-order" || f.Name == "surname-min-length" || f.Name == "surname-max-length" || f.Name == "surname-allow-existing" {
+			surnameFields[f.Name] = true
+		}
 		switch f.Name {
-		case "count", "order", "min-length", "max-length":
+		case "count", "order", "min-length", "max-length", "surname-order", "surname-min-length", "surname-max-length":
 			if f.Value.String() == "0" {
 				optionErr = fmt.Errorf("--%s must be at least 1 when explicitly set", f.Name)
 			}
@@ -90,6 +110,25 @@ func parseGenerate(args []string) (generator.Request, string, error) {
 		return request, format, fmt.Errorf("--mode and --gender must not be empty")
 	}
 	request.Mode = generator.Mode(mode)
+	request.NameType = generator.NameType(nameType)
+	if nameType == "" {
+		return request, format, fmt.Errorf("--name-type must not be empty")
+	}
+	if len(surnameFields) > 0 {
+		if !surnameFields["surname-order"] {
+			surname.Order = request.Order
+		}
+		if !surnameFields["surname-min-length"] {
+			surname.MinLength = request.MinLength
+		}
+		if !surnameFields["surname-max-length"] {
+			surname.MaxLength = request.MaxLength
+		}
+		if !surnameFields["surname-allow-existing"] {
+			surname.AllowExisting = request.AllowExisting
+		}
+		request.Surname = &surname
+	}
 	request.Gender = generator.GenderFilter(gender)
 	request, err := generator.NormalizeRequest(request)
 	return request, format, err
@@ -126,7 +165,7 @@ func runGenerate(ctx context.Context, args []string, stdout, stderr io.Writer) i
 			case generator.ErrorAttemptsExhausted:
 				_, _ = fmt.Fprintln(stderr, "Try a smaller --count, broader length bounds, a lower --order, or --allow-existing. No partial batch was written.")
 			case generator.ErrorEmptySelection:
-				_, _ = fmt.Fprintln(stderr, "Inspect source gender coverage with 'nameforge data inspect --category <id>' or use --gender any.")
+				_, _ = fmt.Fprintln(stderr, "Inspect coverage with 'nameforge data inspect --category <id>' and 'nameforge data list --name-type surname'. Gender filters apply only to given names; use --gender any for unspecified given-name data.")
 			case generator.ErrorUnsupportedScript:
 				_, _ = fmt.Fprintln(stderr, "Use 'nameforge data list' to choose categories with a Latin script profile.")
 			}

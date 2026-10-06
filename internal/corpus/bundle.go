@@ -18,6 +18,9 @@ const SchemaVersion = 1
 
 // Bundle is a validated, self-contained corpus catalog and its name records.
 type Bundle struct {
+	// Surnames is a separate, independently validated training bundle. It is
+	// attached by the runtime catalog loader, never mixed into given-name hashes.
+	Surnames   *Bundle    `json:"-"`
 	Manifest   Manifest   `json:"manifest"`
 	Categories []Category `json:"categories"`
 	Records    []Record   `json:"records"`
@@ -25,6 +28,9 @@ type Bundle struct {
 
 // Category returns a category by stable ID.
 func (bundle *Bundle) Category(id string) (Category, bool) {
+	if bundle == nil {
+		return Category{}, false
+	}
 	for _, category := range bundle.Categories {
 		if category.ID == id {
 			return cloneCategory(category), true
