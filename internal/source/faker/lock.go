@@ -33,6 +33,7 @@ type Target struct {
 	SHA256 string `json:"sha256"`
 }
 type Lock struct {
+	NameType             string            `json:"name_type,omitempty"`
 	Repository           string            `json:"repository"`
 	Revision             string            `json:"revision"`
 	Release              string            `json:"release"`
@@ -63,6 +64,20 @@ func Targets() []Target {
 	return values
 }
 
+// SurnameTargets excludes native-script Greek/Arabic arrays: no romanization
+// or fallback is permitted. Labels describe Faker locales, not ancestry.
+func SurnameTargets() []Target {
+	var targets []Target
+	for _, target := range Targets() {
+		if target.ID == "greek" || target.ID == "arabic" {
+			continue
+		}
+		target.Path = "src/locales/" + target.Locale + "/person/last_name.ts"
+		targets = append(targets, target)
+	}
+	return targets
+}
+
 func DecodeLock(data []byte) (Lock, error) {
 	var lock Lock
 	d := json.NewDecoder(bytes.NewReader(data))
@@ -91,6 +106,11 @@ func (lock Lock) Validate() error {
 		return errors.New("invalid locked license")
 	}
 	expected := Targets()
+	if lock.NameType == "surname" {
+		expected = SurnameTargets()
+	} else if lock.NameType != "" {
+		return errors.New("unsupported locked name type")
+	}
 	if len(lock.Targets) != len(expected) {
 		return errors.New("source lock must cover all reviewed targets")
 	}
@@ -159,6 +179,15 @@ func HTTPRemote(client *http.Client) Remote {
 // reviewed immutable revision; it never runs during ordinary fetch/build/verify.
 func Pin(ctx context.Context, remote Remote, cache Cache) (Lock, error) {
 	lock := Lock{Repository: Repository, Revision: Revision, Release: "v10.6.0", SchemaVersion: corpus.SchemaVersion, ExtractorVersion: ExtractorVersion, NormalizationVersion: corpus.NormalizationVersion, Targets: Targets(), License: corpus.SourceFile{Path: "LICENSE"}}
+	return pin(ctx, remote, cache, lock)
+}
+
+func PinSurnames(ctx context.Context, remote Remote, cache Cache) (Lock, error) {
+	lock := Lock{NameType: "surname", Repository: Repository, Revision: Revision, Release: "v10.6.0", SchemaVersion: corpus.SchemaVersion, ExtractorVersion: ExtractorVersion, NormalizationVersion: corpus.NormalizationVersion, Targets: SurnameTargets(), License: corpus.SourceFile{Path: "LICENSE"}}
+	return pin(ctx, remote, cache, lock)
+}
+
+func pin(ctx context.Context, remote Remote, cache Cache, lock Lock) (Lock, error) {
 	for i := range lock.Targets {
 		data, err := remote(ctx, lock.Targets[i].Path)
 		if err != nil {

@@ -1,0 +1,71 @@
+{
+  "name_type": "surname",
+  "repository": "https://github.com/faker-js/faker",
+  "revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+  "release": "v10.6.0",
+  "schema_version": 1,
+  "extractor_version": "faker-static-v1",
+  "normalization_version": "nfc-v1",
+  "targets": [
+    {
+      "id": "dutch",
+      "label": "Dutch",
+      "locale": "nl",
+      "path": "src/locales/nl/person/last_name.ts",
+      "sha256": "813c638a2fca3d932977cc8b614453e86489a86dda76bf6aee2dd52404745259"
+    },
+    {
+      "id": "english",
+      "label": "English",
+      "locale": "en",
+      "path": "src/locales/en/person/last_name.ts",
+      "sha256": "0df0a5723c4b896935f384d6e5af686a8f0a6b4024662abdb1129cc9db1d68af"
+    },
+    {
+      "id": "french",
+      "label": "French",
+      "locale": "fr",
+      "path": "src/locales/fr/person/last_name.ts",
+      "sha256": "7f4c33c0bbbf8f97723fae69be6ca8aac19fe1bb528eb260e20ee2a6c300dcf2"
+    },
+    {
+      "id": "german",
+      "label": "German",
+      "locale": "de",
+      "path": "src/locales/de/person/last_name.ts",
+      "sha256": "6ee4b498176480c339744d7ac66682df5ffa67515cc7cc665cf8436d7b5da539"
+    },
+    {
+      "id": "italian",
+      "label": "Italian",
+      "locale": "it",
+      "path": "src/locales/it/person/last_name.ts",
+      "sha256": "6e2011c1160f9b4adc1afb71459b31bfccf5ae0552afffe4ea6fb6c38d98b053"
+    },
+    {
+      "id": "portuguese-pt",
+      "label": "Portuguese (Portugal)",
+      "locale": "pt_PT",
+      "path": "src/locales/pt_PT/person/last_name.ts",
+      "sha256": "787bc58b9921a31867966abbae30cc4813d8eb89945b22021a8102c484f3afc2"
+    },
+    {
+      "id": "spanish",
+      "label": "Spanish",
+      "locale": "es",
+      "path": "src/locales/es/person/last_name.ts",
+      "sha256": "3dd24c6bd1d0622ba3564777b673aaa64ac07fbdabe6d7b11dde701911a5dcb9"
+    },
+    {
+      "id": "turkish",
+      "label": "Turkish",
+      "locale": "tr",
+      "path": "src/locales/tr/person/last_name.ts",
+      "sha256": "158273c200921e7e5c79a49f91436e13717b91e0321398d6fa61dcee82b59d7a"
+    }
+  ],
+  "license": {
+    "path": "LICENSE",
+    "sha256": "8c0814c525426e67c04ca562f28364be477003697903d257160c081d14b271bf"
+  }
+}

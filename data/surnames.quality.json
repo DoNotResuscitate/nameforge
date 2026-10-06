@@ -1,0 +1,176 @@
+{
+  "source_revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+  "extractor_version": "faker-static-v1",
+  "bundle_hash": "ea5e57ed62ee74908bdc02f014aa8c72aa50b3abb9676cd21c3497fccb9046a7",
+  "categories": [
+    {
+      "category_id": "dutch",
+      "source_counts": {
+        "generic": 131
+      },
+      "accepted_occurrences": 131,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 131,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 131
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 15
+    },
+    {
+      "category_id": "english",
+      "source_counts": {
+        "generic": 473
+      },
+      "accepted_occurrences": 473,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 473,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 473
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 13
+    },
+    {
+      "category_id": "french",
+      "source_counts": {
+        "generic": 150
+      },
+      "accepted_occurrences": 150,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 150,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 150
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 11
+    },
+    {
+      "category_id": "german",
+      "source_counts": {
+        "generic": 1688
+      },
+      "accepted_occurrences": 1688,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 1688,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 1688
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 2,
+      "max_length_runes": 14
+    },
+    {
+      "category_id": "italian",
+      "source_counts": {
+        "generic": 2170
+      },
+      "accepted_occurrences": 2170,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 2170,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 2170
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 2,
+      "max_length_runes": 13
+    },
+    {
+      "category_id": "portuguese-pt",
+      "source_counts": {
+        "generic": 121
+      },
+      "accepted_occurrences": 121,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 121,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 121
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 2,
+      "max_length_runes": 11
+    },
+    {
+      "category_id": "spanish",
+      "source_counts": {
+        "generic": 625
+      },
+      "accepted_occurrences": 625,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 625,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 625
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 24
+    },
+    {
+      "category_id": "turkish",
+      "source_counts": {
+        "generic": 370
+      },
+      "accepted_occurrences": 370,
+      "rejected_occurrences": 0,
+      "merged_occurrences": 0,
+      "distinct_names": 370,
+      "gender_counts": {
+        "feminine": 0,
+        "masculine": 0,
+        "unisex": 0,
+        "unspecified": 370
+      },
+      "scripts": [
+        "Latin"
+      ],
+      "min_length_runes": 3,
+      "max_length_runes": 13
+    }
+  ],
+  "rejections": []
+}

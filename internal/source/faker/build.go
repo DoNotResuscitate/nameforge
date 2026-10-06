@@ -17,6 +17,13 @@ import (
 const AssetDirectory = "internal/corpus/assets/builtin"
 const ReportPath = "data/quality.json"
 
+func artifactPaths(lock Lock) (string, string) {
+	if lock.NameType == "surname" {
+		return "internal/corpus/assets/surnames", "data/surnames.quality.json"
+	}
+	return AssetDirectory, ReportPath
+}
+
 type Rejection struct {
 	Ref    corpus.SourceRef `json:"source_ref"`
 	Reason string           `json:"reason"`
@@ -44,6 +51,7 @@ type Report struct {
 // Build reads only locked cache entries. Artifacts contains exactly the public
 // redistributable files to write or compare; raw files remain outside this set.
 func Build(ctx context.Context, lock Lock, cache Cache) (map[string][]byte, error) {
+	assetDirectory, reportPath := artifactPaths(lock)
 	if err := lock.Validate(); err != nil {
 		return nil, err
 	}
@@ -122,11 +130,11 @@ func Build(ctx context.Context, lock Lock, cache Cache) (map[string][]byte, erro
 		return nil, err
 	}
 	return map[string][]byte{
-		AssetDirectory + "/manifest.json":          manifestData,
-		AssetDirectory + "/categories.json":        categoryData,
-		AssetDirectory + "/names.jsonl":            recordData,
-		AssetDirectory + "/licenses/FAKER-LICENSE": license,
-		ReportPath: reportData,
+		assetDirectory + "/manifest.json":          manifestData,
+		assetDirectory + "/categories.json":        categoryData,
+		assetDirectory + "/names.jsonl":            recordData,
+		assetDirectory + "/licenses/FAKER-LICENSE": license,
+		reportPath: reportData,
 	}, nil
 }
 
@@ -350,10 +358,11 @@ func quality(lock Lock, bundle *corpus.Bundle, rejected []Rejection) (Report, er
 // Verify checks committed assets and coverage offline without requiring a raw
 // cache. Call Build and Compare separately to verify a locked-cache rebuild.
 func Verify(lock Lock, root fs.FS) error {
+	assetDirectory, reportPath := artifactPaths(lock)
 	if err := lock.Validate(); err != nil {
 		return err
 	}
-	bundle, err := corpus.Load(root, AssetDirectory)
+	bundle, err := corpus.Load(root, assetDirectory)
 	if err != nil {
 		return err
 	}
@@ -372,14 +381,14 @@ func Verify(lock Lock, root fs.FS) error {
 	if len(bundle.Manifest.Licenses) != 1 || bundle.Manifest.Licenses[0] != (corpus.LicenseRef{Name: "Faker (MIT)", Path: "licenses/FAKER-LICENSE"}) {
 		return fmt.Errorf("incorrect license reference")
 	}
-	license, err := fs.ReadFile(root, AssetDirectory+"/licenses/FAKER-LICENSE")
+	license, err := fs.ReadFile(root, assetDirectory+"/licenses/FAKER-LICENSE")
 	if err != nil {
 		return err
 	}
 	if hash(license) != lock.License.SHA256 {
 		return fmt.Errorf("license checksum mismatch")
 	}
-	reportData, err := fs.ReadFile(root, ReportPath)
+	reportData, err := fs.ReadFile(root, reportPath)
 	if err != nil {
 		return err
 	}
