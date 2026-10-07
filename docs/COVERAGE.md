@@ -1,11 +1,12 @@
 # Bundled coverage and verification history
 
-The source table and bundle identity describe the current committed corpus.
+The source tables and bundle identities describe the current committed given-name
+and surname corpora.
 Date-labeled smoke/acceptance records below retain historical measurements, not
 new verification claims. See [DATA.md](DATA.md) for contracts and
 [RELEASE.md](RELEASE.md#ci-release-workflow-and-target-claims) for current platform checks.
 
-Eight packs use Faker **v10.6.0**, immutable revision
+Eight given-name packs use Faker **v10.6.0**, immutable revision
 `2cb04231a6ace91a59ebe577c653f4ec66478ca3`, literal
 `src/locales/<locale>/person/first_name.ts` arrays. Full upstream MIT notice is
 retained, including inherited notices. Raw SHA-256 values and reviewed category
@@ -19,6 +20,35 @@ Bundle identity:
 `36cd9b6d35049fcd815b233ba12f1565e852157438b5333af7621526a41a4da9`.
 
 ## Observed source coverage
+
+### Surname coverage (#10)
+
+Separate surname bundle identity:
+`ea5e57ed62ee74908bdc02f014aa8c72aa50b3abb9676cd21c3497fccb9046a7`.
+All data is from pinned Faker v10.6.0 static `person/last_name.ts` arrays (MIT).
+`data/surnames.lock.json` and `data/surnames.quality.json` retain raw checksums,
+occurrence accounting and measured metadata. All 5,728 occurrences are accepted,
+without merges/rejections; gender is unspecified throughout, never unisex.
+
+| Category | Distinct | NFC rune range |
+| --- | ---: | --- |
+| Dutch | 131 | 3–15 |
+| English | 473 | 3–13 |
+| French | 150 | 3–11 |
+| German | 1,688 | 2–14 |
+| Italian | 2,170 | 2–13 |
+| Portuguese (Portugal) | 121 | 2–11 |
+| Spanish | 625 | 3–24 |
+| Turkish | 370 | 3–13 |
+
+Every surname category has only Latin letters. Greek/Arabic surname arrays are
+native-script and excluded; no sourced Latin replacements are bundled. They
+fail explicitly when required, including full-name all-category requests.
+Offline generator tests check 20 novel, unique, seed-42 surnames and full names
+for each available category in both modes; these are engineering checks, not
+linguistic quality guarantees.
+
+### Given-name coverage
 
 Gender counts overlap only with explicit dual-bucket evidence; here none does.
 Generic buckets are unspecified, not unisex. Counts are locale-specific records;

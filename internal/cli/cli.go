@@ -132,6 +132,24 @@ func runData(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintf(stderr, "load bundled corpus: %v\n", err)
 		return 1
 	}
+	filtered := []string{args[0]}
+	seenType := false
+	for i := 1; i < len(args); i++ {
+		if args[i] == "--name-type" {
+			if seenType || i+1 >= len(args) || (args[i+1] != "given" && args[i+1] != "surname") {
+				_, _ = fmt.Fprintln(stderr, "data --name-type requires given or surname, once")
+				return 2
+			}
+			seenType = true
+			i++
+			if args[i] == "surname" {
+				bundle = bundle.Surnames
+			}
+		} else {
+			filtered = append(filtered, args[i])
+		}
+	}
+	args = filtered
 	switch args[0] {
 	case "list":
 		if len(args) != 1 {

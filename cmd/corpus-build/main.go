@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/DoNotResuscitate/nameforge/internal/source/builtin"
 	"github.com/DoNotResuscitate/nameforge/internal/source/faker"
@@ -59,10 +60,16 @@ func run(ctx context.Context, args []string) error {
 	if err := f.Parse(args[1:]); err != nil {
 		return err
 	}
-	if f.NArg() != 0 || (*rebuild && command != "verify") {
+	if f.NArg() != 0 || (*rebuild && command != "verify" && command != "verify-surnames") {
 		return fmt.Errorf("unexpected arguments")
 	}
 	cache := diskCache(*cachePath)
+	if command == "pin-surnames" || command == "build-surnames" || command == "fetch-surnames" || command == "verify-surnames" {
+		if command != "pin-surnames" {
+			command = strings.TrimSuffix(command, "-surnames")
+		}
+		return surnames(ctx, command, cache, *rebuild)
+	}
 	remote := builtin.Remote(&http.Client{})
 	if command == "pin" {
 		if _, err := os.Stat(*lockPath); !os.IsNotExist(err) {
@@ -103,7 +110,10 @@ func run(ctx context.Context, args []string) error {
 		if err := faker.Fetch(ctx, original, faker.HTTPRemote(&http.Client{}), cache); err != nil {
 			return err
 		}
-		return builtin.Fetch(ctx, lock, remote, cache)
+		if err := builtin.Fetch(ctx, lock, remote, cache); err != nil {
+			return err
+		}
+		return surnames(ctx, command, cache, false)
 	case "build":
 		artifacts, err := builtin.Build(ctx, lock, original, cache)
 		if err != nil {
@@ -119,7 +129,7 @@ func run(ctx context.Context, args []string) error {
 				return err
 			}
 		}
-		return nil
+		return surnames(ctx, command, cache, false)
 	case "verify":
 		if err := builtin.Verify(lock, original, os.DirFS(".")); err != nil {
 			return err
@@ -129,9 +139,11 @@ func run(ctx context.Context, args []string) error {
 			if err != nil {
 				return err
 			}
-			return faker.Compare(artifacts, os.DirFS("."))
+			if err := faker.Compare(artifacts, os.DirFS(".")); err != nil {
+				return err
+			}
 		}
-		return nil
+		return surnames(ctx, command, cache, *rebuild)
 	default:
 		return fmt.Errorf("unknown maintenance command %q", command)
 	}

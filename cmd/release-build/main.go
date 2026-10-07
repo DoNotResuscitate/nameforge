@@ -73,6 +73,10 @@ func run(version, out string) error {
 	if err != nil {
 		return err
 	}
+	surnameHash, err := corpus.BundleHash(bundle.Surnames.Records, bundle.Surnames.Categories)
+	if err != nil {
+		return err
+	}
 	// A private temporary staging area prevents stale files in dist from being
 	// swept into an archive or its checksums. Only explicit entries are packed.
 	stage, err := os.MkdirTemp("", "nameforge-release-")
@@ -106,9 +110,9 @@ func run(version, out string) error {
 			return err
 		}
 		metadata, err := json.MarshalIndent(struct {
-			Version, Commit, Target, GoVersion, BundleHash string
-			CGOEnabled                                     bool
-		}{version, commit, target, "go1.27.1", bundleHash, false}, "", "  ")
+			Version, Commit, Target, GoVersion, BundleHash, SurnameBundleHash string
+			CGOEnabled                                                        bool
+		}{version, commit, target, "go1.27.1", bundleHash, surnameHash, false}, "", "  ")
 		if err != nil {
 			return err
 		}
@@ -153,9 +157,13 @@ func distributionFiles() ([]entry, error) {
 		"LICENSE": "LICENSE", "README.md": "README.md", "AGENTS.md": "AGENTS.md",
 		"DEPENDENCIES.txt":       "internal/legal/assets/DEPENDENCIES.txt",
 		"data/sources.lock.json": "data/sources.lock.json", "data/faker.lock.json": "data/faker.lock.json",
-		"data/quality.json":    "data/quality.json",
-		"data/manifest.json":   "internal/corpus/assets/builtin/manifest.json",
-		"data/categories.json": "internal/corpus/assets/builtin/categories.json",
+		"data/quality.json":             "data/quality.json",
+		"data/surnames.lock.json":       "data/surnames.lock.json",
+		"data/surnames.quality.json":    "data/surnames.quality.json",
+		"data/surnames/manifest.json":   "internal/corpus/assets/surnames/manifest.json",
+		"data/surnames/categories.json": "internal/corpus/assets/surnames/categories.json",
+		"data/manifest.json":            "internal/corpus/assets/builtin/manifest.json",
+		"data/categories.json":          "internal/corpus/assets/builtin/categories.json",
 	}
 	for _, name := range []string{"CLI", "TUI", "COVERAGE", "DATA", "ROMANIZED", "ARCHITECTURE", "RELEASE", "PLAN", "DEVELOPING"} {
 		files["docs/"+name+".md"] = "docs/" + name + ".md"

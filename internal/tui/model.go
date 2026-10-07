@@ -47,6 +47,11 @@ const (
 	maxField
 	seedField
 	noveltyField
+	nameTypeField
+	surnameOrderField
+	surnameMinField
+	surnameMaxField
+	surnameNoveltyField
 )
 
 type generationMsg struct {
@@ -79,35 +84,37 @@ type exportDialog struct {
 // Model owns session state. Commands capture immutable requests/results and
 // return IDs so canceled or superseded work can never replace current state.
 type Model struct {
-	ctx         context.Context
-	bundle      *corpus.Bundle
-	categories  []corpus.Category
-	selected    map[string]bool
-	search      textinput.Model
-	inputs      map[int]textinput.Model
-	focus       focus
-	field       int
-	picker      int
-	cursor      int
-	mode        generator.Mode
-	gender      generator.GenderFilter
-	allow       bool
-	phase       phase
-	cancel      context.CancelFunc
-	requestID   uint64
-	batchID     uint64
-	result      *generator.Result
-	favorites   []favorite
-	dialog      *exportDialog
-	help        bool
-	legal       bool
-	legalText   string
-	helpOffset  int
-	status      string
-	width       int
-	height      int
-	noColor     bool
-	interrupted bool
+	ctx          context.Context
+	bundle       *corpus.Bundle
+	categories   []corpus.Category
+	selected     map[string]bool
+	search       textinput.Model
+	inputs       map[int]textinput.Model
+	focus        focus
+	field        int
+	picker       int
+	cursor       int
+	mode         generator.Mode
+	nameType     generator.NameType
+	surnameAllow bool
+	gender       generator.GenderFilter
+	allow        bool
+	phase        phase
+	cancel       context.CancelFunc
+	requestID    uint64
+	batchID      uint64
+	result       *generator.Result
+	favorites    []favorite
+	dialog       *exportDialog
+	help         bool
+	legal        bool
+	legalText    string
+	helpOffset   int
+	status       string
+	width        int
+	height       int
+	noColor      bool
+	interrupted  bool
 }
 
 func input(value, placeholder string) textinput.Model {
@@ -132,10 +139,12 @@ func New(ctx context.Context, bundle *corpus.Bundle, noColor bool) *Model {
 		inputs: map[int]textinput.Model{
 			orderField: input("2", "1..4"), countField: input("20", "1..1000"),
 			minField: input("", "auto"), maxField: input("", "auto"),
-			seedField: input("", "random"),
+			seedField:         input("", "random"),
+			surnameOrderField: input("2", "1..4"), surnameMinField: input("", "auto"), surnameMaxField: input("", "auto"),
 		},
 		mode: generator.ModeCategory, gender: generator.GenderAny,
-		width: 80, height: 24, noColor: noColor,
+		nameType: generator.NameGiven,
+		width:    80, height: 24, noColor: noColor,
 		legalText: notices,
 		status:    "Choose one or more categories; no category is selected by default.",
 	}
@@ -155,7 +164,7 @@ func (m *Model) filtered() []corpus.Category {
 }
 
 func (m *Model) request(fresh bool) (generator.Request, error) {
-	r := generator.Request{Mode: m.mode, Gender: m.gender, AllowExisting: m.allow}
+	r := generator.Request{NameType: m.nameType, Mode: m.mode, Gender: m.gender, AllowExisting: m.allow}
 	for _, c := range m.categories {
 		if m.selected[c.ID] {
 			r.CategoryIDs = append(r.CategoryIDs, c.ID)
@@ -187,6 +196,28 @@ func (m *Model) request(fresh bool) (generator.Request, error) {
 			return r, fmt.Errorf("seed must be an unsigned 64-bit decimal integer")
 		}
 		r.Seed = &n
+	}
+	if m.nameType == generator.NameFull {
+		component := generator.ComponentOptions{AllowExisting: m.surnameAllow}
+		for _, field := range []int{surnameOrderField, surnameMinField, surnameMaxField} {
+			value := strings.TrimSpace(m.inputs[field].Value())
+			if value == "" && field != surnameOrderField {
+				continue
+			}
+			n, err := strconv.Atoi(value)
+			if err != nil || n < 1 {
+				return r, fmt.Errorf("%s must be positive (blank lengths mean auto)", fieldLabels[field])
+			}
+			switch field {
+			case surnameOrderField:
+				component.Order = n
+			case surnameMinField:
+				component.MinLength = n
+			case surnameMaxField:
+				component.MaxLength = n
+			}
+		}
+		r.Surname = &component
 	}
 	return generator.NormalizeRequest(r)
 }
@@ -268,7 +299,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if errors.As(msg.err, &typed) {
 				switch typed.Kind {
 				case generator.ErrorEmptySelection:
-					m.status += " Use gender any; unspecified is not unisex."
+					m.status += " Check component coverage or use gender any for given names; unspecified is not unisex."
 				case generator.ErrorAttemptsExhausted:
 					m.status += " Try fewer names, broader lengths, lower order, or allow existing."
 				}
@@ -396,9 +427,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if key == "down" || key == "up" || (!m.editing() && (key == "j" || key == "k")) {
 				delta := 1
 				if key == "up" || key == "k" {
-					delta = 7
+					delta = len(fieldLabels) - 1
 				}
-				m.field = (m.field + delta) % 8
+				m.field = (m.field + delta) % len(fieldLabels)
 				return m, m.setFocus(settingsFocus)
 			}
 			if key == " " || key == "left" || key == "right" {
@@ -419,6 +450,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				case noveltyField:
 					m.allow = !m.allow
+				case surnameNoveltyField:
+					m.surnameAllow = !m.surnameAllow
+				case nameTypeField:
+					switch m.nameType {
+					case generator.NameGiven:
+						m.nameType = generator.NameSurname
+					case generator.NameSurname:
+						m.nameType = generator.NameFull
+					default:
+						m.nameType = generator.NameGiven
+					}
 				}
 			}
 			if value, ok := m.inputs[m.field]; ok {

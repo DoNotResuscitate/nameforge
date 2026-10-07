@@ -17,6 +17,8 @@ The first release and owner-reported human checks are recorded in
 | M5a | Sourced romanized Greek/Arabic and all-category generation | Complete |
 | M6 | TUI, session favorites and exports | Complete |
 | M7 | Native verification, binary/source archives and publication | Complete |
+| M8 (#10) | Separate sourced surname bundle and generation | Implemented; PR verification pending |
+| M9 (#11) | Full-name composition, component replay and exports | Implemented; PR verification pending |
 
 Sections 1–4 below retain the behavioral contracts; [DATA.md](DATA.md) retains
 the data contract. Section 5 is a **historical implementation/acceptance log**:
@@ -25,7 +27,9 @@ stage at the time, not current missing functionality. Current corpus measurement
 are in [COVERAGE.md](COVERAGE.md); current tooling and release procedures are in
 [DEVELOPING.md](DEVELOPING.md) and [RELEASE.md](RELEASE.md).
 
-Current limitations: session-only favorites, reserved local-pack/preferences
+Surname/full-name enhancements (#10/#11) are implemented as M8/M9 below;
+native PR verification is pending. Current limitations: session-only favorites,
+reserved local-pack/preferences
 support, Latin-only generation, no Greek gender labels, empty unisex pools, and
 cross-built-only Intel macOS. No mandatory MVP milestone remains. Later work is
 listed below and tracked in GitHub issues; it is not implicit implementation scope.
@@ -54,6 +58,11 @@ path is
 `github.com/DoNotResuscitate/nameforge`. Agents should update statuses as work
 lands.
 
+An independent surname bundle adds 5,728 pinned Faker records across eight
+Latin-script categories. Full names compose same-category components (or matching
+blend selections); Greek/Arabic surname requests fail explicitly. See the
+[enhancement handoff](#surname-and-full-name-enhancements-10-11) for checks/limits.
+
 ### MVP
 
 - Embedded Faker static name arrays plus externally sourced romanized Greek/Arabic
@@ -67,7 +76,7 @@ lands.
 
 ### Later work
 
-Surname/full-name composition, custom category weights, phonetic models,
+Custom category weights, phonetic models,
 syllable constraints, persistent favorites, clipboard integration, model caches,
 optional personal Behind the Name imports, historical/mythological packs,
 regional North African datasets and package-manager publishing. No LLM or
@@ -767,6 +776,50 @@ pending until their acceptance checks pass.
   compilation with module downloads disabled, and `git diff --check`.
 
 ## 6. Execution and handoff
+
+### Surname and full-name enhancements (#10, #11)
+
+The owner requested both issues in one PR, superseding #10's suggested separate
+follow-up PR. M8 (surname generation) precedes and supports M9 (composition).
+
+- M8: independently embedded/validated/hashable v1 surname bundle, 5,728 static
+  Faker records across eight reviewed Latin locale categories; pinned revision,
+  checksums, bucket/index provenance, quality report and full MIT notice. Given
+  corpus bytes/hash unchanged. Data tasks verify both bundles offline. CLI/TUI
+  explicitly select given/surname/full; surname gender stays unspecified.
+- M9: same-category pairing or matching per-component blend unions; given name,
+  ASCII space, surname. Shared settings plus independent surname order/length/
+  novelty options. Gender filtering applies only to given names. Full uniqueness
+  permits repeated components; bounded component-attempt accounting/cancellation
+  and partial-error semantics remain explicit. `/full-v1` versions composition;
+  JSON/favorites retain component spellings, attribution, both hashes and settings.
+- Tests added: every available surname/full category and mode at seed 42, reordered
+  selections, gender/missing-component semantics, novel/unique NFC Latin output,
+  sourced metadata and checksum/notice corruption, token-fixture component reuse,
+  bounded exhaustion/cancellation, CLI settings/errors, TUI controls/favorites,
+  real-binary empty-home CLI/PTY replay/exports for both new types and modes.
+- Limitations: Greek/Arabic surnames unavailable (native Faker arrays are not
+  transliterated); full select-all errors without dropping them. No cross-category
+  pairing, culturally specific full-name order/multiple surnames, persisted
+  favorites, or guarantee of linguistic validity. No mandatory MVP milestone
+  remains; next ready work is PR review/native CI, then owner-selected later work.
+- Local checks passed on Linux amd64: `mise run check`, `mise run race`,
+  `mise run data:verify`, `mise exec -- go run ./cmd/corpus-build verify --cache
+  .local/absent-cache`, `mise exec -- go run ./cmd/corpus-build verify-surnames
+  --rebuild`, `mise exec -- go mod verify`, uncached `TestBinaryHeadless` (including
+  active SIGINT for given/surname/full), uncached `TestBinaryTUI`, focused TUI/
+  release tests after UI follow-up, `git diff --check`, a four-target
+  `mise run release:build -- --version dev`, archive SHA-256 verification, and
+  extracted Linux amd64 `release:smoke` (full CLI/PTY, both new name types/modes,
+  exports/favorites, exact replay and terminal restoration).
+  Built-in given assets/source locks/quality are unchanged. Local runtime tests
+  use empty read-only homes and no tools/data on PATH; OS-enforced network denial
+  and macOS/arm64 native execution remain the existing CI suite's responsibility,
+  not newly claimed from this Linux run. PR native verification is pending.
+- `mise run data:fetch` was attempted but Wikidata returned HTTP 429 while fetching
+  an unchanged Arabic entity. This blocks the complete multi-source cache rebuild,
+  not offline verification or the new surname byte-identical rebuild. The surname
+  maintenance subcommands operate independently of Wikimedia availability.
 
 ### Documentation consolidation (#16)
 

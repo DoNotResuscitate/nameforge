@@ -65,6 +65,12 @@ evidence within each category. Raw caches, research pages, personal corpora,
 generated batches, and correspondence belong in ignored local storage, not commits.
 
 Refreshes are explicit reviewed changes, never side effects of build/release.
+The independent surname lock is `data/surnames.lock.json`; ordinary data tasks
+also fetch/build/verify its eight reviewed Faker surname arrays. For initial
+pinning only, `mise exec -- go run ./cmd/corpus-build pin-surnames` refuses an
+existing lock. `fetch-surnames`, `build-surnames` and `verify-surnames [--rebuild]`
+operate on just surname artifacts, independently of Wikimedia availability.
+Full-data verification with `--rebuild` compares both bundles byte-for-byte.
 The maintenance-only `pin --roster <research.json>` command initializes an absent
 supplemental lock from reviewed QIDs/revisions and refuses to overwrite an existing
 lock. Spellings come only from upstream snapshots. Rebuild byte-for-byte and
@@ -84,5 +90,5 @@ Built-in assets and seeded algorithm behavior must not change incidentally.
 
 M1–M7 are complete. [PLAN.md](PLAN.md#current-status) is the current delivery
 summary; its historical records retain the checks and limitations at each stage.
-Surname generation (#10), full-name composition (#11), persistent preferences,
-regional packs, and other expansion work are not part of the delivered MVP.
+Surname generation (#10) and full-name composition (#11) extend the delivered
+MVP; persistent preferences, regional packs and other expansion remain later work.

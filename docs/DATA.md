@@ -2,7 +2,31 @@
 
 ## Current sources
 
-Use **Faker's static locale name lists** for eight embedded packs. M5a replaced
+Given-name sources below remain unchanged. Surnames are a **separate v1 bundle**
+under `internal/corpus/assets/surnames/`, sourced exclusively from eight
+Latin-script Faker `person/last_name.ts` arrays at the same v10.6.0 revision.
+`data/surnames.lock.json` pins their paths/checksums and complete MIT notice;
+`data/surnames.quality.json` records coverage. No generated Faker outputs,
+transliteration, authored names or implicit fallback are used. Maintenance
+fetch/build/verify processes both independently; runtime embeds only explicit
+redistributable files. Given-name bytes and hash remain unchanged.
+
+The surname bundle has 5,728 records: Dutch 131, English 473, French 150, German
+1,688, Italian 2,170, Portuguese (Portugal) 121, Spanish 625, Turkish 370. All
+occurrences are accepted with no merges/rejections; all are Latin and upstream
+`generic` (unspecified gender, **not unisex**). Greek/Arabic surname arrays at this
+revision are native-script and deliberately not selected. No Latin replacement
+is bundled; requests requiring those surnames fail explicitly.
+
+Record IDs and category IDs are scoped to their separate bundle; identical
+given/surname spellings do not merge or transfer gender evidence. Each surname
+retains original revision/path/bucket/index provenance and the full Faker notice.
+Locale labels describe the upstream locale list, not guaranteed ancestry,
+regional frequency, historical usage or linguistic validity. Full-name
+composition never becomes training data; it combines separately sampled Latin
+components using documented same-category/matching-blend pairing.
+
+Use **Faker's static locale name lists** for eight embedded given-name packs. M5a replaced
 the native-script Greek/Arabic packs with Wikipedia's supplied Latin/Greek name
 pairs (CC BY-SA 4.0) and Wikidata's supplied Latin name statements (CC0). See
 [ROMANIZED.md](ROMANIZED.md) for pinned sources and the reviewed selection. This

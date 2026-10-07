@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "source_revision": "2cb04231a6ace91a59ebe577c653f4ec66478ca3",
+  "sources": [
+    {
+      "path": "src/locales/nl/person/last_name.ts",
+      "sha256": "813c638a2fca3d932977cc8b614453e86489a86dda76bf6aee2dd52404745259"
+    },
+    {
+      "path": "src/locales/en/person/last_name.ts",
+      "sha256": "0df0a5723c4b896935f384d6e5af686a8f0a6b4024662abdb1129cc9db1d68af"
+    },
+    {
+      "path": "src/locales/fr/person/last_name.ts",
+      "sha256": "7f4c33c0bbbf8f97723fae69be6ca8aac19fe1bb528eb260e20ee2a6c300dcf2"
+    },
+    {
+      "path": "src/locales/de/person/last_name.ts",
+      "sha256": "6ee4b498176480c339744d7ac66682df5ffa67515cc7cc665cf8436d7b5da539"
+    },
+    {
+      "path": "src/locales/it/person/last_name.ts",
+      "sha256": "6e2011c1160f9b4adc1afb71459b31bfccf5ae0552afffe4ea6fb6c38d98b053"
+    },
+    {
+      "path": "src/locales/pt_PT/person/last_name.ts",
+      "sha256": "787bc58b9921a31867966abbae30cc4813d8eb89945b22021a8102c484f3afc2"
+    },
+    {
+      "path": "src/locales/es/person/last_name.ts",
+      "sha256": "3dd24c6bd1d0622ba3564777b673aaa64ac07fbdabe6d7b11dde701911a5dcb9"
+    },
+    {
+      "path": "src/locales/tr/person/last_name.ts",
+      "sha256": "158273c200921e7e5c79a49f91436e13717b91e0321398d6fa61dcee82b59d7a"
+    }
+  ],
+  "licenses": [
+    {
+      "name": "Faker (MIT)",
+      "path": "licenses/FAKER-LICENSE"
+    }
+  ],
+  "extractor_version": "faker-static-v1",
+  "normalization_version": "nfc-v1",
+  "record_count": 5728,
+  "records_sha256": "dcde309c1afb3456722ce00d63bc17d0e1ef3b23505e84f6f4bf961cffb2aa8d",
+  "categories_sha256": "dc97f9a42e245887b6e0d35058b1746396a34fd23798eb3adcf4829e73c5dc75"
+}
